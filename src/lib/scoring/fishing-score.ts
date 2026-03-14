@@ -2,6 +2,7 @@ import type { Species, Spot, WeatherData, TideData, SolunarData, FishingScore, S
 import { getSolunarScore } from '@/lib/solunar/solunar-service';
 import { kmhToKnots } from '@/lib/weather/weather-service';
 import { angleDiff } from '@/lib/utils/geo';
+import { SPOTS } from '@/data/spots';
 
 // Température moyenne de surface (SST) à Arcachon par mois (°C)
 // Source : climatologie SHOM/Ifremer Arcachon Eyrac
@@ -137,9 +138,16 @@ export function calculateFishingScore(
 /**
  * Retourne les N meilleures espèces de saison pour les conditions données
  */
+function isSpeciesInSeason(species: Species, month: number): boolean {
+  const { start, end } = species.season;
+  if (start <= end) return month >= start && month <= end;
+  // Saison cyclique (ex: sole oct→mars : start=10, end=3)
+  return month >= start || month <= end;
+}
+
 export function getTopSpeciesForConditions(
   allSpecies: Species[],
-  spot: Spot,
+  fallbackSpot: Spot,
   weather: WeatherData,
   tide: TideData,
   solunar: SolunarData,
@@ -147,12 +155,14 @@ export function getTopSpeciesForConditions(
   limit = 3
 ): Array<{ species: Species; score: FishingScore }> {
   const currentMonth = date.getMonth() + 1;
-  const inSeason = allSpecies.filter(
-    (s) => currentMonth >= s.season.start && currentMonth <= s.season.end
-  );
+  const inSeason = allSpecies.filter((s) => isSpeciesInSeason(s, currentMonth));
 
   return inSeason
-    .map((s) => ({ species: s, score: calculateFishingScore(s, spot, weather, tide, solunar, date) }))
+    .map((s) => {
+      // Utilise le premier spot qui cible cette espèce (cohérent avec page espèces)
+      const spot = SPOTS.find((sp) => sp.species.includes(s.id)) ?? fallbackSpot;
+      return { species: s, score: calculateFishingScore(s, spot, weather, tide, solunar, date) };
+    })
     .sort((a, b) => b.score.total - a.score.total)
     .slice(0, limit);
 }
