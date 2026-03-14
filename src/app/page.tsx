@@ -20,6 +20,7 @@ import SolunarIndicator from '@/components/dashboard/SolunarIndicator';
 import FishingScoreCard from '@/components/dashboard/FishingScoreCard';
 import SpeciesRecommendation from '@/components/dashboard/SpeciesRecommendation';
 import WeekForecast from '@/components/dashboard/WeekForecast';
+import FishingWindows from '@/components/dashboard/FishingWindows';
 
 // Spot de référence pour le score du dashboard
 const DASHBOARD_SPOT = SPOTS.find((s) => s.id === 'passe-nord') ?? SPOTS[0]!;
@@ -239,6 +240,17 @@ export default function DashboardPage() {
           {/* Courbe */}
           <TideCurve curve={tideCurve} extremes={tideData.extremes} now={now} />
         </div>
+
+        {/* Fenêtres de pêche — liées à la courbe de marée */}
+        {weatherData && topSpecies.length > 0 && (
+          <FishingWindows
+            topSpecies={topSpecies}
+            tideData={tideData}
+            weatherData={weatherData}
+            solunarData={solunarData}
+            now={now}
+          />
+        )}
 
         {/* Météo — masquée si indisponible */}
         {weatherData && <WeatherCard weather={weatherData} />}
