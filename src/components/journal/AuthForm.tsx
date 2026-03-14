@@ -16,17 +16,32 @@ function toFrench(msg: string): string {
 }
 
 export default function AuthForm() {
-  const [mode, setMode]         = useState<Mode>('login');
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError]       = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [sent, setSent]         = useState(false); // email de confirmation / reset envoyé
+  const [mode, setMode]                     = useState<Mode>('login');
+  const [email, setEmail]                   = useState('');
+  const [password, setPassword]             = useState('');
+  const [error, setError]                   = useState<string | null>(null);
+  const [loading, setLoading]               = useState(false);
+  const [sent, setSent]                     = useState(false); // email de confirmation / reset envoyé
+  const [needsConfirmation, setNeedsConfirmation] = useState(false); // compte non confirmé
 
   function switchMode(next: Mode) {
     setMode(next);
     setError(null);
     setSent(false);
+    setNeedsConfirmation(false);
+  }
+
+  async function handleResend() {
+    setLoading(true);
+    const supabase = createClient();
+    await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    setLoading(false);
+    setNeedsConfirmation(false);
+    setSent(true);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -66,7 +81,13 @@ export default function AuthForm() {
     // login
     const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (loginError) setError(toFrench(loginError.message));
+    if (loginError) {
+      if (loginError.message.includes('Email not confirmed')) {
+        setNeedsConfirmation(true);
+      } else {
+        setError(toFrench(loginError.message));
+      }
+    }
   }
 
   // ── Écran "email envoyé" ────────────────────────────────────────────────────
@@ -87,6 +108,37 @@ export default function AuthForm() {
           <button
             onClick={() => switchMode('login')}
             className="text-slate-400 text-sm hover:text-slate-200 transition-colors"
+          >
+            ← Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Écran "compte non confirmé" ────────────────────────────────────────────
+  if (needsConfirmation) {
+    return (
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-sm space-y-6 text-center">
+          <p className="text-5xl">✉️</p>
+          <div>
+            <h2 className="text-white font-bold text-xl">Email non confirmé</h2>
+            <p className="text-slate-400 text-sm mt-2">
+              Votre compte existe mais l&apos;email <span className="text-slate-200">{email}</span> n&apos;a pas encore été confirmé.
+              Renvoyez le lien d&apos;activation pour pouvoir vous connecter.
+            </p>
+          </div>
+          <button
+            onClick={handleResend}
+            disabled={loading}
+            className="w-full bg-cyan-400 text-slate-900 font-semibold rounded-xl py-3 text-sm disabled:opacity-50 transition-opacity"
+          >
+            {loading ? 'Envoi…' : 'Renvoyer l\'email de confirmation'}
+          </button>
+          <button
+            onClick={() => switchMode('login')}
+            className="block w-full text-slate-400 text-sm hover:text-slate-200 transition-colors"
           >
             ← Retour à la connexion
           </button>
