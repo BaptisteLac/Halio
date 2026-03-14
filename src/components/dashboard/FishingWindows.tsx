@@ -3,10 +3,8 @@
 import { useMemo } from 'react';
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore } from '@/lib/scoring/fishing-score';
-import { SPOTS } from '@/data/spots';
+import { DASHBOARD_SPOT } from '@/data/spots';
 import type { TideData, WeatherData, SolunarData, Species, FishingScore } from '@/types';
-
-const DASHBOARD_SPOT = SPOTS.find((s) => s.id === 'passe-nord') ?? SPOTS[0]!;
 const THRESHOLD = 65;
 const SLOTS = 48; // 30-min slots over 24h
 
@@ -72,18 +70,17 @@ export default function FishingWindows({
       })
     );
 
-    // Score cumulé par slot (pour trouver la meilleure fenêtre globale)
+    // Score moyen par slot (0-100) pour la vue globale — évite qu'une somme dépasse le seuil
+    const n = speciesTimelines.length || 1;
     const combinedScores = slots.map((_, i) =>
-      speciesTimelines.reduce((sum, tl) => sum + (tl[i] ?? 0), 0)
+      speciesTimelines.reduce((sum, tl) => sum + (tl[i] ?? 0), 0) / n
     );
 
     const maxCombined = Math.max(...combinedScores);
     const peakIdx = combinedScores.indexOf(maxCombined);
 
-    // Expansion du pic vers la fenêtre continue où au moins une espèce est ≥ THRESHOLD
-    const isGood = slots.map((_, i) =>
-      speciesTimelines.some((tl) => (tl[i] ?? 0) >= THRESHOLD)
-    );
+    // Expansion du pic : fenêtre continue où le score moyen ≥ THRESHOLD
+    const isGood = combinedScores.map((avg) => avg >= THRESHOLD);
 
     let wStart = peakIdx;
     let wEnd = peakIdx;

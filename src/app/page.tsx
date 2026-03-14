@@ -9,7 +9,7 @@ import { calculateCoefficientForDate } from '@/lib/tides/coefficient';
 import { calculateFishingScore, getTopSpeciesForConditions } from '@/lib/scoring/fishing-score';
 import { mslToZH } from '@/lib/tides/tide-utils';
 import { SPECIES } from '@/data/species';
-import { SPOTS } from '@/data/spots';
+import { SPOTS, DASHBOARD_SPOT } from '@/data/spots';
 
 import BottomNav from '@/components/layout/BottomNav';
 import WeatherErrorBanner from '@/components/layout/WeatherErrorBanner';
@@ -21,9 +21,6 @@ import FishingScoreCard from '@/components/dashboard/FishingScoreCard';
 import SpeciesRecommendation from '@/components/dashboard/SpeciesRecommendation';
 import WeekForecast from '@/components/dashboard/WeekForecast';
 import FishingWindows from '@/components/dashboard/FishingWindows';
-
-// Spot de référence pour le score du dashboard
-const DASHBOARD_SPOT = SPOTS.find((s) => s.id === 'passe-nord') ?? SPOTS[0]!;
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;

@@ -362,3 +362,6 @@ export function getSpotsByZone(zone: string): Spot[] {
 export function getSpotsBySpecies(speciesId: string): Spot[] {
   return SPOTS.filter((s) => s.species.includes(speciesId));
 }
+
+// Spot de référence pour les scores dashboard (Passe Nord = spot emblématique du Bassin)
+export const DASHBOARD_SPOT: Spot = SPOTS.find((s) => s.id === 'passe-nord') ?? SPOTS[0]!;
