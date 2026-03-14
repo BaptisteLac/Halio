@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import BottomNav from '@/components/layout/BottomNav';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -40,7 +41,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6 pb-20">
+    <div className="min-h-screen bg-slate-950 pb-20">
+      <div className="flex items-center justify-center px-6 pt-20">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <p className="text-4xl mb-3">🔑</p>
@@ -86,6 +88,8 @@ export default function ResetPasswordPage() {
           </form>
         )}
       </div>
+      </div>
+      <BottomNav />
     </div>
   );
 }
