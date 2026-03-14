@@ -132,6 +132,7 @@ export function parseWeatherData(
     sunset: new Date(forecast.daily.sunset[i] ?? t),
     windSpeedMax: forecast.daily.wind_speed_10m_max[i] ?? 0,
     windGustsMax: forecast.daily.wind_gusts_10m_max[i] ?? 0,
+    windDirectionDominant: forecast.daily.winddirection_10m_dominant[i] ?? 0,
     precipitationSum: forecast.daily.precipitation_sum[i] ?? 0,
     weatherCode: forecast.daily.weather_code[i] ?? 0,
   }));

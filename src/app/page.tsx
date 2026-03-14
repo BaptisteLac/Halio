@@ -50,7 +50,8 @@ function LoadingSkeleton() {
 }
 
 export default function DashboardPage() {
-  const [now] = useState(() => new Date());
+  const [fetchDate] = useState(() => new Date()); // stable — utilisé pour le chargement initial
+  const [now, setNow] = useState(() => new Date()); // mis à jour chaque minute — pour l'affichage
   const [tideData, setTideData] = useState<TideData | null>(null);
   const [tideCurve, setTideCurve] = useState<TideCurvePoint[] | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -60,8 +61,16 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [weatherError, setWeatherError] = useState(false);
 
+  // Mise à jour de l'heure d'affichage chaque minute + au retour sur l'onglet
   useEffect(() => {
-    Promise.allSettled([getTideData(now), getTideCurve(now), fetchWeatherData()])
+    const update = () => { if (!document.hidden) setNow(new Date()); };
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    document.addEventListener('visibilitychange', update);
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', update); };
+  }, []);
+
+  useEffect(() => {
+    Promise.allSettled([getTideData(fetchDate), getTideCurve(fetchDate), fetchWeatherData()])
       .then(async ([tideResult, curveResult, weatherResult]) => {
         // Marées = critiques → erreur bloquante si elles échouent
         if (tideResult.status === 'rejected') {
@@ -75,7 +84,7 @@ export default function DashboardPage() {
           return;
         }
 
-        const solunar = getSolunarData(now);
+        const solunar = getSolunarData(fetchDate);
         setTideData(tideResult.value);
         setTideCurve(curveResult.value);
         setSolunarData(solunar);
@@ -100,7 +109,11 @@ export default function DashboardPage() {
               };
               const syntheticWeather: WeatherData = {
                 ...weather,
-                current: { ...weather.current, windSpeed: daily.windSpeedMax },
+                current: {
+                  ...weather.current,
+                  windSpeed: daily.windSpeedMax,
+                  windDirection: daily.windDirectionDominant,
+                },
               };
               const daySolunar = getSolunarData(daily.date);
               const top = getTopSpeciesForConditions(
@@ -117,7 +130,8 @@ export default function DashboardPage() {
 
         setLoading(false);
       });
-  }, [now]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchDate]);
 
   if (loading) {
     return (

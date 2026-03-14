@@ -73,6 +73,12 @@ export default function JournalPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  async function handleDelete(id: string) {
+    const supabase = createClient();
+    await supabase.from('catches').delete().eq('id', id);
+    await fetchCatches();
+  }
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -121,7 +127,7 @@ export default function JournalPage() {
 
       {/* Liste des prises */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        <CatchList catches={catches} />
+        <CatchList catches={catches} onDelete={handleDelete} />
       </div>
 
       {/* Spacer BottomNav */}

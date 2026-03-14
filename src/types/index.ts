@@ -177,6 +177,7 @@ export interface WeatherDaily {
   sunset: Date;
   windSpeedMax: number;
   windGustsMax: number;
+  windDirectionDominant: number;
   precipitationSum: number;
   weatherCode: number;
 }
@@ -328,6 +329,7 @@ export interface OpenMeteoForecastResponse {
     sunset: string[];
     wind_speed_10m_max: number[];
     wind_gusts_10m_max: number[];
+    winddirection_10m_dominant: number[];
     precipitation_sum: number[];
     weather_code: number[];
   };

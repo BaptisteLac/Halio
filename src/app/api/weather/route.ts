@@ -26,6 +26,7 @@ const DAILY_VARS = [
   'sunset',
   'wind_speed_10m_max',
   'wind_gusts_10m_max',
+  'winddirection_10m_dominant',
   'precipitation_sum',
   'weather_code',
 ].join(',');

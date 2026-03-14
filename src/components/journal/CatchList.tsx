@@ -1,4 +1,5 @@
-import { Fish } from 'lucide-react';
+import { useState } from 'react';
+import { Fish, Trash2 } from 'lucide-react';
 import type { CatchRow } from '@/lib/supabase/types';
 import { getSpeciesById } from '@/data/species';
 import { getSpotById } from '@/data/spots';
@@ -6,6 +7,7 @@ import { getFishingScoreColor } from '@/lib/scoring/fishing-score';
 
 interface Props {
   catches: CatchRow[];
+  onDelete: (id: string) => Promise<void>;
 }
 
 function formatDay(dateStr: string): string {
@@ -28,7 +30,17 @@ function groupByDay(catches: CatchRow[]): Array<{ day: string; items: CatchRow[]
   return Array.from(map.entries()).map(([day, items]) => ({ day, items }));
 }
 
-export default function CatchList({ catches }: Props) {
+export default function CatchList({ catches, onDelete }: Props) {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    await onDelete(id);
+    setDeletingId(null);
+    setConfirmId(null);
+  }
+
   if (catches.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center py-16">
@@ -58,6 +70,9 @@ export default function CatchList({ catches }: Props) {
                 const scoreColor = c.fishing_score !== null
                   ? getFishingScoreColor(c.fishing_score)
                   : 'text-slate-500';
+
+                const isConfirming = confirmId === c.id;
+                const isDeleting = deletingId === c.id;
 
                 return (
                   <div
@@ -95,15 +110,43 @@ export default function CatchList({ catches }: Props) {
                       )}
                     </div>
 
-                    {/* Score */}
-                    {c.fishing_score !== null && (
-                      <div className="shrink-0 text-right">
-                        <span className={`text-lg font-bold tabular-nums ${scoreColor}`}>
-                          {c.fishing_score}
-                        </span>
-                        <p className="text-slate-500 text-[10px]">/100</p>
-                      </div>
-                    )}
+                    {/* Score + suppression */}
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
+                      {c.fishing_score !== null && (
+                        <div className="text-right">
+                          <span className={`text-lg font-bold tabular-nums ${scoreColor}`}>
+                            {c.fishing_score}
+                          </span>
+                          <p className="text-slate-500 text-[10px]">/100</p>
+                        </div>
+                      )}
+
+                      {isConfirming ? (
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={() => handleDelete(c.id)}
+                            disabled={isDeleting}
+                            className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-2 py-1 disabled:opacity-50"
+                          >
+                            {isDeleting ? '…' : 'Supprimer'}
+                          </button>
+                          <button
+                            onClick={() => setConfirmId(null)}
+                            className="text-[10px] text-slate-500 border border-slate-700 rounded-lg px-2 py-1"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmId(c.id)}
+                          className="text-slate-600 hover:text-red-400 transition-colors p-1"
+                          aria-label="Supprimer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
