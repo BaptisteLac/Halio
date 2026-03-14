@@ -33,15 +33,20 @@ export default function AuthForm() {
 
   async function handleResend() {
     setLoading(true);
+    setError(null);
     const supabase = createClient();
-    await supabase.auth.resend({
+    const { error: resendError } = await supabase.auth.resend({
       type: 'signup',
       email,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     setLoading(false);
-    setNeedsConfirmation(false);
-    setSent(true);
+    if (resendError) {
+      setError(toFrench(resendError.message));
+    } else {
+      setNeedsConfirmation(false);
+      setSent(true);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -129,12 +134,14 @@ export default function AuthForm() {
               Renvoyez le lien d&apos;activation pour pouvoir vous connecter.
             </p>
           </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+
           <button
             onClick={handleResend}
             disabled={loading}
             className="w-full bg-cyan-400 text-slate-900 font-semibold rounded-xl py-3 text-sm disabled:opacity-50 transition-opacity"
           >
-            {loading ? 'Envoi…' : 'Renvoyer l\'email de confirmation'}
+            {loading ? 'Envoi…' : "Renvoyer l'email de confirmation"}
           </button>
           <button
             onClick={() => switchMode('login')}
