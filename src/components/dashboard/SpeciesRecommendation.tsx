@@ -1,7 +1,7 @@
-import type { Species, FishingScore } from '@/types';
+import type { Species, FishingScore, Spot } from '@/types';
 
 interface Props {
-  topSpecies: Array<{ species: Species; score: FishingScore }>;
+  topSpecies: Array<{ species: Species; score: FishingScore; spot: Spot }>;
 }
 
 function ScoreDot({ score }: { score: number }) {
@@ -37,6 +37,7 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
             {first.species.localNames.length > 0 && (
               <span className="text-slate-400 text-xs ml-1.5">({first.species.localNames[0]})</span>
             )}
+            <p className="text-slate-500 text-[10px] mt-0.5">📍 {first.spot.name}</p>
             {first.species.lures.length > 0 && (
               <p className="text-slate-400 text-xs mt-1 truncate">
                 💡 {first.species.lures[0].name}
@@ -54,13 +55,16 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
       {/* Autres espèces */}
       {rest.length > 0 && (
         <div className="space-y-1.5">
-          {rest.map(({ species, score }) => (
+          {rest.map(({ species, score, spot }) => (
             <div key={species.id} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <ScoreDot score={score.total} />
-                <span className="text-slate-300">{species.name}</span>
+                <div className="min-w-0">
+                  <span className="text-slate-300">{species.name}</span>
+                  <span className="text-slate-600 text-[10px] ml-1.5 truncate">· {spot.name}</span>
+                </div>
               </div>
-              <span className={`font-medium tabular-nums ${score.color}`}>{score.total}</span>
+              <span className={`font-medium tabular-nums shrink-0 ${score.color}`}>{score.total}</span>
             </div>
           ))}
         </div>

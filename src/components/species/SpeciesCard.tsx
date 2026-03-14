@@ -6,6 +6,7 @@ import { getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishin
 interface Props {
   species: Species;
   score?: FishingScore;
+  spotName?: string;
   isInSeason: boolean;
 }
 
@@ -25,7 +26,7 @@ const TECHNIQUE_LABELS: Record<string, string> = {
   sèche:            'Sèche (seiche)',
 };
 
-export default function SpeciesCard({ species, score, isInSeason }: Props) {
+export default function SpeciesCard({ species, score, spotName, isInSeason }: Props) {
   const total = score?.total;
   const color = total !== undefined ? getFishingScoreColor(total) : 'text-slate-500';
   const label = total !== undefined ? getFishingScoreLabel(total) : '—';
@@ -60,6 +61,9 @@ export default function SpeciesCard({ species, score, isInSeason }: Props) {
       {/* Nom */}
       <p className="text-white font-semibold text-sm leading-tight">{species.name}</p>
       <p className="text-slate-500 text-[10px] italic mt-0.5 leading-tight">{species.scientificName}</p>
+      {spotName && (
+        <p className="text-slate-600 text-[10px] mt-0.5 leading-tight">📍 {spotName}</p>
+      )}
 
       {/* Infos clés */}
       <div className="mt-2 flex flex-wrap gap-1">

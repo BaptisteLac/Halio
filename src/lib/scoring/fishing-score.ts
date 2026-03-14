@@ -145,6 +145,28 @@ function isSpeciesInSeason(species: Species, month: number): boolean {
   return month >= start || month <= end;
 }
 
+/**
+ * Calcule le meilleur score possible pour une espèce en testant tous les spots qui la ciblent.
+ * Retourne le score le plus élevé avec le spot correspondant.
+ */
+export function getBestScoreForSpecies(
+  species: Species,
+  spots: Spot[],
+  weather: WeatherData,
+  tide: TideData,
+  solunar: SolunarData,
+  date: Date,
+  fallbackSpot: Spot
+): { score: FishingScore; spot: Spot } {
+  const candidates = spots.filter((sp) => sp.species.includes(species.id));
+  const pool = candidates.length > 0 ? candidates : [fallbackSpot];
+  return pool.reduce<{ score: FishingScore; spot: Spot } | null>((best, spot) => {
+    const score = calculateFishingScore(species, spot, weather, tide, solunar, date);
+    if (!best || score.total > best.score.total) return { score, spot };
+    return best;
+  }, null)!;
+}
+
 export function getTopSpeciesForConditions(
   allSpecies: Species[],
   fallbackSpot: Spot,
@@ -153,15 +175,14 @@ export function getTopSpeciesForConditions(
   solunar: SolunarData,
   date: Date,
   limit = 3
-): Array<{ species: Species; score: FishingScore }> {
+): Array<{ species: Species; score: FishingScore; spot: Spot }> {
   const currentMonth = date.getMonth() + 1;
   const inSeason = allSpecies.filter((s) => isSpeciesInSeason(s, currentMonth));
 
   return inSeason
     .map((s) => {
-      // Utilise le premier spot qui cible cette espèce (cohérent avec page espèces)
-      const spot = SPOTS.find((sp) => sp.species.includes(s.id)) ?? fallbackSpot;
-      return { species: s, score: calculateFishingScore(s, spot, weather, tide, solunar, date) };
+      const { score, spot } = getBestScoreForSpecies(s, SPOTS, weather, tide, solunar, date, fallbackSpot);
+      return { species: s, score, spot };
     })
     .sort((a, b) => b.score.total - a.score.total)
     .slice(0, limit);

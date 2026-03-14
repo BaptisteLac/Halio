@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { WifiOff } from 'lucide-react';
-import type { Species, FishingScore } from '@/types';
+import type { Species, FishingScore, Spot } from '@/types';
 import { getTideData } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
-import { calculateFishingScore, getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
+import { getBestScoreForSpecies, getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
 import { SPOTS } from '@/data/spots';
 
 interface Props {
@@ -14,18 +14,17 @@ interface Props {
 }
 
 export default function ScoreBlock({ species }: Props) {
-  const [score, setScore] = useState<FishingScore | null>(null);
+  const [result, setResult] = useState<{ score: FishingScore; spot: Spot } | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const now = new Date();
-    const spot = SPOTS.find((s) => s.species.includes(species.id)) ?? SPOTS[0];
 
     Promise.allSettled([getTideData(now), fetchWeatherData()])
       .then(([tideResult, weatherResult]) => {
         if (tideResult.status === 'fulfilled' && weatherResult.status === 'fulfilled') {
           const solunar = getSolunarData(now);
-          setScore(calculateFishingScore(species, spot, weatherResult.value, tideResult.value, solunar, now));
+          setResult(getBestScoreForSpecies(species, SPOTS, weatherResult.value, tideResult.value, solunar, now, SPOTS[0]!));
         } else {
           setError(true);
         }
@@ -41,7 +40,7 @@ export default function ScoreBlock({ species }: Props) {
     );
   }
 
-  if (!score) {
+  if (!result) {
     return (
       <div className="bg-slate-800 rounded-xl p-4 flex items-center gap-3">
         <div className="w-14 h-14 rounded-full bg-slate-700 animate-pulse" />
@@ -53,6 +52,7 @@ export default function ScoreBlock({ species }: Props) {
     );
   }
 
+  const { score, spot } = result;
   const color = getFishingScoreColor(score.total);
   const label = getFishingScoreLabel(score.total);
 
@@ -64,7 +64,7 @@ export default function ScoreBlock({ species }: Props) {
       </div>
       <div>
         <p className={`font-semibold ${color}`}>{label}</p>
-        <p className="text-slate-400 text-xs">Score de pêche actuel</p>
+        <p className="text-slate-400 text-xs">📍 {spot.name}</p>
       </div>
     </div>
   );

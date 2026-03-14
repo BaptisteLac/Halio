@@ -3,8 +3,7 @@
 import { useMemo, useState } from 'react';
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
-import { DASHBOARD_SPOT } from '@/data/spots';
-import type { TideData, WeatherData, SolunarData, Species, FishingScore } from '@/types';
+import type { TideData, WeatherData, SolunarData, Species, FishingScore, Spot } from '@/types';
 
 const THRESHOLD = 65;
 const SLOTS = 24; // 1h slots over 24h
@@ -13,6 +12,7 @@ const SLOT_MS = 60 * 60 * 1000;
 interface SpeciesResult {
   species: Species;
   score: FishingScore;
+  spot: Spot;
 }
 
 interface Props {
@@ -75,13 +75,13 @@ export default function FishingWindows({
       Math.floor((now.getTime() - startOfDay.getTime()) / SLOT_MS)
     );
 
-    const speciesTimelines = topSpecies.map(({ species }) =>
+    const speciesTimelines = topSpecies.map(({ species, spot }) =>
       slots.map((slotTime) => {
         const currentHour = getCurrentTideHour(slotTime, tideData.extremes);
         const currentPhase = getTidePhaseAtTime(slotTime, tideData.extremes);
         const syntheticTide: TideData = { ...tideData, currentHour, currentPhase };
         return calculateFishingScore(
-          species, DASHBOARD_SPOT, weatherData, syntheticTide, solunarData, slotTime
+          species, spot, weatherData, syntheticTide, solunarData, slotTime
         ).total;
       })
     );

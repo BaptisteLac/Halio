@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import type { TideData, WeatherData, SolunarData, FishingScore } from '@/types';
+import type { TideData, WeatherData, SolunarData, FishingScore, Spot } from '@/types';
 import { getTideData } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
-import { calculateFishingScore } from '@/lib/scoring/fishing-score';
+import { getBestScoreForSpecies } from '@/lib/scoring/fishing-score';
 import { SPECIES, getSpeciesInSeason as filterSeason } from '@/data/species';
 import { SPOTS } from '@/data/spots';
 
@@ -47,17 +47,14 @@ export default function EspecesPage() {
       });
   }, [now]);
 
-  // Score par espèce (calculé sur le premier spot disponible de l'espèce)
-  const scoreMap = useMemo<Map<string, FishingScore>>(() => {
+  // Score par espèce (meilleur spot pour chaque espèce)
+  const scoreMap = useMemo<Map<string, { score: FishingScore; spot: Spot }>>(() => {
     if (!tideData || !weatherData || !solunarData) return new Map();
 
     return new Map(
       SPECIES.map((species) => {
-        // Utilise le premier spot qui cible cette espèce, ou le premier spot
-        const spot =
-          SPOTS.find((s) => s.species.includes(species.id)) ?? SPOTS[0];
-        const score = calculateFishingScore(species, spot, weatherData, tideData, solunarData, now);
-        return [species.id, score];
+        const result = getBestScoreForSpecies(species, SPOTS, weatherData, tideData, solunarData, now, SPOTS[0]!);
+        return [species.id, result];
       })
     );
   }, [tideData, weatherData, solunarData, now]);
@@ -113,7 +110,8 @@ export default function EspecesPage() {
             <SpeciesCard
               key={species.id}
               species={species}
-              score={scoreMap.get(species.id)}
+              score={scoreMap.get(species.id)?.score}
+              spotName={scoreMap.get(species.id)?.spot.name}
               isInSeason={inSeasonIds.has(species.id)}
             />
           ))}
