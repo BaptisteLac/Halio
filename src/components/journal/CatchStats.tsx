@@ -49,14 +49,14 @@ export default function CatchStats({ catches }: Props) {
       <div className="grid grid-cols-2 gap-2">
         {topSpecies && (
           <StatWide
-            label="Espèce favorite"
+            label="Plus pêchée"
             value={getSpeciesById(topSpecies.id)?.name ?? topSpecies.id}
             sub={`${topSpecies.count} prise${topSpecies.count > 1 ? 's' : ''}`}
           />
         )}
         {topSpot && (
           <StatWide
-            label="Spot favori"
+            label="Spot fréquent"
             value={getSpotById(topSpot.id)?.name ?? topSpot.id}
             sub={`${topSpot.count} sortie${topSpot.count > 1 ? 's' : ''}`}
           />
