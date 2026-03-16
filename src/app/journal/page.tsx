@@ -13,6 +13,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import AuthForm from '@/components/journal/AuthForm';
 import CatchForm from '@/components/journal/CatchForm';
 import CatchList from '@/components/journal/CatchList';
+import CatchStats from '@/components/journal/CatchStats';
 
 export default function JournalPage() {
   const [now] = useState(() => new Date());
@@ -125,8 +126,13 @@ export default function JournalPage() {
         </div>
       </header>
 
-      {/* Liste des prises */}
+      {/* Stats + liste des prises */}
       <div className="flex-1 overflow-hidden flex flex-col">
+        {catches.length > 0 && (
+          <div className="shrink-0 px-3 pt-3 max-w-lg mx-auto w-full">
+            <CatchStats catches={catches} />
+          </div>
+        )}
         <CatchList catches={catches} onDelete={handleDelete} />
       </div>
 
