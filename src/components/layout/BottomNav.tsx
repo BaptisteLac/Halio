@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Map, Fish, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Map, Fish, BookOpen, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/carte', label: 'Carte', icon: Map },
   { href: '/especes', label: 'Espèces', icon: Fish },
   { href: '/journal', label: 'Journal', icon: BookOpen },
+  { href: '/reglages', label: 'Réglages', icon: Settings },
 ];
 
 export default function BottomNav() {
