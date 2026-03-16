@@ -75,10 +75,17 @@ export default function CatchList({ catches, onDelete }: Props) {
                 const isDeleting = deletingId === c.id;
 
                 return (
-                  <div
-                    key={c.id}
-                    className="bg-slate-800 rounded-xl px-4 py-3 flex items-start justify-between gap-3"
-                  >
+                  <div key={c.id} className="bg-slate-800 rounded-xl overflow-hidden">
+                    {/* Photo pleine largeur si disponible */}
+                    {c.photo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.photo_url}
+                        alt={species?.name ?? 'Photo de prise'}
+                        className="w-full h-40 object-cover"
+                      />
+                    )}
+                    <div className="px-4 py-3 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-white font-medium text-sm">
@@ -146,6 +153,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                           <Trash2 size={14} />
                         </button>
                       )}
+                    </div>
                     </div>
                   </div>
                 );

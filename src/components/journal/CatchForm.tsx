@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { X, Camera, Image as ImageIcon } from 'lucide-react';
 import type { TideData, WeatherData } from '@/types';
 import { SPECIES } from '@/data/species';
 import { SPOTS } from '@/data/spots';
@@ -51,10 +51,30 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
   const [lureOrBait, setLureOrBait] = useState('');
   const [released,   setReleased]   = useState(false);
   const [notes,      setNotes]      = useState('');
+  const [photoFile,  setPhotoFile]  = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving,     setSaving]     = useState(false);
   const [error,      setError]      = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSpecies = SPECIES.find((s) => s.id === speciesId) ?? SPECIES[0];
+
+  function resetForm() {
+    setSpeciesId(SPECIES[0].id);
+    setSpotId(SPOTS[0].id);
+    setCaughtAt(toDatetimeLocal(new Date()));
+    setSizeCm('');
+    setWeightKg('');
+    setTechnique('');
+    setLureOrBait('');
+    setReleased(false);
+    setNotes('');
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setError(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,6 +93,23 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
         ? calculateFishingScore(selectedSpecies, spot, weatherData, tideData, solunar, caughtDate).total
         : null;
 
+    // Upload photo si sélectionnée
+    let photoUrl: string | null = null;
+    if (photoFile) {
+      const ext = photoFile.name.split('.').pop() ?? 'jpg';
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('catch-photos')
+        .upload(path, photoFile, { contentType: photoFile.type, upsert: false });
+      if (uploadError) {
+        setError('Erreur upload photo : ' + uploadError.message);
+        setSaving(false);
+        return;
+      }
+      const { data: { publicUrl } } = supabase.storage.from('catch-photos').getPublicUrl(path);
+      photoUrl = publicUrl;
+    }
+
     const payload: CatchInsert = {
       user_id:       user.id,
       species_id:    speciesId,
@@ -84,6 +121,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
       lure_or_bait:  lureOrBait || null,
       released,
       notes:         notes      || null,
+      photo_url:     photoUrl,
       // Conditions auto-remplies
       coefficient:   tideData?.coefficient                       ?? null,
       tide_phase:    tideData?.currentPhase                      ?? null,
@@ -101,6 +139,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
     if (dbError) {
       setError(dbError.message);
     } else {
+      resetForm();
       onSaved();
     }
   }
@@ -127,7 +166,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-bold">Nouvelle prise</h3>
             <button
-              onClick={onClose}
+              onClick={() => { resetForm(); onClose(); }}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
               aria-label="Fermer"
             >
@@ -242,6 +281,49 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
                   }`}
                 />
               </button>
+            </div>
+
+            {/* Photo */}
+            <div>
+              <label className="block text-xs text-slate-400 mb-1">Photo</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  setPhotoFile(file);
+                  setPhotoPreview(file ? URL.createObjectURL(file) : null);
+                }}
+              />
+              {photoPreview ? (
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photoPreview}
+                    alt="Aperçu"
+                    className="w-full h-40 object-cover rounded-xl"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { if (photoPreview) URL.revokeObjectURL(photoPreview); setPhotoFile(null); setPhotoPreview(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                    className="absolute top-2 right-2 bg-slate-900/80 text-slate-300 rounded-full p-1"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex items-center justify-center gap-2 bg-slate-700 border border-slate-600 border-dashed rounded-xl py-4 text-slate-400 text-sm hover:border-cyan-400 hover:text-cyan-400 transition-colors"
+                >
+                  <Camera size={16} />
+                  <span>Prendre une photo</span>
+                  <ImageIcon size={14} className="ml-1 opacity-60" />
+                </button>
+              )}
             </div>
 
             {/* Notes */}
