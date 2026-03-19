@@ -95,6 +95,7 @@ export type Database = {
           favorite_species: string[] | null
           favorite_spots: string[] | null
           home_port: string | null
+          notification_min_score: number
           notifications_enabled: boolean | null
           user_id: string
         }
@@ -103,6 +104,7 @@ export type Database = {
           favorite_species?: string[] | null
           favorite_spots?: string[] | null
           home_port?: string | null
+          notification_min_score?: number
           notifications_enabled?: boolean | null
           user_id: string
         }
@@ -111,6 +113,7 @@ export type Database = {
           favorite_species?: string[] | null
           favorite_spots?: string[] | null
           home_port?: string | null
+          notification_min_score?: number
           notifications_enabled?: boolean | null
           user_id?: string
         }
@@ -254,7 +257,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
-// Raccourcis utiles
-export type CatchRow = Database['public']['Tables']['catches']['Row'];
-export type CatchInsert = Database['public']['Tables']['catches']['Insert'];
