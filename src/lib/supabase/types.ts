@@ -252,6 +252,10 @@ export type CompositeTypes<
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
+// Aliases pratiques
+export type CatchRow = Database["public"]["Tables"]["catches"]["Row"];
+export type UserSettingsRow = Database["public"]["Tables"]["user_settings"]["Row"];
+
 export const Constants = {
   public: {
     Enums: {},
