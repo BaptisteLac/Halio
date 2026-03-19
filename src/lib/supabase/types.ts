@@ -254,6 +254,8 @@ export type CompositeTypes<
 
 // Aliases pratiques
 export type CatchRow = Database["public"]["Tables"]["catches"]["Row"];
+export type CatchInsert = Database["public"]["Tables"]["catches"]["Insert"];
+export type CatchUpdate = Database["public"]["Tables"]["catches"]["Update"];
 export type UserSettingsRow = Database["public"]["Tables"]["user_settings"]["Row"];
 
 export const Constants = {
