@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, ChevronRight, Check } from 'lucide-react';
+import { LogOut, ChevronRight, Check, Bell, BellOff } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { SPECIES } from '@/data/species';
@@ -18,6 +18,12 @@ export default function ReglagesPage() {
   const [user, setUser]           = useState<User | null | undefined>(undefined);
   const [favSpecies, setFavSpecies] = useState<string[]>([]);
   const [favSpots,   setFavSpots]   = useState<string[]>([]);
+
+  // Notifications
+  const [notifEnabled,  setNotifEnabled]  = useState(false);
+  const [notifMinScore, setNotifMinScore] = useState(70);
+  const [savingNotif,   setSavingNotif]   = useState(false);
+  const [notifSaved,    setNotifSaved]    = useState(false);
 
   // Formulaire changement de mot de passe
   const [showPwForm,    setShowPwForm]    = useState(false);
@@ -35,13 +41,15 @@ export default function ReglagesPage() {
       if (!data.user) return;
       supabase
         .from('user_settings')
-        .select('favorite_species, favorite_spots')
+        .select('favorite_species, favorite_spots, notifications_enabled, notification_min_score')
         .eq('user_id', data.user.id)
         .single()
         .then(({ data: s }) => {
           if (s) {
             setFavSpecies(s.favorite_species ?? []);
             setFavSpots(s.favorite_spots ?? []);
+            setNotifEnabled(s.notifications_enabled ?? false);
+            setNotifMinScore(s.notification_min_score ?? 70);
           }
         });
     });
@@ -54,6 +62,18 @@ export default function ReglagesPage() {
     await supabase
       .from('user_settings')
       .upsert({ user_id: user.id, favorite_species: species, favorite_spots: spots });
+  }
+
+  async function saveNotifications(enabled: boolean, minScore: number) {
+    if (!user) return;
+    setSavingNotif(true);
+    const supabase = createClient();
+    await supabase
+      .from('user_settings')
+      .upsert({ user_id: user.id, notifications_enabled: enabled, notification_min_score: minScore });
+    setSavingNotif(false);
+    setNotifSaved(true);
+    setTimeout(() => setNotifSaved(false), 2000);
   }
 
   function toggleSpecies(id: string) {
@@ -219,6 +239,74 @@ export default function ReglagesPage() {
                   </button>
                 </div>
               </form>
+            )}
+          </div>
+        </section>
+
+        {/* ── Notifications ── */}
+        <section className="space-y-1">
+          <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Notifications email</h2>
+          <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden">
+
+            {/* Toggle */}
+            <div className="px-4 py-3 flex items-center justify-between border-b border-slate-700/50">
+              <div className="flex items-center gap-2">
+                {notifEnabled ? (
+                  <Bell size={16} className="text-cyan-400" />
+                ) : (
+                  <BellOff size={16} className="text-slate-500" />
+                )}
+                <div>
+                  <p className="text-sm text-white">Alerte bonne session</p>
+                  <p className="text-xs text-slate-500">Email chaque soir si le score est atteint</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const next = !notifEnabled;
+                  setNotifEnabled(next);
+                  saveNotifications(next, notifMinScore);
+                }}
+                className={`relative w-11 h-6 rounded-full transition-colors ${notifEnabled ? 'bg-cyan-400' : 'bg-slate-600'}`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${notifEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                />
+              </button>
+            </div>
+
+            {/* Seuil minimum */}
+            {notifEnabled && (
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-slate-400">Score minimum pour être notifié</label>
+                  <span className="text-sm font-bold text-cyan-400">{notifMinScore}/100</span>
+                </div>
+                <input
+                  type="range"
+                  min={40}
+                  max={90}
+                  step={5}
+                  value={notifMinScore}
+                  onChange={(e) => setNotifMinScore(Number(e.target.value))}
+                  onMouseUp={() => saveNotifications(notifEnabled, notifMinScore)}
+                  onTouchEnd={() => saveNotifications(notifEnabled, notifMinScore)}
+                  className="w-full accent-cyan-400"
+                />
+                <div className="flex justify-between text-xs text-slate-600 mt-1">
+                  <span>Moyen (40)</span>
+                  <span>Excellent (70)</span>
+                  <span>Max (90)</span>
+                </div>
+                {notifSaved && (
+                  <p className="text-cyan-400 text-xs flex items-center gap-1 mt-2">
+                    <Check size={12} /> Sauvegardé
+                  </p>
+                )}
+                {savingNotif && (
+                  <p className="text-slate-500 text-xs mt-2">Enregistrement…</p>
+                )}
+              </div>
             )}
           </div>
         </section>
