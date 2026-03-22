@@ -11,7 +11,7 @@ import { calculateFishingScore, getTopSpeciesForConditions } from '@/lib/scoring
 import { getBestWindow } from '@/lib/scoring/fishing-windows';
 import { mslToZH, formatTideHour } from '@/lib/tides/tide-utils';
 import { SPECIES } from '@/data/species';
-import { SPOTS, DASHBOARD_SPOT } from '@/data/spots';
+import { DASHBOARD_SPOT } from '@/data/spots';
 
 import BottomNav from '@/components/layout/BottomNav';
 import WeatherErrorBanner from '@/components/layout/WeatherErrorBanner';
