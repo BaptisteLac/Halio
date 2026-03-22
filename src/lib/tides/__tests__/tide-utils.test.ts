@@ -10,6 +10,7 @@ import {
   getNextExtreme,
   getPrevExtreme,
   interpolateTideHeight,
+  formatTideHour,
   ARCACHON_LAT_DATUM,
 } from '../tide-utils';
 import type { TideExtreme } from '@/types';
@@ -183,5 +184,23 @@ describe('interpolateTideHeight', () => {
     // cos(π*0.5) = 0 → height = prev + (next-prev) * (1-0)/2 = -1 + 2 * 0.5 = 0
     // Note: Math.round peut retourner -0 (négatif zéro) en flottant
     expect(result).toBeCloseTo(0, 5);
+  });
+});
+
+// ── formatTideHour ────────────────────────────────────────────────────────────
+
+describe('formatTideHour', () => {
+  it('uses "1re" for first hour of montant', () => {
+    expect(formatTideHour(1, 'montant')).toBe('1re heure de montant');
+  });
+
+  it('uses ordinal "e" for hours 2-6 of montant', () => {
+    expect(formatTideHour(2, 'montant')).toBe('2e heure de montant');
+    expect(formatTideHour(6, 'montant')).toBe('6e heure de montant');
+  });
+
+  it('uses "jusant" label for descendant phase', () => {
+    expect(formatTideHour(1, 'descendant')).toBe('1re heure de jusant');
+    expect(formatTideHour(3, 'descendant')).toBe('3e heure de jusant');
   });
 });

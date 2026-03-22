@@ -281,6 +281,27 @@ export interface DayForecast {
   score: number;
 }
 
+export interface BestWindow {
+  start: Date;
+  end: Date;
+  score: number; // average score of species over this window (0-100)
+}
+
+export interface WeekDay {
+  date: Date;
+  daily: WeatherDaily;
+  coefficient: number;
+  score: number;
+  topSpeciesId: string;
+  topSpeciesName: string;
+  topLure: string | null;
+  bestWindowStart: Date | null;
+  bestWindowEnd: Date | null;
+  windKnots: number;
+  windDir: string;
+  isHighWind: boolean; // true if windKnots > 25
+}
+
 // ---------- Open-Meteo API response types ----------
 
 export interface OpenMeteoForecastResponse {
