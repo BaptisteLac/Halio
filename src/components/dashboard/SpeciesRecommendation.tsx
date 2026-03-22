@@ -61,7 +61,7 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
             <Link
               key={species.id}
               href={`/especes/${species.slug}`}
-              className="flex items-center justify-between text-sm hover:bg-slate-700/30 rounded-lg px-1 py-0.5 transition-colors"
+              className="flex items-center justify-between text-sm hover:bg-slate-700/30 rounded-lg px-1 min-h-[44px] transition-colors"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <ScoreDot score={score.total} />

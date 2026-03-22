@@ -137,9 +137,13 @@ export default function DashboardPage() {
         : calculateFishingScore(SPECIES[0]!, DASHBOARD_SPOT, weatherData, tideData, solunarData, now))
     : null;
 
+  // Normaliser en début de journée : getBestWindow attend une date de référence pour le jour,
+  // pas l'heure courante (cohérent avec l'usage dans useWeekForecasts).
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
   const bestWindow =
     weatherData !== null && topSpecies.length > 0
-      ? getBestWindow(topSpecies, tideData, weatherData, solunarData, now)
+      ? getBestWindow(topSpecies, tideData, weatherData, solunarData, startOfToday)
       : null;
 
   const todayStr = now.toDateString();

@@ -3,10 +3,10 @@
 import { useMemo, useState } from 'react';
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
+import { getBestWindow } from '@/lib/scoring/fishing-windows';
 import type { TideData, WeatherData, SolunarData, SpeciesResult } from '@/types';
 
-const THRESHOLD = 65;
-const SLOTS = 24; // 1h slots over 24h
+const SLOTS = 24; // créneaux de 1h sur 24h
 const SLOT_MS = 60 * 60 * 1000;
 
 interface Props {
@@ -55,7 +55,8 @@ export default function FishingWindows({
 }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
-  const { speciesTimelines, bestWindow, currentSlotIndex, slots } = useMemo(() => {
+  // Timelines par espèce + position du créneau courant pour l'affichage
+  const { speciesTimelines, currentSlotIndex, slots } = useMemo(() => {
     const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -80,31 +81,14 @@ export default function FishingWindows({
       })
     );
 
-    const n = speciesTimelines.length || 1;
-    const combinedScores = slots.map((_, i) =>
-      speciesTimelines.reduce((sum, tl) => sum + (tl[i] ?? 0), 0) / n
-    );
-
-    const maxCombined = Math.max(...combinedScores);
-    const peakIdx = combinedScores.indexOf(maxCombined);
-    const isGood = combinedScores.map((avg) => avg >= THRESHOLD);
-
-    let wStart = peakIdx;
-    let wEnd = peakIdx;
-    while (wStart > 0 && isGood[wStart - 1]) wStart--;
-    while (wEnd < SLOTS - 1 && isGood[wEnd + 1]) wEnd++;
-
-    const bestWindow =
-      (combinedScores[peakIdx] ?? 0) >= THRESHOLD
-        ? {
-            start: slots[wStart]!,
-            end: new Date(slots[wEnd]!.getTime() + SLOT_MS),
-            score: Math.round(maxCombined),
-          }
-        : null;
-
-    return { speciesTimelines, bestWindow, currentSlotIndex, slots };
+    return { speciesTimelines, currentSlotIndex, slots };
   }, [topSpecies, tideData, weatherData, solunarData, now]);
+
+  // Meilleure fenêtre via la fonction lib partagée (évite la duplication de l'algo)
+  const bestWindow = useMemo(
+    () => getBestWindow(topSpecies, tideData, weatherData, solunarData, now),
+    [topSpecies, tideData, weatherData, solunarData, now]
+  );
 
   return (
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
