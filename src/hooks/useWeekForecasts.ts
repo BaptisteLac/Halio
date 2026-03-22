@@ -31,6 +31,8 @@ export function useWeekForecasts(): {
               calculateCoefficientForDate(daily.date),
             ]);
 
+            // Météo synthétique : on réutilise les données live pour la pression/temp,
+            // mais on surcharge le vent avec les prévisions quotidiennes du jour J.
             const syntheticWeather = {
               ...weather,
               current: {
