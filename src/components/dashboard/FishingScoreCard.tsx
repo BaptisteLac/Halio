@@ -98,7 +98,9 @@ export default function FishingScoreCard({ score }: Props) {
     <div
       className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 cursor-pointer select-none"
       onClick={() => setShowFactors((v) => !v)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowFactors((v) => !v); } }}
       role="button"
+      tabIndex={0}
       aria-expanded={showFactors}
     >
       <div className="flex items-center justify-between mb-2">

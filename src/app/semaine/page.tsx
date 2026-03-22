@@ -67,7 +67,7 @@ export default function SemainePage() {
       {!loading && !error && days && bestDay && (
         <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
           {/* ① Hero meilleur jour */}
-          <BestDayHero days={days} />
+          <BestDayHero best={bestDay} />
 
           {/* ② Liste 7 jours interactive */}
           <WeekView days={days} bestDayDate={bestDay.date} todayDate={today} />

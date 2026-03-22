@@ -2,7 +2,8 @@ import type { WeekDay } from '@/types';
 import { getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
 
 interface Props {
-  days: WeekDay[];
+  // Meilleur jour de la semaine pré-calculé par la page parente (évite la double dérivation)
+  best: WeekDay;
 }
 
 function fmt(date: Date | null): string {
@@ -14,8 +15,7 @@ function fmt(date: Date | null): string {
   });
 }
 
-export default function BestDayHero({ days }: Props) {
-  const best = days.reduce((prev, curr) => (curr.score > prev.score ? curr : prev), days[0]!);
+export default function BestDayHero({ best }: Props) {
 
   if (best.score < 65) {
     return (
