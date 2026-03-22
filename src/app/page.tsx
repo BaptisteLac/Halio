@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { TideData, TideCurvePoint, WeatherData, SolunarData, DayForecast } from '@/types';
+import Link from 'next/link';
+import { Settings } from 'lucide-react';
+import type { TideData, TideCurvePoint, WeatherData, SolunarData } from '@/types';
 import { getTideData, getTideCurve } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
-import { calculateCoefficientForDate } from '@/lib/tides/coefficient';
 import { calculateFishingScore, getTopSpeciesForConditions } from '@/lib/scoring/fishing-score';
-import { mslToZH } from '@/lib/tides/tide-utils';
+import { getBestWindow } from '@/lib/scoring/fishing-windows';
+import { mslToZH, formatTideHour } from '@/lib/tides/tide-utils';
 import { SPECIES } from '@/data/species';
 import { SPOTS, DASHBOARD_SPOT } from '@/data/spots';
 
@@ -19,8 +21,8 @@ import CoefficientBadge from '@/components/dashboard/CoefficientBadge';
 import SolunarIndicator from '@/components/dashboard/SolunarIndicator';
 import FishingScoreCard from '@/components/dashboard/FishingScoreCard';
 import SpeciesRecommendation from '@/components/dashboard/SpeciesRecommendation';
-import WeekForecast from '@/components/dashboard/WeekForecast';
 import FishingWindows from '@/components/dashboard/FishingWindows';
+import DayHero from '@/components/dashboard/DayHero';
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -56,7 +58,6 @@ export default function DashboardPage() {
   const [tideCurve, setTideCurve] = useState<TideCurvePoint[] | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [solunarData, setSolunarData] = useState<SolunarData | null>(null);
-  const [weekForecasts, setWeekForecasts] = useState<DayForecast[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [weatherError, setWeatherError] = useState(false);
@@ -71,7 +72,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     Promise.allSettled([getTideData(fetchDate), getTideCurve(fetchDate), fetchWeatherData()])
-      .then(async ([tideResult, curveResult, weatherResult]) => {
+      .then(([tideResult, curveResult, weatherResult]) => {
         // Marées = critiques → erreur bloquante si elles échouent
         if (tideResult.status === 'rejected') {
           setError(tideResult.reason instanceof Error ? tideResult.reason.message : 'Erreur marées');
@@ -91,39 +92,7 @@ export default function DashboardPage() {
 
         // Météo = optionnelle → bandeau si indisponible, marées toujours affichées
         if (weatherResult.status === 'fulfilled') {
-          const weather = weatherResult.value;
-          setWeatherData(weather);
-
-          // Coefficients + scores pour les 7 prochains jours
-          const forecasts = await Promise.all(
-            weather.daily.slice(0, 7).map(async (daily) => {
-              const coefficient = await calculateCoefficientForDate(daily.date);
-              const syntheticTide: TideData = {
-                extremes: [],
-                currentHeight: 1.5,
-                currentPhase: 'montant',
-                currentHour: 3, // heure optimale
-                coefficient,
-                nextExtreme: { time: daily.date, height: 2, type: 'high' },
-                timeToNextExtreme: 180,
-              };
-              const syntheticWeather: WeatherData = {
-                ...weather,
-                current: {
-                  ...weather.current,
-                  windSpeed: daily.windSpeedMax,
-                  windDirection: daily.windDirectionDominant,
-                },
-              };
-              const daySolunar = getSolunarData(daily.date);
-              const top = getTopSpeciesForConditions(
-                SPECIES, DASHBOARD_SPOT, syntheticWeather, syntheticTide, daySolunar, daily.date, 1
-              );
-              const score = top[0]?.score.total ?? 0;
-              return { date: daily.date, daily, coefficient, score };
-            })
-          );
-          setWeekForecasts(forecasts);
+          setWeatherData(weatherResult.value);
         } else {
           setWeatherError(true);
         }
@@ -157,6 +126,7 @@ export default function DashboardPage() {
     );
   }
 
+  // tideData, solunarData et tideCurve sont non-null ici (les guards ci-dessus auraient retourné tôt)
   const topSpecies = weatherData
     ? getTopSpeciesForConditions(SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3)
     : [];
@@ -166,6 +136,11 @@ export default function DashboardPage() {
         ? topSpecies[0].score
         : calculateFishingScore(SPECIES[0]!, DASHBOARD_SPOT, weatherData, tideData, solunarData, now))
     : null;
+
+  const bestWindow =
+    weatherData !== null && topSpecies.length > 0
+      ? getBestWindow(topSpecies, tideData, weatherData, solunarData, now)
+      : null;
 
   const todayStr = now.toDateString();
   const todayExtremes = tideData.extremes.filter((e) => e.time.toDateString() === todayStr);
@@ -188,18 +163,46 @@ export default function DashboardPage() {
             <h1 className="text-base font-bold text-white">PêcheBoard</h1>
             <p className="text-xs text-slate-400 capitalize">{dateLabel}</p>
           </div>
-          <CoefficientBadge coefficient={coefficient} size="md" />
+          <div className="flex items-center gap-3">
+            <CoefficientBadge coefficient={coefficient} size="md" />
+            <Link
+              href="/reglages"
+              className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+              aria-label="Réglages"
+            >
+              <Settings size={18} />
+            </Link>
+          </div>
         </div>
       </header>
 
       {weatherError && <WeatherErrorBanner />}
 
       <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
-        {/* Score + espèces — masqués si météo indisponible */}
-        {overallScore && <FishingScoreCard score={overallScore} />}
-        {topSpecies.length > 0 && <SpeciesRecommendation topSpecies={topSpecies} />}
+        {/* ① Hero — décision immédiate */}
+        {overallScore && (
+          <DayHero
+            score={overallScore}
+            bestWindow={bestWindow}
+            topSpecies={topSpecies}
+          />
+        )}
 
-        {/* Marées */}
+        {/* ② Fenêtres de pêche — remonté, touch-friendly */}
+        {weatherData && topSpecies.length > 0 && (
+          <FishingWindows
+            topSpecies={topSpecies}
+            tideData={tideData}
+            weatherData={weatherData}
+            solunarData={solunarData}
+            now={now}
+          />
+        )}
+
+        {/* ③ Score détaillé — tappable */}
+        {overallScore && <FishingScoreCard score={overallScore} />}
+
+        {/* ④ Marées */}
         <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-slate-300 font-medium text-sm">Marées aujourd&apos;hui</h3>
@@ -210,20 +213,17 @@ export default function DashboardPage() {
                   : 'bg-orange-400/15 text-orange-400 border-orange-400/30'
               }`}
             >
-              {currentPhase === 'montant' ? '↑ Montant' : '↓ Descendant'}
+              {currentPhase === 'montant' ? '↑' : '↓'} {formatTideHour(currentHour, currentPhase)}
             </span>
           </div>
 
-          {/* Hauteur courante */}
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-white tabular-nums">
               {mslToZH(currentHeight).toFixed(2)}
             </span>
             <span className="text-slate-400 text-sm">m (ZH)</span>
-            <span className="text-slate-500 text-xs ml-1">Heure {currentHour}/6</span>
           </div>
 
-          {/* Prochain extrême */}
           <p className="text-xs text-slate-400">
             {nextExtreme.type === 'high' ? '⬆️ PM' : '⬇️ BM'}{' '}
             <span className="text-slate-200 font-medium">{fmt(nextExtreme.time)}</span>
@@ -232,7 +232,6 @@ export default function DashboardPage() {
             <span className="text-slate-500"> ({formatDuration(timeToNextExtreme)})</span>
           </p>
 
-          {/* Extrêmes du jour */}
           <div className="flex gap-2 flex-wrap">
             {todayExtremes.map((e, i) => (
               <div
@@ -248,31 +247,20 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Courbe */}
           <TideCurve curve={tideCurve} extremes={tideData.extremes} now={now} />
         </div>
 
-        {/* Fenêtres de pêche — liées à la courbe de marée */}
-        {weatherData && topSpecies.length > 0 && (
-          <FishingWindows
-            topSpecies={topSpecies}
-            tideData={tideData}
-            weatherData={weatherData}
-            solunarData={solunarData}
-            now={now}
-          />
+        {/* ⑤ Espèces recommandées — avec liens */}
+        {topSpecies.length > 0 && <SpeciesRecommendation topSpecies={topSpecies} />}
+
+        {/* ⑥ Météo + Solunaire — grille 2 colonnes condensée */}
+        {weatherData && (
+          <div className="grid grid-cols-2 gap-3">
+            <WeatherCard weather={weatherData} compact />
+            <SolunarIndicator solunar={solunarData} now={now} compact />
+          </div>
         )}
-
-        {/* Météo — masquée si indisponible */}
-        {weatherData && <WeatherCard weather={weatherData} />}
-
-        {/* Solunaire */}
-        <SolunarIndicator solunar={solunarData} now={now} />
-
-        {/* Prévisions 7 jours */}
-        {weekForecasts && weekForecasts.length > 0 && (
-          <WeekForecast forecasts={weekForecasts} />
-        )}
+        {!weatherData && <SolunarIndicator solunar={solunarData} now={now} />}
       </main>
 
       <BottomNav />
