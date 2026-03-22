@@ -284,7 +284,7 @@ export interface DayForecast {
 export interface BestWindow {
   start: Date;
   end: Date;
-  score: number; // average score of species over this window (0-100)
+  score: number; // score moyen des espèces sur cette fenêtre (0-100)
 }
 
 export interface WeekDay {
@@ -299,7 +299,7 @@ export interface WeekDay {
   bestWindowEnd: Date | null;
   windKnots: number;
   windDir: string;
-  isHighWind: boolean; // true if windKnots > 25
+  isHighWind: boolean; // vrai si windKnots > 25
 }
 
 // ---------- Open-Meteo API response types ----------
