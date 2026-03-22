@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarCheck, CalendarDays, Map, Fish, BookOpen } from 'lucide-react';
+import { CalendarCheck, CalendarDays, Map, Fish, User } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/', label: "Aujourd'hui", icon: CalendarCheck },
   { href: '/semaine', label: 'Semaine', icon: CalendarDays },
   { href: '/carte', label: 'Carte', icon: Map },
   { href: '/especes', label: 'Espèces', icon: Fish },
-  { href: '/journal', label: 'Journal', icon: BookOpen },
+  { href: '/moi', label: 'Moi', icon: User },
 ];
 
 export default function BottomNav() {
