@@ -321,7 +321,6 @@ export default function ReglagesPage() {
             <p className="text-slate-600 text-xs mt-0.5">Sauvegardées pour référence</p>
           </div>
           <FavoritePicker
-            label="Mes espèces"
             items={SPECIES.map((s) => ({ id: s.id, name: s.name }))}
             selected={favSpecies}
             onChange={(updated) => {
@@ -338,7 +337,6 @@ export default function ReglagesPage() {
             <p className="text-slate-600 text-xs mt-0.5">Sauvegardés pour référence</p>
           </div>
           <FavoritePicker
-            label="Mes spots"
             items={SPOTS.map((s) => ({ id: s.id, name: s.name }))}
             selected={favSpots}
             onChange={(updated) => {

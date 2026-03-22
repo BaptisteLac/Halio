@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FavoritePickerProps {
-  label: string;
   items: { id: string; name: string }[];
   selected: string[];
   onChange: (selected: string[]) => void;
 }
 
-export default function FavoritePicker({ label, items, selected, onChange }: FavoritePickerProps) {
+export default function FavoritePicker({ items, selected, onChange }: FavoritePickerProps) {
   const [open, setOpen] = useState(false);
 
   function toggle(id: string) {
