@@ -110,7 +110,13 @@ export default function FishingWindows({
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
       <h3 className="text-slate-300 font-medium text-sm">Fenêtres de pêche</h3>
 
-      <div className="space-y-4">
+      <div
+        className="space-y-4"
+        onPointerDown={(e) => {
+          // Ferme le tooltip si le tap est en dehors des slots
+          if (e.target === e.currentTarget) setTooltip(null);
+        }}
+      >
         {speciesTimelines.map((timeline, si) => {
           const species = topSpecies[si]!.species;
           const activeTooltip = tooltip?.speciesIndex === si ? tooltip.slotIndex : null;
@@ -120,10 +126,7 @@ export default function FishingWindows({
               <span className="text-xs text-slate-400">{species.name}</span>
 
               {/* Timeline */}
-              <div
-                className="relative"
-                onMouseLeave={() => setTooltip(null)}
-              >
+              <div className="relative">
                 {/* Lignes de repère verticales 6h / 12h / 18h */}
                 {[6, 12, 18].map((h) => (
                   <div
@@ -141,7 +144,6 @@ export default function FishingWindows({
                       className={`flex-1 cursor-pointer transition-opacity ${slotColor(score)} ${
                         activeTooltip !== null && activeTooltip !== i ? 'opacity-50' : 'opacity-100'
                       }`}
-                      onMouseEnter={() => setTooltip({ slotIndex: i, speciesIndex: si })}
                       onClick={() =>
                         setTooltip((prev) =>
                           prev?.slotIndex === i && prev.speciesIndex === si ? null : { slotIndex: i, speciesIndex: si }
