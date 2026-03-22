@@ -2,18 +2,27 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { LogOut, ChevronRight, Check, Bell, BellOff } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Bell, BellOff } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { SPECIES } from '@/data/species';
 import { SPOTS } from '@/data/spots';
 import BottomNav from '@/components/layout/BottomNav';
+import FavoritePicker from '@/components/settings/FavoritePicker';
 
 const inputClass =
   'w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors';
 
 export default function ReglagesPage() {
   const router = useRouter();
+
+  function handleBack() {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/moi');
+    }
+  }
 
   const [user, setUser]           = useState<User | null | undefined>(undefined);
   const [favSpecies, setFavSpecies] = useState<string[]>([]);
@@ -55,6 +64,11 @@ export default function ReglagesPage() {
     });
   }, []);
 
+  // Redirection si non-authentifié (après chargement de l'état auth)
+  useEffect(() => {
+    if (user === null) router.push('/moi');
+  }, [user, router]);
+
   // ── Sauvegarde favorites ───────────────────────────────────────────────────
   async function saveFavorites(species: string[], spots: string[]) {
     if (!user) return;
@@ -74,22 +88,6 @@ export default function ReglagesPage() {
     setSavingNotif(false);
     setNotifSaved(true);
     setTimeout(() => setNotifSaved(false), 2000);
-  }
-
-  function toggleSpecies(id: string) {
-    const updated = favSpecies.includes(id)
-      ? favSpecies.filter((s) => s !== id)
-      : [...favSpecies, id];
-    setFavSpecies(updated);
-    saveFavorites(updated, favSpots);
-  }
-
-  function toggleSpot(id: string) {
-    const updated = favSpots.includes(id)
-      ? favSpots.filter((s) => s !== id)
-      : [...favSpots, id];
-    setFavSpots(updated);
-    saveFavorites(favSpecies, updated);
   }
 
   // ── Changement de mot de passe ────────────────────────────────────────────
@@ -126,13 +124,6 @@ export default function ReglagesPage() {
     setPwSuccess(false);
   }
 
-  // ── Déconnexion ───────────────────────────────────────────────────────────
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/journal');
-  }
-
   // ── Loading ───────────────────────────────────────────────────────────────
   if (user === undefined) {
     return (
@@ -145,15 +136,12 @@ export default function ReglagesPage() {
     );
   }
 
-  // ── Non connecté ──────────────────────────────────────────────────────────
+  // ── Non connecté — spinner pendant que le useEffect redirige ──────────────
   if (!user) {
     return (
       <div className="h-dvh flex flex-col bg-slate-950">
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
-          <p className="text-slate-300 font-medium">Accès limité</p>
-          <p className="text-slate-500 text-sm">
-            Connectez-vous via le Journal pour accéder aux réglages.
-          </p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
         </div>
         <BottomNav />
       </div>
@@ -165,7 +153,14 @@ export default function ReglagesPage() {
     <div className="min-h-dvh bg-slate-950 pb-24">
       {/* Header */}
       <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800">
-        <div className="px-4 py-3 max-w-lg mx-auto">
+        <div className="px-4 py-3 max-w-lg mx-auto flex items-center gap-3">
+          <button
+            onClick={handleBack}
+            className="text-slate-400 hover:text-white transition-colors p-1 -ml-1"
+            aria-label="Retour"
+          >
+            <ChevronLeft size={22} />
+          </button>
           <h1 className="text-base font-bold text-white">Réglages</h1>
         </div>
       </header>
@@ -243,7 +238,7 @@ export default function ReglagesPage() {
           </div>
         </section>
 
-        {/* ── Notifications ── */}
+        {/* ── Notifications email ── */}
         <section className="space-y-1">
           <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Notifications email</h2>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden">
@@ -257,7 +252,14 @@ export default function ReglagesPage() {
                   <BellOff size={16} className="text-slate-500" />
                 )}
                 <div>
-                  <p className="text-sm text-white">Alerte bonne session</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-white">Alerte bonne session</p>
+                    {notifEnabled && (
+                      <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-[10px] font-medium">
+                        Actif
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">Email chaque soir si le score est atteint</p>
                 </div>
               </div>
@@ -267,10 +269,11 @@ export default function ReglagesPage() {
                   setNotifEnabled(next);
                   saveNotifications(next, notifMinScore);
                 }}
-                className={`relative w-11 h-6 rounded-full transition-colors ${notifEnabled ? 'bg-cyan-400' : 'bg-slate-600'}`}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${notifEnabled ? 'bg-cyan-400' : 'bg-slate-600'}`}
+                aria-label={notifEnabled ? 'Désactiver les notifications' : 'Activer les notifications'}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${notifEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${notifEnabled ? 'translate-x-5' : 'translate-x-0'}`}
                 />
               </button>
             </div>
@@ -299,7 +302,7 @@ export default function ReglagesPage() {
                   <span>Max (90)</span>
                 </div>
                 {notifSaved && (
-                  <p className="text-cyan-400 text-xs flex items-center gap-1 mt-2">
+                  <p className="text-emerald-400 text-xs flex items-center gap-1 mt-2">
                     <Check size={12} /> Sauvegardé
                   </p>
                 )}
@@ -311,67 +314,38 @@ export default function ReglagesPage() {
           </div>
         </section>
 
-        {/* ── Espèces favorites ── */}
+        {/* ── Mes espèces ── */}
         <section className="space-y-2">
           <div className="px-1">
-            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Espèces favorites</h2>
+            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Mes espèces</h2>
             <p className="text-slate-600 text-xs mt-0.5">Sauvegardées pour référence</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {SPECIES.map((s) => {
-              const active = favSpecies.includes(s.id);
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => toggleSpecies(s.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                    active
-                      ? 'bg-cyan-400/15 text-cyan-400 border-cyan-400/40'
-                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
-                  }`}
-                >
-                  {s.name}
-                </button>
-              );
-            })}
-          </div>
+          <FavoritePicker
+            label="Mes espèces"
+            items={SPECIES.map((s) => ({ id: s.id, name: s.name }))}
+            selected={favSpecies}
+            onChange={(updated) => {
+              setFavSpecies(updated);
+              saveFavorites(updated, favSpots);
+            }}
+          />
         </section>
 
-        {/* ── Spots favoris ── */}
+        {/* ── Mes spots ── */}
         <section className="space-y-2">
           <div className="px-1">
-            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Spots favoris</h2>
+            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Mes spots</h2>
             <p className="text-slate-600 text-xs mt-0.5">Sauvegardés pour référence</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {SPOTS.map((s) => {
-              const active = favSpots.includes(s.id);
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => toggleSpot(s.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                    active
-                      ? 'bg-cyan-400/15 text-cyan-400 border-cyan-400/40'
-                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
-                  }`}
-                >
-                  {s.name}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ── Déconnexion ── */}
-        <section>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl py-3 text-sm font-medium hover:bg-red-500/20 transition-colors"
-          >
-            <LogOut size={16} />
-            Déconnexion
-          </button>
+          <FavoritePicker
+            label="Mes spots"
+            items={SPOTS.map((s) => ({ id: s.id, name: s.name }))}
+            selected={favSpots}
+            onChange={(updated) => {
+              setFavSpots(updated);
+              saveFavorites(favSpecies, updated);
+            }}
+          />
         </section>
 
       </main>
