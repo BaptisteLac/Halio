@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { TideData, WeatherData, SolunarData } from '@/types';
 import { getTideData } from '@/lib/tides/tide-service';
@@ -17,6 +19,15 @@ import CatchStats from '@/components/journal/CatchStats';
 
 export default function JournalPage() {
   const [now] = useState(() => new Date());
+  const router = useRouter();
+
+  function handleBack() {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/moi');
+    }
+  }
 
   // Auth
   const [user, setUser]         = useState<User | null | undefined>(undefined); // undefined = loading
@@ -112,8 +123,15 @@ export default function JournalPage() {
     <div className="h-dvh flex flex-col bg-slate-950 overflow-hidden">
       {/* Header */}
       <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 z-40">
-        <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
-          <div>
+        <div className="px-4 py-3 flex items-center gap-3 max-w-lg mx-auto">
+          <button
+            onClick={handleBack}
+            className="text-slate-400 hover:text-white transition-colors p-1 -ml-1"
+            aria-label="Retour"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <div className="flex-1">
             <h1 className="text-base font-bold text-white">Journal</h1>
             <p className="text-xs text-slate-400 truncate max-w-[180px]">{user.email}</p>
           </div>
