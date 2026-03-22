@@ -42,8 +42,8 @@ export default function MoiPage() {
       .select('species_id, spot_id')
       .eq('user_id', user.id)
       .gte('caught_at', yearStart)
-      .then(({ data }) => {
-        if (!data || data.length === 0) {
+      .then(({ data, error }) => {
+        if (error || !data || data.length === 0) {
           setStats({ catchCount: 0, topSpeciesName: null, topSpotName: null });
           return;
         }
@@ -128,7 +128,7 @@ export default function MoiPage() {
             <User size={20} className="text-cyan-400" />
           </div>
           <div className="min-w-0">
-            <p className="text-white font-medium text-sm truncate">{user.email}</p>
+            <p className="text-white font-medium text-sm truncate">{user.email ?? 'Utilisateur'}</p>
             <p className="text-slate-500 text-xs">Pêcheur du Bassin</p>
           </div>
         </div>
