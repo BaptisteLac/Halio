@@ -209,6 +209,12 @@ export interface FishingScore {
   color: string; // classe Tailwind
 }
 
+export interface SpeciesResult {
+  species: Species;
+  score: FishingScore;
+  spot: Spot;
+}
+
 export interface SpotScore {
   spot: Spot;
   score: FishingScore;

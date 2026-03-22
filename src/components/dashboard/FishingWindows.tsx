@@ -3,17 +3,11 @@
 import { useMemo, useState } from 'react';
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
-import type { TideData, WeatherData, SolunarData, Species, FishingScore, Spot } from '@/types';
+import type { TideData, WeatherData, SolunarData, SpeciesResult } from '@/types';
 
 const THRESHOLD = 65;
 const SLOTS = 24; // 1h slots over 24h
 const SLOT_MS = 60 * 60 * 1000;
-
-interface SpeciesResult {
-  species: Species;
-  score: FishingScore;
-  spot: Spot;
-}
 
 interface Props {
   topSpecies: SpeciesResult[];

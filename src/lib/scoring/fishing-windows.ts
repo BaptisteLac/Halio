@@ -1,16 +1,10 @@
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore } from '@/lib/scoring/fishing-score';
-import type { TideData, WeatherData, SolunarData, Species, FishingScore, Spot, BestWindow } from '@/types';
+import type { TideData, WeatherData, SolunarData, BestWindow, SpeciesResult } from '@/types';
 
 const THRESHOLD = 65;
 const SLOTS = 24; // créneaux horaires sur 24h
 const SLOT_MS = 60 * 60 * 1000;
-
-interface SpeciesResult {
-  species: Species;
-  score: FishingScore;
-  spot: Spot;
-}
 
 /**
  * Calcule la meilleure fenêtre de pêche sur 24h pour un ensemble d'espèces.
