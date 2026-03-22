@@ -1,8 +1,10 @@
+'use client';
+
+import { useState } from 'react';
 import type { FishingScore, ScoreFactors } from '@/types';
 
 interface Props {
   score: FishingScore;
-  showFactors?: boolean;
 }
 
 const SCORE_COLORS: Record<string, string> = {
@@ -30,9 +32,9 @@ function CircularGauge({ score }: { score: number }) {
 
   return (
     <svg width="140" height="140" viewBox="0 0 140 140" className="drop-shadow-lg">
-      {/* Track */}
+      {/* Fond de la jauge */}
       <circle cx="70" cy="70" r={radius} fill="none" stroke="#1e293b" strokeWidth={strokeWidth} />
-      {/* Progress */}
+      {/* Progression */}
       <circle
         cx="70"
         cy="70"
@@ -45,7 +47,7 @@ function CircularGauge({ score }: { score: number }) {
         transform="rotate(-90 70 70)"
         style={{ transition: 'stroke-dasharray 0.6s ease' }}
       />
-      {/* Score number */}
+      {/* Score numérique */}
       <text x="70" y="64" textAnchor="middle" fill={color} fontSize="30" fontWeight="700">
         {score}
       </text>
@@ -88,11 +90,24 @@ function FactorBar({ label, value }: { label: string; value: number }) {
   );
 }
 
-export default function FishingScoreCard({ score, showFactors = false }: Props) {
+export default function FishingScoreCard({ score }: Props) {
+  // État interne : affichage du détail des facteurs
+  const [showFactors, setShowFactors] = useState(false);
+
   return (
-    <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4">
+    <div
+      className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 cursor-pointer select-none"
+      onClick={() => setShowFactors((v) => !v)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowFactors((v) => !v); } }}
+      role="button"
+      tabIndex={0}
+      aria-expanded={showFactors}
+    >
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-slate-300 font-medium text-sm">Score de pêche</h3>
+        <h3 className="text-slate-300 font-medium text-sm">
+          Score de pêche{' '}
+          <span className="text-xs text-slate-600">{showFactors ? '↑' : '↓'}</span>
+        </h3>
         <span className={`text-sm font-semibold ${score.color}`}>{score.label}</span>
       </div>
 
@@ -107,6 +122,10 @@ export default function FishingScoreCard({ score, showFactors = false }: Props) 
           ))}
         </div>
       )}
+
+      <p className="text-center text-xs text-slate-600 mt-2">
+        {showFactors ? 'Tap pour masquer' : 'Tap pour voir le détail'}
+      </p>
     </div>
   );
 }

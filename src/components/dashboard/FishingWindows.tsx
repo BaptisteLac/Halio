@@ -3,17 +3,11 @@
 import { useMemo, useState } from 'react';
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
-import type { TideData, WeatherData, SolunarData, Species, FishingScore, Spot } from '@/types';
+import { getBestWindow } from '@/lib/scoring/fishing-windows';
+import type { TideData, WeatherData, SolunarData, SpeciesResult } from '@/types';
 
-const THRESHOLD = 65;
-const SLOTS = 24; // 1h slots over 24h
+const SLOTS = 24; // créneaux de 1h sur 24h
 const SLOT_MS = 60 * 60 * 1000;
-
-interface SpeciesResult {
-  species: Species;
-  score: FishingScore;
-  spot: Spot;
-}
 
 interface Props {
   topSpecies: SpeciesResult[];
@@ -61,7 +55,8 @@ export default function FishingWindows({
 }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
-  const { speciesTimelines, bestWindow, currentSlotIndex, slots } = useMemo(() => {
+  // Timelines par espèce + position du créneau courant pour l'affichage
+  const { speciesTimelines, currentSlotIndex, slots } = useMemo(() => {
     const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -86,37 +81,26 @@ export default function FishingWindows({
       })
     );
 
-    const n = speciesTimelines.length || 1;
-    const combinedScores = slots.map((_, i) =>
-      speciesTimelines.reduce((sum, tl) => sum + (tl[i] ?? 0), 0) / n
-    );
-
-    const maxCombined = Math.max(...combinedScores);
-    const peakIdx = combinedScores.indexOf(maxCombined);
-    const isGood = combinedScores.map((avg) => avg >= THRESHOLD);
-
-    let wStart = peakIdx;
-    let wEnd = peakIdx;
-    while (wStart > 0 && isGood[wStart - 1]) wStart--;
-    while (wEnd < SLOTS - 1 && isGood[wEnd + 1]) wEnd++;
-
-    const bestWindow =
-      (combinedScores[peakIdx] ?? 0) >= THRESHOLD
-        ? {
-            start: slots[wStart]!,
-            end: new Date(slots[wEnd]!.getTime() + SLOT_MS),
-            score: Math.round(maxCombined),
-          }
-        : null;
-
-    return { speciesTimelines, bestWindow, currentSlotIndex, slots };
+    return { speciesTimelines, currentSlotIndex, slots };
   }, [topSpecies, tideData, weatherData, solunarData, now]);
+
+  // Meilleure fenêtre via la fonction lib partagée (évite la duplication de l'algo)
+  const bestWindow = useMemo(
+    () => getBestWindow(topSpecies, tideData, weatherData, solunarData, now),
+    [topSpecies, tideData, weatherData, solunarData, now]
+  );
 
   return (
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
       <h3 className="text-slate-300 font-medium text-sm">Fenêtres de pêche</h3>
 
-      <div className="space-y-4">
+      <div
+        className="space-y-4"
+        onPointerDown={(e) => {
+          // Ferme le tooltip si le tap est en dehors des slots
+          if (e.target === e.currentTarget) setTooltip(null);
+        }}
+      >
         {speciesTimelines.map((timeline, si) => {
           const species = topSpecies[si]!.species;
           const activeTooltip = tooltip?.speciesIndex === si ? tooltip.slotIndex : null;
@@ -126,10 +110,7 @@ export default function FishingWindows({
               <span className="text-xs text-slate-400">{species.name}</span>
 
               {/* Timeline */}
-              <div
-                className="relative"
-                onMouseLeave={() => setTooltip(null)}
-              >
+              <div className="relative">
                 {/* Lignes de repère verticales 6h / 12h / 18h */}
                 {[6, 12, 18].map((h) => (
                   <div
@@ -147,7 +128,6 @@ export default function FishingWindows({
                       className={`flex-1 cursor-pointer transition-opacity ${slotColor(score)} ${
                         activeTooltip !== null && activeTooltip !== i ? 'opacity-50' : 'opacity-100'
                       }`}
-                      onMouseEnter={() => setTooltip({ slotIndex: i, speciesIndex: si })}
                       onClick={() =>
                         setTooltip((prev) =>
                           prev?.slotIndex === i && prev.speciesIndex === si ? null : { slotIndex: i, speciesIndex: si }

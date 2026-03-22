@@ -209,6 +209,12 @@ export interface FishingScore {
   color: string; // classe Tailwind
 }
 
+export interface SpeciesResult {
+  species: Species;
+  score: FishingScore;
+  spot: Spot;
+}
+
 export interface SpotScore {
   spot: Spot;
   score: FishingScore;
@@ -279,6 +285,27 @@ export interface DayForecast {
   daily: WeatherDaily;
   coefficient: number;
   score: number;
+}
+
+export interface BestWindow {
+  start: Date;
+  end: Date;
+  score: number; // score moyen des espèces sur cette fenêtre (0-100)
+}
+
+export interface WeekDay {
+  date: Date;
+  daily: WeatherDaily;
+  coefficient: number;
+  score: number;
+  topSpeciesId: string;
+  topSpeciesName: string;
+  topLure: string | null;
+  bestWindowStart: Date | null;
+  bestWindowEnd: Date | null;
+  windKnots: number;
+  windDir: string;
+  isHighWind: boolean; // vrai si windKnots > 25
 }
 
 // ---------- Open-Meteo API response types ----------

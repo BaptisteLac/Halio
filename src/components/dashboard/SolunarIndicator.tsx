@@ -4,6 +4,7 @@ import type { SolunarData } from '@/types';
 interface Props {
   solunar: SolunarData;
   now: Date;
+  compact?: boolean;
 }
 
 function fmt(date: Date | null): string {
@@ -24,14 +25,34 @@ function formatDuration(minutes: number): string {
 
 const MOON_EMOJIS = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
 
-export default function SolunarIndicator({ solunar, now }: Props) {
+export default function SolunarIndicator({ solunar, now, compact = false }: Props) {
   const moonEmoji = MOON_EMOJIS[Math.round(solunar.moonPhase * 8) % 8];
+  const moonLabel = solunar.moonPhaseName;
   const { currentPeriod } = solunar;
 
   const nextPeriod = solunar.periods.find((p) => p.start > now);
   const minutesToNext = nextPeriod
     ? Math.round((nextPeriod.start.getTime() - now.getTime()) / 60000)
     : null;
+
+  // Prochaine période majeure (pour l'affichage compact)
+  const nextMajor = solunar.periods.find((p) => p.type === 'majeure' && p.start > now) ?? null;
+
+  // Affichage condensé pour les vues compactes (ex. grille du dashboard)
+  if (compact) {
+    return (
+      <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-3 space-y-1.5">
+        <h3 className="text-slate-400 font-medium text-xs">Solunaire</h3>
+        <p className="text-white font-bold text-sm">{moonEmoji} {moonLabel}</p>
+        <div className="text-xs text-slate-400 space-y-0.5">
+          {nextMajor && (
+            <p>⭐ Majeure : {fmt(nextMajor.start)}</p>
+          )}
+          <p>🌅 Lever : {fmt(solunar.sunrise)}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">

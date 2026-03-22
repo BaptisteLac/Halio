@@ -9,6 +9,7 @@ import type { WeatherData } from '@/types';
 
 interface Props {
   weather: WeatherData;
+  compact?: boolean;
 }
 
 function PressureIcon({ trend }: { trend: 'hausse' | 'stable' | 'baisse' }) {
@@ -17,13 +18,36 @@ function PressureIcon({ trend }: { trend: 'hausse' | 'stable' | 'baisse' }) {
   return <Minus size={13} className="text-slate-500" />;
 }
 
-export default function WeatherCard({ weather }: Props) {
+export default function WeatherCard({ weather, compact = false }: Props) {
   const { current } = weather;
   const windKnots = kmhToKnots(current.windSpeed);
   const gustKnots = kmhToKnots(current.windGusts);
   const beaufort = getBeaufortScale(current.windSpeed);
   const windDir = getWindDirectionLabel(current.windDirection);
   const hasGusts = current.windGusts > current.windSpeed * 1.3;
+
+  // Affichage condensé pour les vues compactes (ex. grille du dashboard)
+  if (compact) {
+    return (
+      <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-3 space-y-1.5">
+        <h3 className="text-slate-400 font-medium text-xs">Météo</h3>
+        <p className="text-white font-bold text-sm">
+          {windDir} {windKnots.toFixed(0)} kt
+        </p>
+        <div className="text-xs text-slate-400 space-y-0.5">
+          <div className="flex items-center gap-1">
+            <span>🌡 {Math.round(current.temperature)}°C</span>
+            <span>·</span>
+            <span>{Math.round(current.pressure)} hPa</span>
+            <PressureIcon trend={current.pressureTrend} />
+          </div>
+          {current.waveHeight !== null && (
+            <p>🌊 {current.waveHeight.toFixed(1)}m</p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">

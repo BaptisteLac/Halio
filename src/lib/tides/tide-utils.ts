@@ -96,3 +96,14 @@ export function interpolateTideHeight(
     ((nextExtreme.height - prevExtreme.height) * (1 - Math.cos(cosAngle))) / 2;
   return Math.round(height * 100) / 100;
 }
+
+/**
+ * Formate l'heure de marée en ordinal français lisible
+ * Ex: formatTideHour(1, 'montant') → "1re heure de montant"
+ * Ex: formatTideHour(3, 'descendant') → "3e heure de jusant"
+ */
+export function formatTideHour(hour: number, phase: 'montant' | 'descendant'): string {
+  const ordinal = hour === 1 ? '1re' : `${hour}e`;
+  const phaseLabel = phase === 'montant' ? 'montant' : 'jusant';
+  return `${ordinal} heure de ${phaseLabel}`;
+}
