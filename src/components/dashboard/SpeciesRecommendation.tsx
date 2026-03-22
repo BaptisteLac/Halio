@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Species, FishingScore, Spot } from '@/types';
 
 interface Props {
@@ -23,12 +24,13 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-2.5">
       <h3 className="text-slate-300 font-medium text-sm">Espèces recommandées</h3>
 
-      {/* Top espèce */}
-      <div
-        className={`rounded-lg p-3 border ${
+      {/* Top espèce — lien vers la fiche détaillée */}
+      <Link
+        href={`/especes/${first.species.slug}`}
+        className={`block rounded-lg p-3 border transition-colors ${
           first.score.total >= 70
-            ? 'bg-cyan-400/10 border-cyan-400/25'
-            : 'bg-slate-800 border-slate-700'
+            ? 'bg-cyan-400/10 border-cyan-400/25 hover:bg-cyan-400/15'
+            : 'bg-slate-800 border-slate-700 hover:bg-slate-700/50'
         }`}
       >
         <div className="flex items-start justify-between gap-2">
@@ -50,13 +52,17 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
             <span className={`font-bold text-lg ${first.score.color}`}>{first.score.total}</span>
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Autres espèces */}
       {rest.length > 0 && (
         <div className="space-y-1.5">
           {rest.map(({ species, score, spot }) => (
-            <div key={species.id} className="flex items-center justify-between text-sm">
+            <Link
+              key={species.id}
+              href={`/especes/${species.slug}`}
+              className="flex items-center justify-between text-sm hover:bg-slate-700/30 rounded-lg px-1 py-0.5 transition-colors"
+            >
               <div className="flex items-center gap-2 min-w-0">
                 <ScoreDot score={score.total} />
                 <div className="min-w-0">
@@ -65,7 +71,7 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
                 </div>
               </div>
               <span className={`font-medium tabular-nums shrink-0 ${score.color}`}>{score.total}</span>
-            </div>
+            </Link>
           ))}
         </div>
       )}
