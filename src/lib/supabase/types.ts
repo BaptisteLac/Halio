@@ -92,29 +92,44 @@ export type Database = {
       user_settings: {
         Row: {
           created_at: string | null
+          display_name: string | null
           favorite_species: string[] | null
           favorite_spots: string[] | null
           home_port: string | null
+          notification_days: number[] | null
           notification_min_score: number
+          notification_time_range: string | null
           notifications_enabled: boolean | null
+          preferred_techniques: string[] | null
+          push_notifications_enabled: boolean | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          display_name?: string | null
           favorite_species?: string[] | null
           favorite_spots?: string[] | null
           home_port?: string | null
+          notification_days?: number[] | null
           notification_min_score?: number
+          notification_time_range?: string | null
           notifications_enabled?: boolean | null
+          preferred_techniques?: string[] | null
+          push_notifications_enabled?: boolean | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          display_name?: string | null
           favorite_species?: string[] | null
           favorite_spots?: string[] | null
           home_port?: string | null
+          notification_days?: number[] | null
           notification_min_score?: number
+          notification_time_range?: string | null
           notifications_enabled?: boolean | null
+          preferred_techniques?: string[] | null
+          push_notifications_enabled?: boolean | null
           user_id?: string
         }
         Relationships: []
@@ -251,12 +266,6 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-// Aliases pratiques
-export type CatchRow = Database["public"]["Tables"]["catches"]["Row"];
-export type CatchInsert = Database["public"]["Tables"]["catches"]["Insert"];
-export type CatchUpdate = Database["public"]["Tables"]["catches"]["Update"];
-export type UserSettingsRow = Database["public"]["Tables"]["user_settings"]["Row"];
 
 export const Constants = {
   public: {
