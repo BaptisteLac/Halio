@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, Star, Bell, User, ChevronRight, LogOut } from 'lucide-react';
+import { BookOpen, Star, Bell, User, ChevronRight } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { SPECIES } from '@/data/species';
@@ -17,7 +16,6 @@ interface MiniStats {
 }
 
 export default function MoiPage() {
-  const router = useRouter();
   const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined);
   const [stats, setStats] = useState<MiniStats | null>(null);
 
@@ -66,13 +64,6 @@ export default function MoiPage() {
         });
       });
   }, [user]);
-
-  // ── Déconnexion ───────────────────────────────────────────────────────────
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/moi');
-  }
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (user === undefined) {
@@ -177,7 +168,7 @@ export default function MoiPage() {
             <ChevronRight size={16} className="text-slate-600" />
           </Link>
           <Link
-            href="/reglages"
+            href="/moi/preferences"
             className="flex items-center gap-3 px-4 py-4 hover:bg-slate-700/30 transition-colors"
           >
             <Star size={18} className="text-slate-400 shrink-0" />
@@ -185,7 +176,7 @@ export default function MoiPage() {
             <ChevronRight size={16} className="text-slate-600" />
           </Link>
           <Link
-            href="/reglages"
+            href="/moi/notifications"
             className="flex items-center gap-3 px-4 py-4 hover:bg-slate-700/30 transition-colors"
           >
             <Bell size={18} className="text-slate-400 shrink-0" />
@@ -193,7 +184,7 @@ export default function MoiPage() {
             <ChevronRight size={16} className="text-slate-600" />
           </Link>
           <Link
-            href="/reglages"
+            href="/moi/compte"
             className="flex items-center gap-3 px-4 py-4 hover:bg-slate-700/30 transition-colors"
           >
             <User size={18} className="text-slate-400 shrink-0" />
@@ -201,15 +192,6 @@ export default function MoiPage() {
             <ChevronRight size={16} className="text-slate-600" />
           </Link>
         </div>
-
-        {/* ── Déconnexion ── */}
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl py-3 text-sm font-medium hover:bg-red-500/20 transition-colors"
-        >
-          <LogOut size={16} />
-          Déconnexion
-        </button>
 
       </main>
 

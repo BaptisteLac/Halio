@@ -264,6 +264,12 @@ export interface UserSettings {
   favoriteSpots: string[];
   homePort: string;
   notificationsEnabled: boolean;
+  notificationMinScore: number;
+  displayName: string | null;
+  preferredTechniques: string[];
+  notificationDays: number[];
+  notificationTimeRange: 'matin' | 'journee' | 'tous';
+  pushNotificationsEnabled: boolean;
   createdAt: Date;
 }
 
