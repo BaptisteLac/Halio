@@ -125,7 +125,7 @@ export default function ComptePage() {
     const headers = Object.keys(data[0]);
     const rows = data.map((row) =>
       headers.map((h) => {
-        const val = row[h];
+        const val = (row as Record<string, unknown>)[h];
         if (val === null || val === undefined) return '';
         const str = String(val);
         return str.includes(',') || str.includes('"') || str.includes('\n')
