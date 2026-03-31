@@ -73,16 +73,11 @@ export default function CoachPage() {
       });
   }, []);
 
-  // Le transport est mémorisé pour éviter de réinstancier (et donc réinitialiser
-  // le chat) à chaque re-render. Il change seulement quand coachContext est défini
-  // pour la première fois (au mount).
+  // Transport créé une seule fois — le contexte live est injecté au niveau
+  // de chaque sendMessage (2ème argument) pour éviter tout problème de stale closure.
   const transport = useMemo(
-    () => new DefaultChatTransport({
-      api: '/api/coach',
-      body: coachContext ? { context: coachContext } : undefined,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [!!coachContext], // recréer uniquement au passage null → défini
+    () => new DefaultChatTransport({ api: '/api/coach' }),
+    [],
   );
 
   const { messages, sendMessage, status } = useChat({ transport });
@@ -114,11 +109,11 @@ export default function CoachPage() {
     const text = inputValue.trim();
     if (!text || isLoading) return;
     setInputValue('');
-    sendMessage({ text });
+    sendMessage({ text }, { body: { context: coachContext } });
   };
 
   const handleSuggestionSelect = (text: string) => {
-    sendMessage({ text });
+    sendMessage({ text }, { body: { context: coachContext } });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
