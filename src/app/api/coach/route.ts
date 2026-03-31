@@ -14,13 +14,6 @@ const SLIDING_WINDOW = 10;
 export async function POST(req: Request) {
   const { messages } = await req.json() as { messages: UIMessage[] };
 
-  if (!context) {
-    return new Response(
-      JSON.stringify({ error: 'Missing context' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } },
-    );
-  }
-
   // Fenêtre glissante : on ne garde que les N derniers messages
   // puis on convertit au format ModelMessage attendu par streamText
   const recentUIMessages = messages.slice(-SLIDING_WINDOW);

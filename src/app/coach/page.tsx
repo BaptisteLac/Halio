@@ -109,11 +109,11 @@ export default function CoachPage() {
     const text = inputValue.trim();
     if (!text || isLoading) return;
     setInputValue('');
-    sendMessage({ text }, { body: { context: coachContext } });
+    sendMessage({ text });
   };
 
   const handleSuggestionSelect = (text: string) => {
-    sendMessage({ text }, { body: { context: coachContext } });
+    sendMessage({ text });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
