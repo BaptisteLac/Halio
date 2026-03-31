@@ -15,6 +15,13 @@ export async function POST(req: Request) {
     context: CoachContext;
   };
 
+  if (!context) {
+    return new Response(
+      JSON.stringify({ error: 'Missing context' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
   // Fenêtre glissante : on ne garde que les N derniers messages
   // puis on convertit au format ModelMessage attendu par streamText
   const recentUIMessages = messages.slice(-SLIDING_WINDOW);

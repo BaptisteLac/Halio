@@ -76,10 +76,14 @@ export default function CoachPage() {
   // Le transport est mémorisé pour éviter de réinstancier (et donc réinitialiser
   // le chat) à chaque re-render. Il change seulement quand coachContext est défini
   // pour la première fois (au mount).
+  // Note: DefaultChatTransport ne supporte pas l'option `body` — il faut utiliser
+  // prepareSendMessagesRequest pour inclure des données supplémentaires dans le body.
   const transport = useMemo(
     () => new DefaultChatTransport({
       api: '/api/coach',
-      body: coachContext ? { context: coachContext } : undefined,
+      prepareSendMessagesRequest: ({ id, messages, trigger }) => ({
+        body: { id, messages, trigger, context: coachContext },
+      }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [!!coachContext], // recréer uniquement au passage null → défini
