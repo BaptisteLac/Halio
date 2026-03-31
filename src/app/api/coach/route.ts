@@ -4,7 +4,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { buildSystemPrompt } from '@/lib/coach/build-system-prompt';
 import { getTideData } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
-import { fetchWeatherData } from '@/lib/weather/weather-service';
+import { fetchWeatherDataDirect } from '@/lib/weather/weather-service';
 import { getTopSpeciesForConditions } from '@/lib/scoring/fishing-score';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
@@ -23,13 +23,10 @@ export async function POST(req: Request) {
   // du client pour envoyer le contexte (contourne les problèmes de cache PWA,
   // stale closure, etc.)
   const now = new Date();
-  const host = req.headers.get('host') ?? 'pecheboard.vercel.app';
-  const protocol = host.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
 
   const [tideData, weatherData] = await Promise.all([
     getTideData(now),
-    fetchWeatherData(baseUrl),
+    fetchWeatherDataDirect(),
   ]);
   const solunarData = getSolunarData(now);
   const topSpecies = getTopSpeciesForConditions(

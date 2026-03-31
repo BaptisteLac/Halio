@@ -27,6 +27,48 @@ function getPressureTrend(hourlyPressures: number[], currentIndex: number): Pres
   return 'stable';
 }
 
+const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
+const OPEN_METEO_MARINE_URL = 'https://marine-api.open-meteo.com/v1/marine';
+const ARCACHON_LAT = 44.66;
+const ARCACHON_LNG = -1.17;
+
+/**
+ * Récupère les données météo directement depuis Open-Meteo (usage serveur uniquement).
+ * Contourne le proxy HTTP /api/weather pour éviter les appels self-référentiels.
+ */
+export async function fetchWeatherDataDirect(): Promise<WeatherData> {
+  const forecastParams = new URLSearchParams({
+    latitude: String(ARCACHON_LAT),
+    longitude: String(ARCACHON_LNG),
+    timezone: 'Europe/Paris',
+    hourly: 'temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation,precipitation_probability,cloud_cover,weather_code',
+    daily: 'temperature_2m_max,temperature_2m_min,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max,winddirection_10m_dominant,precipitation_sum,weather_code',
+    current: 'temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation,precipitation_probability,cloud_cover,weather_code',
+    forecast_days: '7',
+    wind_speed_unit: 'kmh',
+  });
+
+  const marineParams = new URLSearchParams({
+    latitude: String(ARCACHON_LAT),
+    longitude: String(ARCACHON_LNG),
+    timezone: 'Europe/Paris',
+    hourly: 'wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period',
+    forecast_days: '7',
+  });
+
+  const [forecastRes, marineRes] = await Promise.all([
+    fetch(`${OPEN_METEO_FORECAST_URL}?${forecastParams}`),
+    fetch(`${OPEN_METEO_MARINE_URL}?${marineParams}`),
+  ]);
+
+  if (!forecastRes.ok) throw new Error(`Open-Meteo forecast indisponible: ${forecastRes.status}`);
+
+  const forecast: OpenMeteoForecastResponse = await forecastRes.json();
+  const marine: OpenMeteoMarineResponse | null = marineRes.ok ? await marineRes.json() : null;
+
+  return parseWeatherData(forecast, marine);
+}
+
 /**
  * Récupère les données météo depuis l'API route Next.js (avec cache ISR).
  * Cache in-mémoire côté client de 1h pour éviter un round-trip HTTP à chaque composant.

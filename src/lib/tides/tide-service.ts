@@ -1,5 +1,3 @@
-'use client';
-
 import type { TideExtreme, TideData, TideCurvePoint } from '@/types';
 import type { HarmonicConstituent, Extreme, TimelinePoint } from '@neaps/tide-predictor';
 import type { Station } from '@neaps/tide-database';
