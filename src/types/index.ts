@@ -382,3 +382,12 @@ export interface OpenMeteoMarineResponse {
     swell_wave_period: number[];
   };
 }
+
+// ---------- Types pour le Coach IA ----------
+
+export interface CoachContext {
+  tideData: TideData;
+  weatherData: WeatherData;
+  solunarData: SolunarData;
+  topSpecies: SpeciesResult[];
+}
