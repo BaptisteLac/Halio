@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { Sparkles, Send, Loader2 } from 'lucide-react';
+import { Sparkles, Send, Loader2, Lock } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { CoachContext } from '@/types';
+import { createClient } from '@/lib/supabase/client';
 import { getTideData } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
@@ -15,6 +18,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import ChatMessage from '@/components/coach/ChatMessage';
 import SuggestionCards from '@/components/coach/SuggestionCards';
 import ConditionBadges from '@/components/coach/ConditionBadges';
+
+const DAILY_LIMIT = 20;
 
 function LoadingCoach() {
   return (
@@ -30,7 +35,7 @@ function LoadingCoach() {
           <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto animate-pulse">
             <Sparkles size={18} className="text-violet-400" />
           </div>
-          <p className="text-slate-500 text-sm">Chargement des conditions live…</p>
+          <p className="text-slate-500 text-sm">Chargement…</p>
         </div>
       </div>
       <BottomNav />
@@ -38,15 +43,58 @@ function LoadingCoach() {
   );
 }
 
+function UnauthenticatedCoach() {
+  return (
+    <div className="h-dvh flex flex-col bg-slate-950">
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center relative">
+          <Sparkles size={28} className="text-violet-400" />
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center">
+            <Lock size={11} className="text-slate-400" />
+          </div>
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-white mb-2">Coach PêcheBoard</h1>
+          <p className="text-slate-400 text-sm leading-relaxed max-w-xs mx-auto">
+            Connectez-vous pour accéder au coach IA — conseils personnalisés sur les conditions du Bassin en temps réel.
+          </p>
+        </div>
+        <Link
+          href="/journal"
+          className="bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl px-8 py-3 text-sm transition-colors"
+        >
+          Se connecter
+        </Link>
+      </div>
+      <BottomNav />
+    </div>
+  );
+}
+
 export default function CoachPage() {
+  const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined);
   const [coachContext, setCoachContext] = useState<CoachContext | null>(null);
+  const [remaining, setRemaining] = useState<number>(DAILY_LIMIT);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Charge les données live au mount
+  // Auth
   useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Données live + solde quotidien (seulement si connecté)
+  useEffect(() => {
+    if (!user) return;
     const now = new Date();
+
+    // Conditions de pêche
     Promise.allSettled([getTideData(now), fetchWeatherData()])
       .then(([tideResult, weatherResult]) => {
         if (tideResult.status === 'rejected') {
@@ -61,20 +109,26 @@ export default function CoachPage() {
         const weatherData = weatherResult.value;
         const solunarData = getSolunarData(now);
         const topSpecies = getTopSpeciesForConditions(
-          SPECIES,
-          DASHBOARD_SPOT,
-          weatherData,
-          tideData,
-          solunarData,
-          now,
-          3,
+          SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3,
         );
         setCoachContext({ tideData, weatherData, solunarData, topSpecies });
       });
-  }, []);
 
-  // Transport créé une seule fois — le contexte live est injecté au niveau
-  // de chaque sendMessage (2ème argument) pour éviter tout problème de stale closure.
+    // Solde quotidien
+    const supabase = createClient();
+    supabase
+      .from('coach_usage')
+      .select('messages_today, reset_date')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (!data) return;
+        const today = new Date().toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' });
+        const usedToday = data.reset_date < today ? 0 : (data.messages_today ?? 0);
+        setRemaining(Math.max(0, DAILY_LIMIT - usedToday));
+      });
+  }, [user]);
+
   const transport = useMemo(
     () => new DefaultChatTransport({ api: '/api/coach' }),
     [],
@@ -84,10 +138,13 @@ export default function CoachPage() {
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
-  // Autoscroll vers le bas à chaque nouveau message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // États de chargement / auth
+  if (user === undefined) return <LoadingCoach />;
+  if (user === null) return <UnauthenticatedCoach />;
 
   if (loadError) {
     return (
@@ -101,18 +158,19 @@ export default function CoachPage() {
     );
   }
 
-  if (!coachContext) {
-    return <LoadingCoach />;
-  }
+  if (!coachContext) return <LoadingCoach />;
 
   const handleSend = () => {
     const text = inputValue.trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || remaining <= 0) return;
     setInputValue('');
+    setRemaining((r) => Math.max(0, r - 1));
     sendMessage({ text });
   };
 
   const handleSuggestionSelect = (text: string) => {
+    if (remaining <= 0) return;
+    setRemaining((r) => Math.max(0, r - 1));
     sendMessage({ text });
   };
 
@@ -122,6 +180,8 @@ export default function CoachPage() {
       handleSend();
     }
   };
+
+  const limitReached = remaining <= 0;
 
   return (
     <div className="min-h-screen bg-slate-950 pb-20 flex flex-col">
@@ -138,6 +198,16 @@ export default function CoachPage() {
                 Conditions live
               </span>
             </div>
+            {/* Compteur quotidien */}
+            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+              limitReached
+                ? 'bg-red-500/10 border-red-500/25 text-red-400'
+                : remaining <= 5
+                  ? 'bg-orange-500/10 border-orange-500/25 text-orange-400'
+                  : 'bg-slate-800 border-slate-700 text-slate-400'
+            }`}>
+              {limitReached ? 'Limite atteinte' : `${remaining}/${DAILY_LIMIT} restants`}
+            </span>
           </div>
           <ConditionBadges context={coachContext} />
         </div>
@@ -156,12 +226,17 @@ export default function CoachPage() {
                 Je connais les conditions actuelles du Bassin — marées, météo, espèces, réglementations.
               </p>
             </div>
-            <SuggestionCards onSelect={handleSuggestionSelect} />
+            {!limitReached && <SuggestionCards onSelect={handleSuggestionSelect} />}
+            {limitReached && (
+              <p className="text-center text-orange-400/80 text-sm bg-orange-500/10 border border-orange-500/20 rounded-xl px-4 py-3">
+                Vous avez atteint la limite de {DAILY_LIMIT} messages pour aujourd'hui.<br />
+                <span className="text-slate-500">Revenez demain !</span>
+              </p>
+            )}
           </div>
         ) : (
           <div className="space-y-1 py-2">
             {messages.map((m) => {
-              // En v6, le message a des `parts` ; on reconstruit le texte
               const textContent = m.parts
                 .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
                 .map((p) => p.text)
@@ -185,29 +260,35 @@ export default function CoachPage() {
         )}
       </main>
 
-      {/* Input — positionné au-dessus de la BottomNav */}
+      {/* Input */}
       <div className="fixed bottom-16 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/80 px-4 py-3">
-        <div className="flex items-center gap-2 max-w-lg mx-auto">
-          <input
-            id="coach-input"
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Posez votre question…"
-            disabled={isLoading || !coachContext}
-            className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 disabled:opacity-50 transition-colors"
-          />
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={isLoading || !inputValue.trim() || !coachContext}
-            className="w-10 h-10 flex-shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
-            aria-label="Envoyer"
-          >
-            <Send size={16} className="text-white" />
-          </button>
-        </div>
+        {limitReached ? (
+          <p className="text-center text-slate-500 text-sm py-1">
+            Limite quotidienne atteinte — revenez demain
+          </p>
+        ) : (
+          <div className="flex items-center gap-2 max-w-lg mx-auto">
+            <input
+              id="coach-input"
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Posez votre question…"
+              disabled={isLoading}
+              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 disabled:opacity-50 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={isLoading || !inputValue.trim()}
+              className="w-10 h-10 flex-shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
+              aria-label="Envoyer"
+            >
+              <Send size={16} className="text-white" />
+            </button>
+          </div>
+        )}
       </div>
 
       <BottomNav />
