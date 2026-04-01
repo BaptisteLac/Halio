@@ -89,6 +89,24 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_usage: {
+        Row: {
+          messages_today: number
+          reset_date: string
+          user_id: string
+        }
+        Insert: {
+          messages_today?: number
+          reset_date?: string
+          user_id: string
+        }
+        Update: {
+          messages_today?: number
+          reset_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string | null
@@ -272,9 +290,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
-// Aliases pratiques
-export type CatchRow = Database["public"]["Tables"]["catches"]["Row"];
-export type CatchInsert = Database["public"]["Tables"]["catches"]["Insert"];
-export type CatchUpdate = Database["public"]["Tables"]["catches"]["Update"];
-export type UserSettingsRow = Database["public"]["Tables"]["user_settings"]["Row"];
