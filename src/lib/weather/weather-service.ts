@@ -10,6 +10,8 @@ import type {
 
 const ARCACHON_LAT = 44.66;
 const ARCACHON_LNG = -1.17;
+const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
+const OPEN_METEO_MARINE_URL = 'https://marine-api.open-meteo.com/v1/marine';
 
 // Cache module-level — partagé entre tous les composants pour la durée de la session
 let _weatherCache: { data: WeatherData; expiresAt: number } | null = null;
@@ -26,11 +28,6 @@ function getPressureTrend(hourlyPressures: number[], currentIndex: number): Pres
   if (diff < -1) return 'baisse';
   return 'stable';
 }
-
-const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-const OPEN_METEO_MARINE_URL = 'https://marine-api.open-meteo.com/v1/marine';
-const ARCACHON_LAT = 44.66;
-const ARCACHON_LNG = -1.17;
 
 /**
  * Récupère les données météo directement depuis Open-Meteo (usage serveur uniquement).
