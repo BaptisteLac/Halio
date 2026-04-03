@@ -75,9 +75,13 @@ export async function fetchWeatherData(baseUrl = ''): Promise<WeatherData> {
     return _weatherCache.data;
   }
 
+  // Paramètre de cache-busting : invalide le cache CDN/ISR au changement de jour
+  const today = new Date();
+  const dateStamp = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
   const [forecastRes, marineRes] = await Promise.all([
-    fetch(`${baseUrl}/api/weather`),
-    fetch(`${baseUrl}/api/marine`),
+    fetch(`${baseUrl}/api/weather?t=${dateStamp}`),
+    fetch(`${baseUrl}/api/marine?t=${dateStamp}`),
   ]);
 
   if (!forecastRes.ok) throw new Error(`Météo indisponible: ${forecastRes.status}`);

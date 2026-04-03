@@ -10,7 +10,7 @@ import { getBestWindow } from '@/lib/scoring/fishing-windows';
 import { kmhToKnots, getWindDirectionLabel } from '@/lib/weather/weather-service';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
-import type { WeekDay } from '@/types';
+import type { WeekDay, DaySpecies } from '@/types';
 
 export function useWeekForecasts(): {
   days: WeekDay[] | null;
@@ -43,14 +43,27 @@ export function useWeekForecasts(): {
             };
 
             const daySolunar = getSolunarData(daily.date);
-            const topSpecies = getTopSpeciesForConditions(
-              SPECIES, DASHBOARD_SPOT, syntheticWeather, tideData, daySolunar, daily.date, 1
+            const top3 = getTopSpeciesForConditions(
+              SPECIES, DASHBOARD_SPOT, syntheticWeather, tideData, daySolunar, daily.date, 3
             );
-            const top = topSpecies[0];
+            const top = top3[0];
             const bestWindow = getBestWindow(
-              topSpecies, tideData, syntheticWeather, daySolunar, daily.date
+              top3, tideData, syntheticWeather, daySolunar, daily.date
             );
             const windKnots = kmhToKnots(daily.windSpeedMax);
+
+            // Fenêtres individuelles par espèce
+            const topSpecies: DaySpecies[] = top3.map((s) => {
+              const win = getBestWindow([s], tideData, syntheticWeather, daySolunar, daily.date);
+              return {
+                id: s.species.id,
+                name: s.species.name,
+                score: s.score.total,
+                lure: s.species.lures[0]?.name ?? null,
+                windowStart: win?.start ?? null,
+                windowEnd: win?.end ?? null,
+              };
+            });
 
             return {
               date: daily.date,
@@ -65,6 +78,7 @@ export function useWeekForecasts(): {
               windKnots,
               windDir: getWindDirectionLabel(daily.windDirectionDominant),
               isHighWind: windKnots > 25,
+              topSpecies,
             } satisfies WeekDay;
           })
         );

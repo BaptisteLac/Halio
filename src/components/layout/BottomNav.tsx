@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarCheck, CalendarDays, Map, Sparkles, User } from 'lucide-react';
+import { CalendarCheck, CalendarDays, Fish, Map, Sparkles, User } from 'lucide-react';
 
 interface NavItem {
   href: string;
@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/', label: "Aujourd'hui", icon: CalendarCheck },
   { href: '/semaine', label: 'Semaine', icon: CalendarDays },
   { href: '/carte', label: 'Carte', icon: Map },
+  { href: '/especes', label: 'Espèces', icon: Fish },
   { href: '/coach', label: 'Coach', icon: Sparkles, activeColor: 'text-violet-400' },
   { href: '/moi', label: 'Moi', icon: User },
 ];

@@ -299,6 +299,15 @@ export interface BestWindow {
   score: number; // score moyen des espèces sur cette fenêtre (0-100)
 }
 
+export interface DaySpecies {
+  id: string;
+  name: string;
+  score: number;
+  lure: string | null;
+  windowStart: Date | null;
+  windowEnd: Date | null;
+}
+
 export interface WeekDay {
   date: Date;
   daily: WeatherDaily;
@@ -312,6 +321,7 @@ export interface WeekDay {
   windKnots: number;
   windDir: string;
   isHighWind: boolean; // vrai si windKnots > 25
+  topSpecies: DaySpecies[]; // top 3 espèces de saison avec leur fenêtre individuelle
 }
 
 // ---------- Open-Meteo API response types ----------
