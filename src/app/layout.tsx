@@ -11,16 +11,30 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'PêcheBoard — Bassin d\'Arcachon',
-  description: 'Tableau de bord pour pêcheurs en bateau sur le Bassin d\'Arcachon. Marées, météo, scores de pêche et spots.',
+  title: 'Halioapp',
+  description: 'Décidez quand et où pêcher sur le Bassin d\'Arcachon',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'PêcheBoard',
+    title: 'Halioapp',
   },
   icons: {
+    icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    title: 'Halioapp',
+    description: 'Décidez quand et où pêcher sur le Bassin d\'Arcachon',
+    url: 'https://halioapp.com',
+    siteName: 'Halioapp',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+      },
+    ],
   },
 };
 
