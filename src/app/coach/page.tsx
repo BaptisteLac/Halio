@@ -115,8 +115,15 @@ export default function CoachPage() {
       });
   }, [user]);
 
+  // Ref stable — body function lit toujours le contexte le plus récent
+  const contextRef = useRef(coachContext);
+  useEffect(() => { contextRef.current = coachContext; }, [coachContext]);
+
   const transport = useMemo(
-    () => new DefaultChatTransport({ api: '/api/coach' }),
+    () => new DefaultChatTransport({
+      api: '/api/coach',
+      body: () => ({ context: contextRef.current }),
+    }),
     [],
   );
 
