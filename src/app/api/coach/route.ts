@@ -13,7 +13,7 @@ import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
 
 const SLIDING_WINDOW = 10;
-const DAILY_LIMIT = 20;
+const DAILY_LIMIT = 10;
 
 function getParisDate(): string {
   return new Date().toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' }); // YYYY-MM-DD
