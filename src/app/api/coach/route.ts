@@ -2,7 +2,6 @@ import { streamText, convertToModelMessages } from 'ai';
 import type { UIMessage } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { createServerClient } from '@supabase/ssr';
-import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { buildSystemPrompt } from '@/lib/coach/build-system-prompt';
 import { getTideData } from '@/lib/tides/tide-service';
@@ -11,9 +10,10 @@ import { fetchWeatherDataDirect } from '@/lib/weather/weather-service';
 import { getTopSpeciesForConditions } from '@/lib/scoring/fishing-score';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
+import type { CoachContext } from '@/types';
 
 const SLIDING_WINDOW = 10;
-const DAILY_LIMIT = 20;
+const DAILY_LIMIT = 10;
 
 function getParisDate(): string {
   return new Date().toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' }); // YYYY-MM-DD
@@ -25,18 +25,11 @@ function createSupabaseServerClient(cookieStore: Awaited<ReturnType<typeof cooki
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll() { /* lecture seule dans une route API */ },
+        getAll: () => cookieStore.getAll(),
+        setAll: (list) =>
+          list.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
       },
     }
-  );
-}
-
-function createAdminSupabase() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
   );
 }
 
@@ -79,122 +72,105 @@ export async function GET() {
  * POST /api/coach — chat avec le coach (authentification requise)
  */
 export async function POST(req: Request) {
-  // 1. Vérifier la clé API Anthropic
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('[coach] ANTHROPIC_API_KEY manquant');
     return Response.json({ error: 'Configuration serveur incomplète' }, { status: 500 });
   }
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('[coach] SUPABASE_SERVICE_ROLE_KEY manquant');
-    return Response.json({ error: 'Configuration serveur incomplète' }, { status: 500 });
-  }
-
-  // 2. Vérifier l'authentification
+  // ── 1. Auth ─────────────────────────────────────────────────────────────
   const cookieStore = await cookies();
   const supabase = createSupabaseServerClient(cookieStore);
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return Response.json(
-      { error: 'Authentification requise pour utiliser le coach.' },
+      { error: 'Connexion requise pour utiliser le coach' },
       { status: 401 },
     );
   }
 
-  // 3. Vérifier la limite quotidienne
-  const admin = createAdminSupabase();
+  // ── 2. Rate limiting ─────────────────────────────────────────────────────
   const today = getParisDate();
 
-  const { data: usage } = await admin
+  // maybeSingle() retourne null sans erreur si la ligne n'existe pas encore
+  const { data: usage } = await supabase
     .from('coach_usage')
     .select('messages_today, reset_date')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   const isNewDay = !usage || usage.reset_date < today;
-  const messagesToday = isNewDay ? 0 : (usage?.messages_today ?? 0);
+  const currentCount = isNewDay ? 0 : (usage?.messages_today ?? 0);
 
-  if (messagesToday >= DAILY_LIMIT) {
+  if (currentCount >= DAILY_LIMIT) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const resetAt = new Date(
+      tomorrow.toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' }) + 'T00:00:00'
+    ).toISOString();
+
     return Response.json(
-      {
-        error: `Limite quotidienne atteinte (${DAILY_LIMIT} messages/jour). Revenez demain !`,
-        remaining: 0,
-        limit: DAILY_LIMIT,
-      },
+      { error: 'Limite journalière atteinte', resetAt, limit: DAILY_LIMIT },
       { status: 429 },
     );
   }
 
-  // 4. Incrémenter le compteur avant de streamer
-  await admin.from('coach_usage').upsert({
-    user_id: user.id,
-    messages_today: messagesToday + 1,
-    reset_date: today,
-  });
-
-  // 5. Parser le body
+  // ── 3. Parse body ────────────────────────────────────────────────────────
   let messages: UIMessage[];
+  let clientContext: CoachContext | null = null;
+
   try {
-    const body = await req.json() as { messages: UIMessage[] };
+    const body = await req.json() as { messages: UIMessage[]; context?: CoachContext };
     messages = body.messages ?? [];
+    clientContext = body.context ?? null;
   } catch (e) {
-    console.error('[coach] Erreur parsing body:', e);
     return Response.json({ error: 'Corps de requête invalide' }, { status: 400 });
   }
 
-  // 6. Convertir les messages
+  // ── 4. Incrémenter avant de streamer ─────────────────────────────────────
+  await supabase
+    .from('coach_usage')
+    .upsert(
+      { user_id: user.id, messages_today: currentCount + 1, reset_date: today },
+      { onConflict: 'user_id' },
+    );
+
+  // ── 5. Convertir les messages ─────────────────────────────────────────────
   let recentMessages;
   try {
-    const recentUIMessages = messages.slice(-SLIDING_WINDOW);
-    recentMessages = await convertToModelMessages(recentUIMessages);
+    recentMessages = await convertToModelMessages(messages.slice(-SLIDING_WINDOW));
   } catch (e) {
-    console.error('[coach] Erreur convertToModelMessages:', e);
     return Response.json({ error: 'Format de messages invalide' }, { status: 400 });
   }
 
-  // 7. Collecter le contexte de pêche
-  const now = new Date();
-
-  let tideData;
-  try {
-    tideData = await getTideData(now);
-  } catch (e) {
-    console.error('[coach] Erreur getTideData:', e);
-  }
-
-  let weatherData;
-  try {
-    weatherData = await fetchWeatherDataDirect();
-  } catch (e) {
-    console.error('[coach] Erreur fetchWeatherDataDirect:', e);
-  }
-
-  let solunarData;
-  try {
-    solunarData = getSolunarData(now);
-  } catch (e) {
-    console.error('[coach] Erreur getSolunarData:', e);
-  }
-
-  // 8. Construire le system prompt
+  // ── 6. Construire le system prompt ───────────────────────────────────────
+  // Priorité : contexte envoyé par le client (déjà chargé côté page)
+  // Fallback  : re-fetch serveur si le client n'a pas envoyé le contexte
   let systemPrompt: string;
-  if (tideData && weatherData && solunarData) {
+  if (clientContext) {
     try {
+      systemPrompt = buildSystemPrompt(clientContext);
+    } catch {
+      systemPrompt = buildFallbackSystemPrompt();
+    }
+  } else {
+    // Fallback : collecte serveur (compatibilité avec les anciens clients)
+    try {
+      const now = new Date();
+      const [tideData, weatherData] = await Promise.all([
+        getTideData(now),
+        fetchWeatherDataDirect(),
+      ]);
+      const solunarData = getSolunarData(now);
       const topSpecies = getTopSpeciesForConditions(
         SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3,
       );
       systemPrompt = buildSystemPrompt({ tideData, weatherData, solunarData, topSpecies });
-    } catch (e) {
-      console.error('[coach] Erreur buildSystemPrompt:', e);
+    } catch {
       systemPrompt = buildFallbackSystemPrompt();
     }
-  } else {
-    systemPrompt = buildFallbackSystemPrompt();
   }
 
-  // 9. Streamer la réponse
-  const remaining = DAILY_LIMIT - (messagesToday + 1);
+  // ── 7. Streamer la réponse ────────────────────────────────────────────────
   try {
     const result = streamText({
       model: anthropic('claude-haiku-4-5-20251001'),
@@ -203,7 +179,7 @@ export async function POST(req: Request) {
     });
     return result.toUIMessageStreamResponse({
       headers: {
-        'X-Coach-Remaining': String(remaining),
+        'X-Coach-Remaining': String(DAILY_LIMIT - (currentCount + 1)),
         'X-Coach-Limit': String(DAILY_LIMIT),
       },
     });

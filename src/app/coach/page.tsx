@@ -18,8 +18,8 @@ import BottomNav from '@/components/layout/BottomNav';
 import ChatMessage from '@/components/coach/ChatMessage';
 import SuggestionCards from '@/components/coach/SuggestionCards';
 import ConditionBadges from '@/components/coach/ConditionBadges';
-
-const DAILY_LIMIT = 20;
+import CoachUsageBar from '@/components/coach/CoachUsageBar';
+import { useCoachUsage } from '@/hooks/useCoachUsage';
 
 function LoadingCoach() {
   return (
@@ -74,10 +74,11 @@ function UnauthenticatedCoach() {
 export default function CoachPage() {
   const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined);
   const [coachContext, setCoachContext] = useState<CoachContext | null>(null);
-  const [remaining, setRemaining] = useState<number>(DAILY_LIMIT);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const usage = useCoachUsage();
 
   // Auth
   useEffect(() => {
@@ -89,12 +90,11 @@ export default function CoachPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Données live + solde quotidien (seulement si connecté)
+  // Données de pêche live (seulement si connecté)
   useEffect(() => {
     if (!user) return;
     const now = new Date();
 
-    // Conditions de pêche
     Promise.allSettled([getTideData(now), fetchWeatherData()])
       .then(([tideResult, weatherResult]) => {
         if (tideResult.status === 'rejected') {
@@ -113,30 +113,33 @@ export default function CoachPage() {
         );
         setCoachContext({ tideData, weatherData, solunarData, topSpecies });
       });
-
-    // Solde quotidien
-    const supabase = createClient();
-    supabase
-      .from('coach_usage')
-      .select('messages_today, reset_date')
-      .eq('user_id', user.id)
-      .single()
-      .then(({ data }) => {
-        if (!data) return;
-        const today = new Date().toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' });
-        const usedToday = data.reset_date < today ? 0 : (data.messages_today ?? 0);
-        setRemaining(Math.max(0, DAILY_LIMIT - usedToday));
-      });
   }, [user]);
 
+  // Ref stable — body function lit toujours le contexte le plus récent
+  const contextRef = useRef(coachContext);
+  useEffect(() => { contextRef.current = coachContext; }, [coachContext]);
+
   const transport = useMemo(
-    () => new DefaultChatTransport({ api: '/api/coach' }),
+    () => new DefaultChatTransport({
+      api: '/api/coach',
+      body: () => ({ context: contextRef.current }),
+    }),
     [],
   );
 
   const { messages, sendMessage, status } = useChat({ transport });
 
   const isLoading = status === 'streaming' || status === 'submitted';
+
+  // Rafraîchir le compteur après chaque échange terminé
+  const prevStatus = useRef(status);
+  useEffect(() => {
+    const prev = prevStatus.current;
+    prevStatus.current = status;
+    if ((prev === 'streaming' || prev === 'submitted') && status === 'ready') {
+      usage.refresh();
+    }
+  }, [status, usage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -160,17 +163,17 @@ export default function CoachPage() {
 
   if (!coachContext) return <LoadingCoach />;
 
+  const limitReached = usage.isLimitReached;
+
   const handleSend = () => {
     const text = inputValue.trim();
-    if (!text || isLoading || remaining <= 0) return;
+    if (!text || isLoading || limitReached) return;
     setInputValue('');
-    setRemaining((r) => Math.max(0, r - 1));
     sendMessage({ text });
   };
 
   const handleSuggestionSelect = (text: string) => {
-    if (remaining <= 0) return;
-    setRemaining((r) => Math.max(0, r - 1));
+    if (limitReached) return;
     sendMessage({ text });
   };
 
@@ -180,8 +183,6 @@ export default function CoachPage() {
       handleSend();
     }
   };
-
-  const limitReached = remaining <= 0;
 
   return (
     <div className="min-h-screen bg-slate-950 pb-20 flex flex-col">
@@ -198,18 +199,12 @@ export default function CoachPage() {
                 Conditions live
               </span>
             </div>
-            {/* Compteur quotidien */}
-            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
-              limitReached
-                ? 'bg-red-500/10 border-red-500/25 text-red-400'
-                : remaining <= 5
-                  ? 'bg-orange-500/10 border-orange-500/25 text-orange-400'
-                  : 'bg-slate-800 border-slate-700 text-slate-400'
-            }`}>
-              {limitReached ? 'Limite atteinte' : `${remaining}/${DAILY_LIMIT} restants`}
-            </span>
           </div>
           <ConditionBadges context={coachContext} />
+        </div>
+        {/* Barre d'usage — sticky sous le header */}
+        <div className="max-w-lg mx-auto pb-3">
+          <CoachUsageBar usage={usage} />
         </div>
       </header>
 
@@ -229,7 +224,7 @@ export default function CoachPage() {
             {!limitReached && <SuggestionCards onSelect={handleSuggestionSelect} />}
             {limitReached && (
               <p className="text-center text-orange-400/80 text-sm bg-orange-500/10 border border-orange-500/20 rounded-xl px-4 py-3">
-                Vous avez atteint la limite de {DAILY_LIMIT} messages pour aujourd'hui.<br />
+                Vous avez atteint la limite de {usage.limit} messages pour aujourd&apos;hui.<br />
                 <span className="text-slate-500">Revenez demain !</span>
               </p>
             )}
@@ -274,14 +269,14 @@ export default function CoachPage() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Posez votre question…"
-              disabled={isLoading}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 disabled:opacity-50 transition-colors"
+              placeholder={limitReached ? 'Limite atteinte — revenez demain' : 'Posez votre question…'}
+              disabled={isLoading || limitReached || usage.loading}
+              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             />
             <button
               type="button"
               onClick={handleSend}
-              disabled={isLoading || !inputValue.trim()}
+              disabled={isLoading || !inputValue.trim() || limitReached || usage.loading}
               className="w-10 h-10 flex-shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
               aria-label="Envoyer"
             >
