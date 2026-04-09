@@ -10,7 +10,7 @@ export const SPECIES: Species[] = [
     season: { start: 3, end: 11 },
     peakMonths: [5, 6, 9, 10],
     minSize: 42,
-    dailyQuota: 1,
+    dailyQuota: 2,
     markingRequired: true,
     closedPeriod: null,
     optimalCoeffRange: [60, 90],

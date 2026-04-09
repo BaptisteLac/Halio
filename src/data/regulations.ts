@@ -4,10 +4,10 @@ export const REGULATIONS: Regulation[] = [
   {
     speciesId: 'bar',
     minSize: 42,
-    dailyQuota: 1,
+    dailyQuota: 2,
     markingRequired: true,
     closedPeriod: null,
-    notes: "1 bar par pêcheur et par jour. Marquage obligatoire à bord. Interdiction de la pêche du bar en dérive moteur coupé à l'exception des embarcations non motorisées.",
+    notes: "2 bars par pêcheur et par jour. Taille minimale 42 cm. Marquage obligatoire à bord. Interdiction de la pêche du bar en dérive moteur coupé à l'exception des embarcations non motorisées.",
   },
   {
     speciesId: 'maigre',
