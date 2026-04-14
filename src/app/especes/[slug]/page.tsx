@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, AlertTriangle, Fish, Thermometer, Wind } from 'lucide-react';
@@ -5,10 +6,19 @@ import { getSpeciesBySlug, SPECIES } from '@/data/species';
 import ScoreBlock from '@/components/species/ScoreBlock';
 import BottomNav from '@/components/layout/BottomNav';
 
-// ─── Static paths ─────────────────────────────────────────────────────────────
-
 export function generateStaticParams() {
   return SPECIES.map((s) => ({ slug: s.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const species = getSpeciesBySlug(slug);
+  if (!species) return { title: 'Espèce introuvable — Halioapp' };
+  return { title: `${species.name} — Halioapp` };
 }
 
 // ─── Labels ───────────────────────────────────────────────────────────────────
