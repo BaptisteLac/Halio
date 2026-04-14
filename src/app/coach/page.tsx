@@ -97,12 +97,12 @@ export default function CoachPage() {
 
     Promise.allSettled([getTideData(now), fetchWeatherData()])
       .then(([tideResult, weatherResult]) => {
-        if (tideResult.status === 'rejected') {
-          setLoadError('Impossible de charger les données de marées.');
-          return;
-        }
-        if (weatherResult.status === 'rejected') {
-          setLoadError('Impossible de charger les données météo.');
+        if (tideResult.status === 'rejected' || weatherResult.status === 'rejected') {
+          const failed = [
+            tideResult.status === 'rejected' ? 'marées' : null,
+            weatherResult.status === 'rejected' ? 'météo' : null,
+          ].filter(Boolean).join(' et ');
+          setLoadError(`Impossible de charger les données de ${failed}.`);
           return;
         }
         const tideData = tideResult.value;
@@ -151,10 +151,12 @@ export default function CoachPage() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 pb-20">
-        <div className="text-center">
-          <p className="text-red-400 font-medium">Erreur de chargement</p>
-          <p className="text-slate-500 text-sm mt-1">{loadError}</p>
+      <div className="min-h-screen bg-slate-950 pb-20 flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <p className="text-red-400 font-medium">Erreur de chargement</p>
+            <p className="text-slate-400 text-sm mt-1">{loadError}</p>
+          </div>
         </div>
         <BottomNav />
       </div>

@@ -1,12 +1,12 @@
 // PêcheBoard Service Worker
 // Stratégie : Cache-first pour assets statiques, StaleWhileRevalidate pour API météo, CacheFirst pour tuiles carte
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE  = `pecheboard-static-${CACHE_VERSION}`;
 const API_CACHE     = `pecheboard-api-${CACHE_VERSION}`;
 const TILES_CACHE   = `pecheboard-tiles-${CACHE_VERSION}`;
 
-const STATIC_ASSETS = ['/', '/carte', '/especes', '/journal'];
+const STATIC_ASSETS = ['/', '/carte', '/especes', '/journal', '/semaine', '/coach', '/moi'];
 
 // ── Installation : pré-cache les pages principales ──────────────────────────
 self.addEventListener('install', (event) => {

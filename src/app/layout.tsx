@@ -11,6 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://halioapp.com'),
   title: 'Halioapp',
   description: 'Décidez quand et où pêcher sur le Bassin d\'Arcachon',
   manifest: '/manifest.json',
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Halioapp',
     description: 'Décidez quand et où pêcher sur le Bassin d\'Arcachon',
-    url: 'https://halioapp.com',
+    url: '/',
     siteName: 'Halioapp',
     images: [
       {
@@ -41,8 +42,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   themeColor: '#0f172a',
 };
 

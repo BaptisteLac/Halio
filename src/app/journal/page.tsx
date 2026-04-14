@@ -72,9 +72,12 @@ export default function JournalPage() {
   // ── Prises (quand connecté) ───────────────────────────────────────────────
   async function fetchCatches() {
     const supabase = createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) return;
     const { data } = await supabase
       .from('catches')
       .select('*')
+      .eq('user_id', currentUser.id)
       .order('caught_at', { ascending: false });
     setCatches(data ?? []);
   }
