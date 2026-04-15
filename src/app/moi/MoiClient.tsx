@@ -129,18 +129,18 @@ export default function MoiClient() {
               <div className="flex items-center justify-around text-center gap-2">
                 <div>
                   <p className="text-xl font-bold text-cyan-400">{stats.catchCount}</p>
-                  <p className="text-[10px] text-slate-400">prises cette année</p>
+                  <p className="text-xs text-slate-400">prises cette année</p>
                 </div>
                 {stats.topSpeciesName && (
                   <div>
                     <p className="text-sm font-bold text-white truncate max-w-[90px]">{stats.topSpeciesName}</p>
-                    <p className="text-[10px] text-slate-400">espèce favorite</p>
+                    <p className="text-xs text-slate-400">espèce favorite</p>
                   </div>
                 )}
                 {stats.topSpotName && (
                   <div>
                     <p className="text-sm font-bold text-white truncate max-w-[90px]">{stats.topSpotName}</p>
-                    <p className="text-[10px] text-slate-400">spot favori</p>
+                    <p className="text-xs text-slate-400">spot favori</p>
                   </div>
                 )}
               </div>

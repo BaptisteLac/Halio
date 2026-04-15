@@ -39,7 +39,7 @@ export default function SpeciesCard({ species, score, spotName, isInSeason }: Pr
       {/* En saison */}
       <div className="flex items-center justify-between mb-2">
         <span
-          className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+          className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
             isInSeason
               ? 'bg-green-400/15 text-green-400'
               : 'bg-slate-700 text-slate-400'
@@ -53,27 +53,27 @@ export default function SpeciesCard({ species, score, spotName, isInSeason }: Pr
             {total ?? '·'}
           </span>
           {total !== undefined && (
-            <span className={`text-[10px] font-medium ${color}`}>{label}</span>
+            <span className={`text-xs font-medium ${color}`}>{label}</span>
           )}
         </div>
       </div>
 
       {/* Nom */}
       <p className="text-white font-semibold text-sm leading-tight">{species.name}</p>
-      <p className="text-slate-400 text-[10px] italic mt-0.5 leading-tight">{species.scientificName}</p>
+      <p className="text-slate-400 text-xs italic mt-0.5 leading-tight">{species.scientificName}</p>
       {spotName && (
-        <p className="text-slate-600 text-[10px] mt-0.5 leading-tight">📍 {spotName}</p>
+        <p className="text-slate-400 text-xs mt-0.5 leading-tight">📍 {spotName}</p>
       )}
 
       {/* Infos clés */}
       <div className="mt-2 flex flex-wrap gap-1">
         {species.minSize && (
-          <span className="text-[10px] text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
+          <span className="text-xs text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
             ≥{species.minSize} cm
           </span>
         )}
         {species.techniques.slice(0, 2).map((t) => (
-          <span key={t} className="text-[10px] text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
+          <span key={t} className="text-xs text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
             {TECHNIQUE_LABELS[t] ?? t}
           </span>
         ))}

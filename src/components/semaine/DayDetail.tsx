@@ -80,7 +80,7 @@ export default function DayDetail({ day }: Props) {
       {/* Espèces de saison avec leurs fenêtres */}
       {day.topSpecies.length > 0 && (
         <div className="bg-slate-800/60 rounded-lg px-3 py-1">
-          <p className="text-[10px] uppercase tracking-wide text-slate-400 pt-1.5 pb-1">
+          <p className="text-xs uppercase tracking-wide text-slate-400 pt-1.5 pb-1">
             Espèces de saison · fenêtres de tir
           </p>
           {day.topSpecies.map((s) => (

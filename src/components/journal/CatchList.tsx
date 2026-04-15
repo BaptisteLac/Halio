@@ -92,7 +92,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                           {species?.name ?? c.species_id}
                         </span>
                         {c.released && (
-                          <span className="text-[10px] text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-1.5 py-0.5 rounded-full">
+                          <span className="text-xs text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-1.5 py-0.5 rounded-full">
                             Relâché
                           </span>
                         )}
@@ -124,7 +124,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                           <span className={`text-lg font-bold tabular-nums ${scoreColor}`}>
                             {c.fishing_score}
                           </span>
-                          <p className="text-slate-400 text-[10px]">/100</p>
+                          <p className="text-slate-400 text-xs">/100</p>
                         </div>
                       )}
 
@@ -133,13 +133,13 @@ export default function CatchList({ catches, onDelete }: Props) {
                           <button
                             onClick={() => handleDelete(c.id)}
                             disabled={isDeleting}
-                            className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-2 py-1 disabled:opacity-50"
+                            className="text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-2 py-1 disabled:opacity-50"
                           >
                             {isDeleting ? '…' : 'Supprimer'}
                           </button>
                           <button
                             onClick={() => setConfirmId(null)}
-                            className="text-[10px] text-slate-400 border border-slate-700 rounded-lg px-2 py-1"
+                            className="text-xs text-slate-400 border border-slate-700 rounded-lg px-2 py-1"
                           >
                             Annuler
                           </button>

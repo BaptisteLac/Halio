@@ -90,7 +90,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-slate-700/50 rounded-lg px-3 py-2 text-center">
       <p className="text-white font-bold text-base tabular-nums">{value}</p>
-      <p className="text-slate-400 text-[10px] mt-0.5">{label}</p>
+      <p className="text-slate-400 text-xs mt-0.5">{label}</p>
     </div>
   );
 }
@@ -98,9 +98,9 @@ function Stat({ label, value }: { label: string; value: string }) {
 function StatWide({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="bg-slate-700/50 rounded-lg px-3 py-2">
-      <p className="text-slate-400 text-[10px]">{label}</p>
+      <p className="text-slate-400 text-xs">{label}</p>
       <p className="text-white font-semibold text-sm mt-0.5 truncate">{value}</p>
-      <p className="text-slate-400 text-[10px]">{sub}</p>
+      <p className="text-slate-400 text-xs">{sub}</p>
     </div>
   );
 }

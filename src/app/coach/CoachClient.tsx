@@ -191,7 +191,7 @@ export default function CoachClient() {
             </div>
             <div className="flex items-center gap-2 flex-1">
               <h1 className="text-base font-bold text-white">Coach PêcheBoard</h1>
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400">
                 Conditions live
               </span>
             </div>
@@ -203,7 +203,7 @@ export default function CoachClient() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 py-4 max-w-lg mx-auto w-full">
+      <main className="flex-1 overflow-y-auto touch-pan-y px-4 py-4 max-w-lg mx-auto w-full">
         {messages.length === 0 ? (
           <div className="space-y-6 pt-2">
             <div className="text-center space-y-2">
@@ -262,6 +262,7 @@ export default function CoachClient() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)}
               placeholder={limitReached ? 'Limite atteinte — revenez demain' : 'Posez votre question…'}
               disabled={isLoading || limitReached || usage.loading}
               className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

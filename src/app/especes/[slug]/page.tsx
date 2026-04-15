@@ -232,7 +232,7 @@ export default async function SpeciesSlugPage({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-slate-400">{lure.weight}</span>
-                      <span className="text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded text-xs">
                         {lure.type}
                       </span>
                     </div>

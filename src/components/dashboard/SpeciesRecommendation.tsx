@@ -39,7 +39,7 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
             {first.species.localNames.length > 0 && (
               <span className="text-slate-400 text-xs ml-1.5">({first.species.localNames[0]})</span>
             )}
-            <p className="text-slate-400 text-[10px] mt-0.5">📍 {first.spot.name}</p>
+            <p className="text-slate-400 text-xs mt-0.5">📍 {first.spot.name}</p>
             {first.species.lures.length > 0 && (
               <p className="text-slate-400 text-xs mt-1 truncate">
                 💡 {first.species.lures[0].name}
@@ -67,7 +67,7 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
                 <ScoreDot score={score.total} />
                 <div className="min-w-0">
                   <span className="text-slate-300">{species.name}</span>
-                  <span className="text-slate-600 text-[10px] ml-1.5 truncate">· {spot.name}</span>
+                  <span className="text-slate-400 text-xs ml-1.5 truncate">· {spot.name}</span>
                 </div>
               </div>
               <span className={`font-medium tabular-nums shrink-0 ${score.color}`}>{score.total}</span>

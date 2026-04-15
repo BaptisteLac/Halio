@@ -75,7 +75,7 @@ export default function CoachUsageBar({ usage }: Props) {
   return (
     <div className="mx-4 mt-2">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] text-slate-400">
+        <span className="text-xs text-slate-400">
           {count}/{limit} messages aujourd&apos;hui
         </span>
       </div>

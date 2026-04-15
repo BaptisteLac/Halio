@@ -25,6 +25,11 @@
 | M-13 | `SpotDetail` : `overscroll-contain` + `max-h-[65dvh]` | — |
 | M-14 | `CatchForm` : `overscroll-contain` | — |
 | M-18 | `PWAInstallPrompt` : `bottom-14` → `bottom-[calc(3.5rem+env(safe-area-inset-bottom))]` | — |
+| M-09 | Non-issue : les Links BottomNav ont déjà `min-h-[56px]` — Playwright mesurait le SVG, pas la zone de tap | — |
+| M-12 | `onFocus` + `scrollIntoView` sur l'input du coach | — |
+| M-15 | `touch-pan-y` sur les containers scroll principaux (Coach, Espèces) | — |
+| M-16 | `text-[10px]` → `text-xs` sur 12 fichiers (28 occurrences) — minimum 12px | — |
+| M-17 | Idem (couvert par M-16) | — |
 
 ---
 

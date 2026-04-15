@@ -167,7 +167,7 @@ export default function NotificationsPage() {
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-white">Alerte bonne session</p>
                     {notifEnabled && (
-                      <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-[10px] font-medium">
+                      <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full px-2 py-0.5 text-xs font-medium">
                         Actif
                       </span>
                     )}
@@ -260,7 +260,7 @@ export default function NotificationsPage() {
                       }`}
                     >
                       <span className="block">{tr.label}</span>
-                      <span className="block text-[10px] opacity-70">{tr.detail}</span>
+                      <span className="block text-xs opacity-70">{tr.detail}</span>
                     </button>
                   ))}
                 </div>

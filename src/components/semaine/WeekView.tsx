@@ -58,7 +58,7 @@ export default function WeekView({ days, bestDayDate, todayDate }: Props) {
             >
               {/* Jour */}
               <div className="w-9 text-center shrink-0">
-                <p className={`text-[10px] uppercase ${isBest ? 'text-green-400' : isToday ? 'text-cyan-400' : 'text-slate-400'}`}>
+                <p className={`text-xs uppercase ${isBest ? 'text-green-400' : isToday ? 'text-cyan-400' : 'text-slate-400'}`}>
                   {isBest ? '⭐' : dayName}
                 </p>
                 <p className={`text-base font-bold leading-tight ${isBest ? 'text-green-300' : isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
@@ -74,12 +74,12 @@ export default function WeekView({ days, bestDayDate, todayDate }: Props) {
                     style={{ width: `${barWidth}px` }}
                   />
                   {day.bestWindowStart && (
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-xs text-slate-400">
                       {fmt(day.bestWindowStart)}
                     </span>
                   )}
                 </div>
-                <p className="text-[10px] text-slate-400 truncate">
+                <p className="text-xs text-slate-400 truncate">
                   Coeff {day.coefficient} · {day.windDir} {day.windKnots.toFixed(0)} kt
                   {day.isHighWind && ' ⚠️'}
                   {' · '}
