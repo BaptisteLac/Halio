@@ -155,7 +155,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <div className="bg-slate-900 border-t border-slate-700 rounded-t-2xl max-h-[80vh] overflow-y-auto">
+      <div className="bg-slate-900 border-t border-slate-700 rounded-t-2xl max-h-[80dvh] overflow-y-auto">
         {/* Handle */}
         <div className="flex justify-center pt-2 pb-1 sticky top-0 bg-slate-900 z-10">
           <div className="w-10 h-1 rounded-full bg-slate-600" />
@@ -217,6 +217,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
                 <label className="block text-xs text-slate-400 mb-1">Taille (cm)</label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={sizeCm}
                   onChange={(e) => setSizeCm(e.target.value)}
                   placeholder="ex: 55"
@@ -230,6 +231,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
                 <label className="block text-xs text-slate-400 mb-1">Poids (kg)</label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   value={weightKg}
                   onChange={(e) => setWeightKg(e.target.value)}
                   placeholder="ex: 1.2"

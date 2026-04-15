@@ -84,7 +84,7 @@ export default function EspecesClient() {
               <button
                 key={f}
                 onClick={() => setSeasonFilter(f)}
-                className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${
+                className={`text-xs px-3 min-h-[44px] rounded-full font-medium transition-colors ${
                   seasonFilter === f
                     ? 'bg-cyan-400 text-slate-900'
                     : 'text-slate-400 hover:text-slate-200'

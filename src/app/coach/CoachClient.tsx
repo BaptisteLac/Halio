@@ -23,7 +23,7 @@ import { useCoachUsage } from '@/hooks/useCoachUsage';
 
 function LoadingCoach() {
   return (
-    <div className="min-h-screen bg-slate-950 pb-20 flex flex-col">
+    <div className="min-h-dvh bg-slate-950 pb-20 flex flex-col">
       <div className="bg-slate-900/90 border-b border-slate-800 px-4 py-3">
         <div className="flex items-center gap-2 max-w-lg mx-auto">
           <div className="w-7 h-7 rounded-full bg-violet-500/20 animate-pulse" />
@@ -146,7 +146,7 @@ export default function CoachClient() {
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-slate-950 pb-20 flex flex-col">
+      <div className="min-h-dvh bg-slate-950 pb-20 flex flex-col">
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <p className="text-red-400 font-medium">Erreur de chargement</p>
@@ -182,7 +182,7 @@ export default function CoachClient() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-20 flex flex-col">
+    <div className="min-h-dvh bg-slate-950 pb-20 flex flex-col">
       <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800/80">
         <div className="px-4 py-3 max-w-lg mx-auto space-y-2.5">
           <div className="flex items-center gap-2">

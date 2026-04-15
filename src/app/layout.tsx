@@ -53,7 +53,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="dark">
-      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-100 min-h-screen`}>
+      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-100 min-h-dvh`}>
         {children}
         <PWAInstallPrompt />
         <ServiceWorkerRegistration />

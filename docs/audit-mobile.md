@@ -13,8 +13,14 @@
 | UX-18 | Contrastes WCAG 2.1 AA — `text-slate-500` → `text-slate-400` sur 26 fichiers | b89947be |
 | M-01 | `BottomNav` : `pb-[env(safe-area-inset-bottom)]` ajouté | — |
 | M-02 | `viewport-fit: 'cover'` ajouté dans `app/layout.tsx` | — |
-| M-19 | `BottomNav` ajouté dans `not-found.tsx` | — |
+| M-19 | `BottomNav` ajouté dans `not-found.tsx` et `error.tsx` | — |
 | M-20 | `-webkit-tap-highlight-color: transparent` dans `globals.css` | — |
+| M-04 | `min-h-screen` → `min-h-dvh` dans `CoachClient`, `max-h-[80vh]` → `max-h-[80dvh]` dans `CatchForm` | — |
+| M-05 | Filtres zone `/carte` : `py-1.5` → `min-h-[44px]` | — |
+| M-06 | Toggle "En saison"/"Toutes" : `py-1` → `min-h-[44px]` | — |
+| M-07 | "Mot de passe oublié ?" : `py-3` ajouté + contraste `text-slate-400` | — |
+| M-08 | "Pas encore de compte ?" : `py-3` ajouté | — |
+| M-10 | `inputMode="decimal"` sur inputs taille/poids dans `CatchForm` | — |
 
 ---
 

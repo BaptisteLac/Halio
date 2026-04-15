@@ -101,7 +101,7 @@ export default function DashboardClient() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 pb-20">
+      <div className="min-h-dvh bg-slate-950 pb-20">
         <div className="bg-slate-900 border-b border-slate-800 px-4 py-3">
           <div className="h-6 bg-slate-800 rounded w-32 animate-pulse" />
         </div>
@@ -113,7 +113,7 @@ export default function DashboardClient() {
 
   if (error || !tideData || !solunarData || !tideCurve) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 pb-20">
+      <div className="min-h-dvh bg-slate-950 flex items-center justify-center p-4 pb-20">
         <div className="text-center">
           <p className="text-red-400 font-medium">Erreur de chargement</p>
           <p className="text-slate-400 text-sm mt-1">{error ?? 'Données indisponibles'}</p>
@@ -153,7 +153,7 @@ export default function DashboardClient() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-20">
+    <div className="min-h-dvh bg-slate-950 pb-20">
       <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800/80">
         <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
           <div>

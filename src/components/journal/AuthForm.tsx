@@ -245,13 +245,13 @@ export default function AuthForm() {
             <>
               <button
                 onClick={() => switchMode('signup')}
-                className="block w-full text-slate-400 text-sm hover:text-slate-200 transition-colors"
+                className="block w-full text-slate-400 text-sm hover:text-slate-200 transition-colors py-3"
               >
                 Pas encore de compte ? S&apos;inscrire
               </button>
               <button
                 onClick={() => switchMode('forgot')}
-                className="block w-full text-slate-600 text-xs hover:text-slate-400 transition-colors"
+                className="block w-full text-slate-400 text-xs hover:text-slate-200 transition-colors py-3"
               >
                 Mot de passe oublié ?
               </button>
