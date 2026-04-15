@@ -40,7 +40,7 @@ export default function SemaineClient() {
             <h1 className="text-base font-bold text-white">Cette semaine</h1>
             {weekRange && <p className="text-xs text-slate-400">{weekRange}</p>}
           </div>
-          <div className="text-xs text-slate-500 bg-slate-800 rounded-md px-2 py-1">
+          <div className="text-xs text-slate-400 bg-slate-800 rounded-md px-2 py-1">
             Bassin d&apos;Arcachon
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function SemaineClient() {
         <div className="p-4 max-w-lg mx-auto">
           <div className="bg-orange-950/40 border border-orange-800/40 rounded-xl p-4 text-center">
             <p className="text-orange-400 font-medium text-sm">Météo indisponible</p>
-            <p className="text-slate-500 text-xs mt-1">
+            <p className="text-slate-400 text-xs mt-1">
               Impossible de charger les prévisions — vérifiez votre connexion
             </p>
           </div>

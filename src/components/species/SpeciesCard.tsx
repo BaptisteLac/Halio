@@ -28,7 +28,7 @@ const TECHNIQUE_LABELS: Record<string, string> = {
 
 export default function SpeciesCard({ species, score, spotName, isInSeason }: Props) {
   const total = score?.total;
-  const color = total !== undefined ? getFishingScoreColor(total) : 'text-slate-500';
+  const color = total !== undefined ? getFishingScoreColor(total) : 'text-slate-400';
   const label = total !== undefined ? getFishingScoreLabel(total) : '—';
 
   return (
@@ -42,7 +42,7 @@ export default function SpeciesCard({ species, score, spotName, isInSeason }: Pr
           className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
             isInSeason
               ? 'bg-green-400/15 text-green-400'
-              : 'bg-slate-700 text-slate-500'
+              : 'bg-slate-700 text-slate-400'
           }`}
         >
           {isInSeason ? 'En saison' : 'Hors saison'}
@@ -60,7 +60,7 @@ export default function SpeciesCard({ species, score, spotName, isInSeason }: Pr
 
       {/* Nom */}
       <p className="text-white font-semibold text-sm leading-tight">{species.name}</p>
-      <p className="text-slate-500 text-[10px] italic mt-0.5 leading-tight">{species.scientificName}</p>
+      <p className="text-slate-400 text-[10px] italic mt-0.5 leading-tight">{species.scientificName}</p>
       {spotName && (
         <p className="text-slate-600 text-[10px] mt-0.5 leading-tight">📍 {spotName}</p>
       )}

@@ -40,7 +40,7 @@ export default function SuggestionCards({ onSelect }: SuggestionCardsProps) {
           <p className="text-slate-200 text-sm font-medium leading-snug group-hover:text-white transition-colors">
             {s.title}
           </p>
-          <p className="text-slate-500 text-xs mt-1 leading-snug group-hover:text-slate-400 transition-colors">
+          <p className="text-slate-400 text-xs mt-1 leading-snug group-hover:text-slate-400 transition-colors">
             {s.subtitle}
           </p>
         </button>

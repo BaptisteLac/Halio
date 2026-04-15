@@ -158,7 +158,7 @@ export default function FishingWindows({
                     <span className={`text-xs font-semibold ${tooltipTextColor(timeline[activeTooltip] ?? 0)}`}>
                       {getFishingScoreLabel(timeline[activeTooltip] ?? 0)}
                     </span>
-                    <span className="ml-1.5 text-slate-500 text-xs">
+                    <span className="ml-1.5 text-slate-400 text-xs">
                       ({timeline[activeTooltip]})
                     </span>
                   </div>
@@ -191,7 +191,7 @@ export default function FishingWindows({
         </div>
       ) : (
         <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg px-3 py-2 text-center">
-          <span className="text-slate-500 text-sm">Aucune fenêtre optimale aujourd&apos;hui</span>
+          <span className="text-slate-400 text-sm">Aucune fenêtre optimale aujourd&apos;hui</span>
         </div>
       )}
     </div>

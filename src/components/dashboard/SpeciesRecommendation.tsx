@@ -39,7 +39,7 @@ export default function SpeciesRecommendation({ topSpecies }: Props) {
             {first.species.localNames.length > 0 && (
               <span className="text-slate-400 text-xs ml-1.5">({first.species.localNames[0]})</span>
             )}
-            <p className="text-slate-500 text-[10px] mt-0.5">📍 {first.spot.name}</p>
+            <p className="text-slate-400 text-[10px] mt-0.5">📍 {first.spot.name}</p>
             {first.species.lures.length > 0 && (
               <p className="text-slate-400 text-xs mt-1 truncate">
                 💡 {first.species.lures[0].name}

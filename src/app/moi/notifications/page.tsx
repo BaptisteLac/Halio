@@ -140,7 +140,7 @@ export default function NotificationsPage() {
             <ChevronLeft size={22} />
           </button>
           <h1 className="text-base font-bold text-white flex-1">Notifications</h1>
-          {saving && <span className="text-xs text-slate-500">Enregistrement…</span>}
+          {saving && <span className="text-xs text-slate-400">Enregistrement…</span>}
           {saved && (
             <span className="text-xs text-emerald-400 flex items-center gap-1">
               <Check size={12} /> Sauvegardé
@@ -153,7 +153,7 @@ export default function NotificationsPage() {
 
         {/* ── Alertes email ── */}
         <section className="space-y-1">
-          <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Alertes email</h2>
+          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Alertes email</h2>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden">
 
             {/* Toggle */}
@@ -172,7 +172,7 @@ export default function NotificationsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">Email si le score de pêche est atteint</p>
+                  <p className="text-xs text-slate-400">Email si le score de pêche est atteint</p>
                 </div>
               </div>
               <button
@@ -230,7 +230,7 @@ export default function NotificationsPage() {
                         className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
                           active
                             ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/40'
-                            : 'bg-slate-700/50 text-slate-500 border border-slate-700 hover:border-slate-500'
+                            : 'bg-slate-700/50 text-slate-400 border border-slate-700 hover:border-slate-500'
                         }`}
                       >
                         {jour.label}
@@ -256,7 +256,7 @@ export default function NotificationsPage() {
                       className={`flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-colors ${
                         timeRange === tr.id
                           ? 'bg-cyan-400/20 text-cyan-400 border border-cyan-400/40'
-                          : 'bg-slate-700/50 text-slate-500 border border-slate-700 hover:border-slate-500'
+                          : 'bg-slate-700/50 text-slate-400 border border-slate-700 hover:border-slate-500'
                       }`}
                     >
                       <span className="block">{tr.label}</span>
@@ -271,13 +271,13 @@ export default function NotificationsPage() {
 
         {/* ── Notifications push ── */}
         <section className="space-y-1">
-          <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Notifications push</h2>
+          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Notifications push</h2>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-4">
             <div className="flex items-start gap-3">
               <BellRing size={20} className="text-cyan-400 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-white font-medium">Notifications navigateur</p>
-                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
                   Recevez des alertes directement sur votre appareil, même sans ouvrir l'application.
                 </p>
 

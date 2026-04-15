@@ -197,7 +197,7 @@ export default function AuthForm() {
 
             <div className="flex items-center gap-3">
               <div className="flex-1 h-px bg-slate-700" />
-              <span className="text-slate-500 text-xs">ou</span>
+              <span className="text-slate-400 text-xs">ou</span>
               <div className="flex-1 h-px bg-slate-700" />
             </div>
           </div>

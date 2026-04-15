@@ -69,7 +69,7 @@ export default function SolunarIndicator({ solunar, now, compact = false }: Prop
             Période {currentPeriod}
           </span>
         ) : (
-          <span className="text-xs text-slate-500">Hors période</span>
+          <span className="text-xs text-slate-400">Hors période</span>
         )}
       </div>
 

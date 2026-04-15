@@ -116,7 +116,7 @@ export default function DashboardClient() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 pb-20">
         <div className="text-center">
           <p className="text-red-400 font-medium">Erreur de chargement</p>
-          <p className="text-slate-500 text-sm mt-1">{error ?? 'Données indisponibles'}</p>
+          <p className="text-slate-400 text-sm mt-1">{error ?? 'Données indisponibles'}</p>
         </div>
         <BottomNav />
       </div>
@@ -164,7 +164,7 @@ export default function DashboardClient() {
             <CoefficientBadge coefficient={coefficient} size="md" />
             <Link
               href="/reglages"
-              className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+              className="text-slate-400 hover:text-slate-300 transition-colors p-1"
               aria-label="Réglages"
             >
               <Settings size={18} />
@@ -222,7 +222,7 @@ export default function DashboardClient() {
             <span className="text-slate-200 font-medium">{fmt(nextExtreme.time)}</span>
             {' — '}
             <span className="text-slate-300">{mslToZH(nextExtreme.height).toFixed(2)} m</span>
-            <span className="text-slate-500"> ({formatDuration(timeToNextExtreme)})</span>
+            <span className="text-slate-400"> ({formatDuration(timeToNextExtreme)})</span>
           </p>
 
           <div className="flex gap-2 flex-wrap">
@@ -235,7 +235,7 @@ export default function DashboardClient() {
                   {e.type === 'high' ? 'PM' : 'BM'}
                 </span>
                 <span className="text-slate-300">{fmt(e.time)}</span>
-                <span className="text-slate-500">{mslToZH(e.height).toFixed(2)} m</span>
+                <span className="text-slate-400">{mslToZH(e.height).toFixed(2)} m</span>
               </div>
             ))}
           </div>

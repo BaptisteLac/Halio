@@ -112,14 +112,14 @@ export default function MoiClient() {
           </div>
           <div className="min-w-0">
             <p className="text-white font-medium text-sm truncate">{user.email ?? 'Utilisateur'}</p>
-            <p className="text-slate-500 text-xs">Pêcheur du Bassin</p>
+            <p className="text-slate-400 text-xs">Pêcheur du Bassin</p>
           </div>
         </div>
 
         {stats !== null && (
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-3">
             {stats.catchCount === 0 ? (
-              <p className="text-slate-500 text-sm text-center py-1">
+              <p className="text-slate-400 text-sm text-center py-1">
                 Aucune prise enregistrée —{' '}
                 <Link href="/journal" className="text-cyan-400 underline">
                   commencez votre journal
@@ -129,18 +129,18 @@ export default function MoiClient() {
               <div className="flex items-center justify-around text-center gap-2">
                 <div>
                   <p className="text-xl font-bold text-cyan-400">{stats.catchCount}</p>
-                  <p className="text-[10px] text-slate-500">prises cette année</p>
+                  <p className="text-[10px] text-slate-400">prises cette année</p>
                 </div>
                 {stats.topSpeciesName && (
                   <div>
                     <p className="text-sm font-bold text-white truncate max-w-[90px]">{stats.topSpeciesName}</p>
-                    <p className="text-[10px] text-slate-500">espèce favorite</p>
+                    <p className="text-[10px] text-slate-400">espèce favorite</p>
                   </div>
                 )}
                 {stats.topSpotName && (
                   <div>
                     <p className="text-sm font-bold text-white truncate max-w-[90px]">{stats.topSpotName}</p>
-                    <p className="text-[10px] text-slate-500">spot favori</p>
+                    <p className="text-[10px] text-slate-400">spot favori</p>
                   </div>
                 )}
               </div>

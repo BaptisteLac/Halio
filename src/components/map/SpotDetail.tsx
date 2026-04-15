@@ -48,7 +48,7 @@ function ScoreBadge({ score, label, color }: { score: number; label: string; col
       <span className={`text-3xl font-bold tabular-nums ${color}`}>{score}</span>
       <div>
         <p className={`text-sm font-medium ${color}`}>{label}</p>
-        <p className="text-slate-500 text-xs">/100</p>
+        <p className="text-slate-400 text-xs">/100</p>
       </div>
     </div>
   );

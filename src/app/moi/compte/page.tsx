@@ -200,7 +200,7 @@ export default function ComptePage() {
 
         {/* ── Profil ── */}
         <section className="space-y-1">
-          <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Profil</h2>
+          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Profil</h2>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-cyan-400/15 rounded-full flex items-center justify-center shrink-0">
@@ -208,7 +208,7 @@ export default function ComptePage() {
               </div>
               <div className="min-w-0">
                 <p className="text-white text-sm font-medium truncate">{user.email}</p>
-                <p className="text-slate-500 text-xs">Pêcheur du Bassin d'Arcachon</p>
+                <p className="text-slate-400 text-xs">Pêcheur du Bassin d'Arcachon</p>
               </div>
             </div>
             <div>
@@ -236,7 +236,7 @@ export default function ComptePage() {
 
         {/* ── Connexion ── */}
         <section className="space-y-1">
-          <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Connexion</h2>
+          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Connexion</h2>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden">
 
             {/* Email */}
@@ -251,7 +251,7 @@ export default function ComptePage() {
               className="w-full px-4 py-3 flex items-center justify-between text-sm text-slate-200 hover:bg-slate-700/40 transition-colors"
             >
               <span>Changer le mot de passe</span>
-              <ChevronRight size={16} className={`text-slate-500 transition-transform ${showPwForm ? 'rotate-90' : ''}`} />
+              <ChevronRight size={16} className={`text-slate-400 transition-transform ${showPwForm ? 'rotate-90' : ''}`} />
             </button>
 
             {showPwForm && (
@@ -307,7 +307,7 @@ export default function ComptePage() {
 
         {/* ── Mes données ── */}
         <section className="space-y-1">
-          <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide px-1">Mes données</h2>
+          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Mes données</h2>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-4">
             <p className="text-xs text-slate-400 mb-3 leading-relaxed">
               Exportez l'intégralité de votre journal de pêche au format CSV, lisible dans Excel ou Google Sheets.

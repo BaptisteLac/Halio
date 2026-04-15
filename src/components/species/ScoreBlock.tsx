@@ -35,7 +35,7 @@ export default function ScoreBlock({ species }: Props) {
     return (
       <div className="bg-slate-800 rounded-xl p-4 flex items-center gap-3">
         <WifiOff size={20} className="text-slate-500 shrink-0" />
-        <p className="text-slate-500 text-sm">Score indisponible — météo hors ligne</p>
+        <p className="text-slate-400 text-sm">Score indisponible — météo hors ligne</p>
       </div>
     );
   }
@@ -60,7 +60,7 @@ export default function ScoreBlock({ species }: Props) {
     <div className="bg-slate-800 rounded-xl p-4 flex items-center gap-4">
       <div className="flex items-baseline gap-1">
         <span className={`text-4xl font-bold tabular-nums ${color}`}>{score.total}</span>
-        <span className="text-slate-500 text-sm">/100</span>
+        <span className="text-slate-400 text-sm">/100</span>
       </div>
       <div>
         <p className={`font-semibold ${color}`}>{label}</p>

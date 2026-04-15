@@ -35,7 +35,7 @@ function LoadingCoach() {
           <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto animate-pulse">
             <Sparkles size={18} className="text-violet-400" />
           </div>
-          <p className="text-slate-500 text-sm">Chargement…</p>
+          <p className="text-slate-400 text-sm">Chargement…</p>
         </div>
       </div>
       <BottomNav />
@@ -211,7 +211,7 @@ export default function CoachClient() {
                 <Sparkles size={24} className="text-violet-400" />
               </div>
               <h2 className="text-white font-semibold">Comment puis-je vous aider ?</h2>
-              <p className="text-slate-500 text-sm max-w-xs mx-auto">
+              <p className="text-slate-400 text-sm max-w-xs mx-auto">
                 Je connais les conditions actuelles du Bassin — marées, météo, espèces, réglementations.
               </p>
             </div>
@@ -219,7 +219,7 @@ export default function CoachClient() {
             {limitReached && (
               <p className="text-center text-orange-400/80 text-sm bg-orange-500/10 border border-orange-500/20 rounded-xl px-4 py-3">
                 Vous avez atteint la limite de {usage.limit} messages pour aujourd&apos;hui.<br />
-                <span className="text-slate-500">Revenez demain !</span>
+                <span className="text-slate-400">Revenez demain !</span>
               </p>
             )}
           </div>
@@ -241,7 +241,7 @@ export default function CoachClient() {
             {isLoading && (
               <div className="flex items-center gap-2 pl-9 pb-2">
                 <Loader2 size={14} className="text-violet-400 animate-spin" />
-                <span className="text-slate-500 text-xs">Le coach réfléchit…</span>
+                <span className="text-slate-400 text-xs">Le coach réfléchit…</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -251,7 +251,7 @@ export default function CoachClient() {
 
       <div className="fixed bottom-16 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/80 px-4 py-3">
         {limitReached ? (
-          <p className="text-center text-slate-500 text-sm py-1">
+          <p className="text-center text-slate-400 text-sm py-1">
             Limite quotidienne atteinte — revenez demain
           </p>
         ) : (

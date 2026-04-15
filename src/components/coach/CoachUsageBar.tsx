@@ -39,7 +39,7 @@ export default function CoachUsageBar({ usage }: Props) {
           <span className="text-base leading-none" aria-hidden="true">🔒</span>
           <span className="text-sm font-medium text-slate-200">Limite journalière atteinte</span>
         </div>
-        <p className="text-xs text-slate-500 mb-2">
+        <p className="text-xs text-slate-400 mb-2">
           Revenez demain — réinitialisation à minuit
           {countdown && (
             <> · Réinitialisation dans <span className="text-slate-400">{countdown}</span></>
@@ -75,7 +75,7 @@ export default function CoachUsageBar({ usage }: Props) {
   return (
     <div className="mx-4 mt-2">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] text-slate-500">
+        <span className="text-[10px] text-slate-400">
           {count}/{limit} messages aujourd&apos;hui
         </span>
       </div>

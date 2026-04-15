@@ -24,7 +24,7 @@ function SpeciesRow({ s }: { s: DaySpecies }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-slate-200 font-medium truncate">{s.name}</p>
         {s.lure && (
-          <p className="text-[11px] text-slate-500 truncate">{s.lure}</p>
+          <p className="text-[11px] text-slate-400 truncate">{s.lure}</p>
         )}
       </div>
 
@@ -59,18 +59,18 @@ export default function DayDetail({ day }: Props) {
       {/* Pills résumé */}
       <div className="flex gap-2">
         <div className="bg-slate-800 rounded-lg px-3 py-2 text-center flex-1">
-          <p className="text-xs text-slate-500">Coefficient</p>
+          <p className="text-xs text-slate-400">Coefficient</p>
           <p className="text-base font-bold text-cyan-400">{day.coefficient}</p>
         </div>
         <div className="bg-slate-800 rounded-lg px-3 py-2 text-center flex-1">
-          <p className="text-xs text-slate-500">Vent</p>
+          <p className="text-xs text-slate-400">Vent</p>
           <p className="text-sm font-bold text-slate-200">
             {day.windDir} {day.windKnots.toFixed(0)} kt
             {day.isHighWind && <span className="text-orange-400 ml-1">⚠️</span>}
           </p>
         </div>
         <div className="bg-slate-800 rounded-lg px-3 py-2 text-center flex-1">
-          <p className="text-xs text-slate-500">Meilleure fenêtre</p>
+          <p className="text-xs text-slate-400">Meilleure fenêtre</p>
           <p className="text-sm font-bold text-slate-200">
             {day.bestWindowStart ? fmt(day.bestWindowStart) : '—'}
           </p>
@@ -80,7 +80,7 @@ export default function DayDetail({ day }: Props) {
       {/* Espèces de saison avec leurs fenêtres */}
       {day.topSpecies.length > 0 && (
         <div className="bg-slate-800/60 rounded-lg px-3 py-1">
-          <p className="text-[10px] uppercase tracking-wide text-slate-500 pt-1.5 pb-1">
+          <p className="text-[10px] uppercase tracking-wide text-slate-400 pt-1.5 pb-1">
             Espèces de saison · fenêtres de tir
           </p>
           {day.topSpecies.map((s) => (

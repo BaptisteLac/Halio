@@ -29,7 +29,7 @@ export default function FavoritePicker({ items, selected, onChange }: FavoritePi
       >
         <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
           {selected.length === 0 ? (
-            <span className="text-sm text-slate-500">Aucune sélection</span>
+            <span className="text-sm text-slate-400">Aucune sélection</span>
           ) : (
             selected.map((id) => {
               const item = items.find((i) => i.id === id);
@@ -46,7 +46,7 @@ export default function FavoritePicker({ items, selected, onChange }: FavoritePi
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {selected.length > 0 && (
-            <span className="text-xs text-slate-500">({selected.length})</span>
+            <span className="text-xs text-slate-400">({selected.length})</span>
           )}
           {open ? (
             <ChevronUp size={16} className="text-slate-400" />

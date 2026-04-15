@@ -46,7 +46,7 @@ export default function CatchList({ catches, onDelete }: Props) {
       <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center py-16">
         <Fish size={40} className="text-slate-600" />
         <p className="text-slate-400 text-sm">Pas encore de prise enregistrée.</p>
-        <p className="text-slate-500 text-xs">Appuyez sur + pour logger votre première prise !</p>
+        <p className="text-slate-400 text-xs">Appuyez sur + pour logger votre première prise !</p>
       </div>
     );
   }
@@ -69,7 +69,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                 const spot    = getSpotById(c.spot_id);
                 const scoreColor = c.fishing_score !== null
                   ? getFishingScoreColor(c.fishing_score)
-                  : 'text-slate-500';
+                  : 'text-slate-400';
 
                 const isConfirming = confirmId === c.id;
                 const isDeleting = deletingId === c.id;
@@ -113,7 +113,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                         )}
                       </div>
                       {c.notes && (
-                        <p className="text-slate-500 text-xs mt-1 line-clamp-1">{c.notes}</p>
+                        <p className="text-slate-400 text-xs mt-1 line-clamp-1">{c.notes}</p>
                       )}
                     </div>
 
@@ -124,7 +124,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                           <span className={`text-lg font-bold tabular-nums ${scoreColor}`}>
                             {c.fishing_score}
                           </span>
-                          <p className="text-slate-500 text-[10px]">/100</p>
+                          <p className="text-slate-400 text-[10px]">/100</p>
                         </div>
                       )}
 
@@ -139,7 +139,7 @@ export default function CatchList({ catches, onDelete }: Props) {
                           </button>
                           <button
                             onClick={() => setConfirmId(null)}
-                            className="text-[10px] text-slate-500 border border-slate-700 rounded-lg px-2 py-1"
+                            className="text-[10px] text-slate-400 border border-slate-700 rounded-lg px-2 py-1"
                           >
                             Annuler
                           </button>

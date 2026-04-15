@@ -136,7 +136,7 @@ export default function PreferencesPage() {
             <ChevronLeft size={22} />
           </button>
           <h1 className="text-base font-bold text-white flex-1">Mes préférences</h1>
-          {saving && <span className="text-xs text-slate-500">Enregistrement…</span>}
+          {saving && <span className="text-xs text-slate-400">Enregistrement…</span>}
           {saved && (
             <span className="text-xs text-emerald-400 flex items-center gap-1">
               <Check size={12} /> Sauvegardé
@@ -150,7 +150,7 @@ export default function PreferencesPage() {
         {/* ── Mes espèces ── */}
         <section className="space-y-2">
           <div className="px-1">
-            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Mes espèces</h2>
+            <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Mes espèces</h2>
             <p className="text-slate-600 text-xs mt-0.5">Affichées en priorité sur le dashboard</p>
           </div>
           <FavoritePicker
@@ -166,7 +166,7 @@ export default function PreferencesPage() {
         {/* ── Mes spots ── */}
         <section className="space-y-2">
           <div className="px-1">
-            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Mes spots</h2>
+            <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Mes spots</h2>
             <p className="text-slate-600 text-xs mt-0.5">Mis en avant sur la carte</p>
           </div>
           <FavoritePicker
@@ -182,7 +182,7 @@ export default function PreferencesPage() {
         {/* ── Port de départ ── */}
         <section className="space-y-2">
           <div className="px-1">
-            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Port de départ</h2>
+            <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Port de départ</h2>
             <p className="text-slate-600 text-xs mt-0.5">Calcul des distances vers les spots</p>
           </div>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden divide-y divide-slate-700/50">
@@ -212,7 +212,7 @@ export default function PreferencesPage() {
         {/* ── Techniques préférées ── */}
         <section className="space-y-2">
           <div className="px-1">
-            <h2 className="text-xs text-slate-500 font-medium uppercase tracking-wide">Techniques préférées</h2>
+            <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Techniques préférées</h2>
             <p className="text-slate-600 text-xs mt-0.5">Filtres par défaut sur la carte et les espèces</p>
           </div>
           <div className="flex flex-wrap gap-2">

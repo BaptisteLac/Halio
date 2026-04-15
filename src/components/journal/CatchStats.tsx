@@ -100,7 +100,7 @@ function StatWide({ label, value, sub }: { label: string; value: string; sub: st
     <div className="bg-slate-700/50 rounded-lg px-3 py-2">
       <p className="text-slate-400 text-[10px]">{label}</p>
       <p className="text-white font-semibold text-sm mt-0.5 truncate">{value}</p>
-      <p className="text-slate-500 text-[10px]">{sub}</p>
+      <p className="text-slate-400 text-[10px]">{sub}</p>
     </div>
   );
 }

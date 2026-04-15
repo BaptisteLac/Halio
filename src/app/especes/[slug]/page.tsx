@@ -85,7 +85,7 @@ export default async function SpeciesSlugPage({
           </Link>
           <div className="min-w-0">
             <h1 className="text-base font-bold text-white truncate">{species.name}</h1>
-            <p className="text-xs text-slate-500 italic truncate">{species.scientificName}</p>
+            <p className="text-xs text-slate-400 italic truncate">{species.scientificName}</p>
           </div>
         </div>
       </header>
@@ -156,7 +156,7 @@ export default async function SpeciesSlugPage({
                           : 'bg-slate-700'
                       }`}
                     />
-                    <p className="text-[8px] text-slate-500 mt-0.5">{label}</p>
+                    <p className="text-[8px] text-slate-400 mt-0.5">{label}</p>
                   </div>
                 );
               })}
@@ -228,11 +228,11 @@ export default async function SpeciesSlugPage({
                   >
                     <div>
                       <span className="text-slate-200">{lure.name}</span>
-                      <span className="text-slate-500 ml-1.5">{lure.brand}</span>
+                      <span className="text-slate-400 ml-1.5">{lure.brand}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-slate-400">{lure.weight}</span>
-                      <span className="text-slate-500 bg-slate-700 px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded text-[10px]">
                         {lure.type}
                       </span>
                     </div>

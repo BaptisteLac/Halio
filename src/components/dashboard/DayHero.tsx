@@ -89,7 +89,7 @@ export default function DayHero({ score, bestWindow, topSpecies }: Props) {
               </span>
             </p>
           ) : (
-            <p className="text-sm text-slate-500 mt-1">Aucune fenêtre optimale aujourd&apos;hui</p>
+            <p className="text-sm text-slate-400 mt-1">Aucune fenêtre optimale aujourd&apos;hui</p>
           )}
 
           {/* Espèce recommandée et leurre principal */}
@@ -98,7 +98,7 @@ export default function DayHero({ score, bestWindow, topSpecies }: Props) {
               🐟{' '}
               <span className="text-slate-200 font-medium">{top.species.name}</span>
               {top.species.lures[0] && (
-                <span className="text-slate-500"> · {top.species.lures[0].name}</span>
+                <span className="text-slate-400"> · {top.species.lures[0].name}</span>
               )}
             </p>
           )}

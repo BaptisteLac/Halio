@@ -53,7 +53,7 @@ export default function WeatherCard({ weather, compact = false }: Props) {
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-slate-300 font-medium text-sm">Météo</h3>
-        <span className="text-slate-500 text-xs">{getWeatherCodeLabel(current.weatherCode)}</span>
+        <span className="text-slate-400 text-xs">{getWeatherCodeLabel(current.weatherCode)}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -109,12 +109,12 @@ export default function WeatherCard({ weather, compact = false }: Props) {
               )}
             </>
           ) : (
-            <p className="text-slate-500 text-base mt-1">N/D</p>
+            <p className="text-slate-400 text-base mt-1">N/D</p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-slate-500 pt-0.5 border-t border-slate-700/50">
+      <div className="flex items-center justify-between text-xs text-slate-400 pt-0.5 border-t border-slate-700/50">
         <span>🌡 {Math.round(current.temperature)}°C (ressenti {Math.round(current.apparentTemperature)}°C)</span>
         <span>☁ {current.cloudCover}%</span>
       </div>
