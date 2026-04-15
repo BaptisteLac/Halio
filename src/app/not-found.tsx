@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { Fish } from 'lucide-react';
+import BottomNav from '@/components/layout/BottomNav';
 
 export default function NotFound() {
   return (
-    <div className="h-dvh flex flex-col items-center justify-center gap-6 bg-slate-950 px-8 text-center">
+    <div className="min-h-dvh bg-slate-950 flex flex-col items-center justify-center gap-6 px-8 pb-24 text-center">
       <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center">
         <Fish size={28} className="text-slate-500" />
       </div>
@@ -17,6 +18,7 @@ export default function NotFound() {
       >
         Retour à l&apos;accueil
       </Link>
+      <BottomNav />
     </div>
   );
 }
