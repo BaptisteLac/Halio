@@ -151,7 +151,7 @@ export default function PreferencesPage() {
         <section className="space-y-2">
           <div className="px-1">
             <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Mes espèces</h2>
-            <p className="text-slate-600 text-xs mt-0.5">Affichées en priorité sur le dashboard</p>
+            <p className="text-slate-400 text-xs mt-0.5">Affichées en priorité sur le dashboard</p>
           </div>
           <FavoritePicker
             items={SPECIES.map((s) => ({ id: s.id, name: s.name }))}
@@ -167,7 +167,7 @@ export default function PreferencesPage() {
         <section className="space-y-2">
           <div className="px-1">
             <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Mes spots</h2>
-            <p className="text-slate-600 text-xs mt-0.5">Mis en avant sur la carte</p>
+            <p className="text-slate-400 text-xs mt-0.5">Mis en avant sur la carte</p>
           </div>
           <FavoritePicker
             items={SPOTS.map((s) => ({ id: s.id, name: s.name }))}
@@ -183,7 +183,7 @@ export default function PreferencesPage() {
         <section className="space-y-2">
           <div className="px-1">
             <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Port de départ</h2>
-            <p className="text-slate-600 text-xs mt-0.5">Calcul des distances vers les spots</p>
+            <p className="text-slate-400 text-xs mt-0.5">Calcul des distances vers les spots</p>
           </div>
           <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden divide-y divide-slate-700/50">
             {PORTS.map((port) => (
@@ -213,7 +213,7 @@ export default function PreferencesPage() {
         <section className="space-y-2">
           <div className="px-1">
             <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide">Techniques préférées</h2>
-            <p className="text-slate-600 text-xs mt-0.5">Filtres par défaut sur la carte et les espèces</p>
+            <p className="text-slate-400 text-xs mt-0.5">Filtres par défaut sur la carte et les espèces</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {TECHNIQUES.map((tech) => {

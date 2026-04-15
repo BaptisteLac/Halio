@@ -208,7 +208,7 @@ export default function NotificationsPage() {
                   onTouchEnd={() => save({ minScore: notifMinScore })}
                   className="w-full accent-cyan-400"
                 />
-                <div className="flex justify-between text-xs text-slate-600 mt-1">
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
                   <span>Moyen (40)</span>
                   <span>Excellent (70)</span>
                   <span>Max (90)</span>

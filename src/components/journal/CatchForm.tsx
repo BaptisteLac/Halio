@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { X, Camera, Image as ImageIcon } from 'lucide-react';
+import { X, Camera, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import type { TideData, WeatherData } from '@/types';
 import { SPECIES } from '@/data/species';
 import { SPOTS } from '@/data/spots';
@@ -145,7 +145,7 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
   }
 
   const selectClass =
-    'w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors';
+    'w-full appearance-none bg-slate-700 border border-slate-600 rounded-lg pl-3 pr-8 py-2 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors';
   const inputClass =
     'w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors';
 
@@ -178,25 +178,31 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
             {/* Espèce */}
             <div>
               <label className="block text-xs text-slate-400 mb-1">Espèce</label>
-              <select
-                value={speciesId}
-                onChange={(e) => { setSpeciesId(e.target.value); setTechnique(''); }}
-                className={selectClass}
-              >
-                {SPECIES.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={speciesId}
+                  onChange={(e) => { setSpeciesId(e.target.value); setTechnique(''); }}
+                  className={selectClass}
+                >
+                  {SPECIES.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Spot */}
             <div>
               <label className="block text-xs text-slate-400 mb-1">Spot</label>
-              <select value={spotId} onChange={(e) => setSpotId(e.target.value)} className={selectClass}>
-                {SPOTS.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select value={spotId} onChange={(e) => setSpotId(e.target.value)} className={selectClass}>
+                  {SPOTS.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Date/heure */}
@@ -246,12 +252,15 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
             {/* Technique */}
             <div>
               <label className="block text-xs text-slate-400 mb-1">Technique</label>
-              <select value={technique} onChange={(e) => setTechnique(e.target.value)} className={selectClass}>
-                <option value="">— Choisir —</option>
-                {selectedSpecies.techniques.map((t) => (
-                  <option key={t} value={t}>{TECHNIQUE_LABELS[t] ?? t}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select value={technique} onChange={(e) => setTechnique(e.target.value)} className={selectClass}>
+                  <option value="">— Choisir —</option>
+                  {selectedSpecies.techniques.map((t) => (
+                    <option key={t} value={t}>{TECHNIQUE_LABELS[t] ?? t}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              </div>
             </div>
 
             {/* Leurre / Appât */}

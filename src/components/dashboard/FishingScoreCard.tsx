@@ -106,7 +106,7 @@ export default function FishingScoreCard({ score }: Props) {
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-slate-300 font-medium text-sm">
           Score de pêche{' '}
-          <span className="text-xs text-slate-600">{showFactors ? '↑' : '↓'}</span>
+          <span className="text-xs text-slate-400">{showFactors ? '↑' : '↓'}</span>
         </h3>
         <span className={`text-sm font-semibold ${score.color}`}>{score.label}</span>
       </div>
@@ -123,7 +123,7 @@ export default function FishingScoreCard({ score }: Props) {
         </div>
       )}
 
-      <p className="text-center text-xs text-slate-600 mt-2">
+      <p className="text-center text-xs text-slate-400 mt-2">
         {showFactors ? 'Tap pour masquer' : 'Tap pour voir le détail'}
       </p>
     </div>

@@ -35,7 +35,7 @@ function SpeciesRow({ s }: { s: DaySpecies }) {
             {fmt(s.windowStart)}{s.windowEnd ? ` → ${fmt(s.windowEnd)}` : ''}
           </p>
         ) : (
-          <p className="text-[11px] text-slate-600">—</p>
+          <p className="text-xs text-slate-400">—</p>
         )}
       </div>
 

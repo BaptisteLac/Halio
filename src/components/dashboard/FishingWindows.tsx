@@ -170,7 +170,7 @@ export default function FishingWindows({
       </div>
 
       {/* Axe temporel */}
-      <div className="flex justify-between text-xs text-slate-600 px-0">
+      <div className="flex justify-between text-xs text-slate-400 px-0">
         <span>0h</span>
         <span>6h</span>
         <span>12h</span>

@@ -229,7 +229,7 @@ export default function ComptePage() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-600 mt-1">Sauvegardé automatiquement</p>
+              <p className="text-xs text-slate-400 mt-1">Sauvegardé automatiquement</p>
             </div>
           </div>
         </section>
