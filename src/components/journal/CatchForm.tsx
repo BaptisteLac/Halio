@@ -151,11 +151,11 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
 
   return (
     <div
-      className={`fixed left-0 right-0 bottom-14 z-40 transition-transform duration-300 ${
+      className={`fixed left-0 right-0 bottom-[calc(3.5rem_+_env(safe-area-inset-bottom))] z-40 transition-transform duration-300 ${
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
-      <div className="bg-slate-900 border-t border-slate-700 rounded-t-2xl max-h-[80dvh] overflow-y-auto">
+      <div className="bg-slate-900 border-t border-slate-700 rounded-t-2xl max-h-[80dvh] overflow-y-auto overscroll-contain">
         {/* Handle */}
         <div className="flex justify-center pt-2 pb-1 sticky top-0 bg-slate-900 z-10">
           <div className="w-10 h-1 rounded-full bg-slate-600" />

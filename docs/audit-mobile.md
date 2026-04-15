@@ -21,6 +21,10 @@
 | M-07 | "Mot de passe oublié ?" : `py-3` ajouté + contraste `text-slate-400` | — |
 | M-08 | "Pas encore de compte ?" : `py-3` ajouté | — |
 | M-10 | `inputMode="decimal"` sur inputs taille/poids dans `CatchForm` | — |
+| M-03 | Bottom sheets `CatchForm` + `SpotDetail` : `bottom-14` → `bottom-[calc(3.5rem+env(safe-area-inset-bottom))]` | — |
+| M-13 | `SpotDetail` : `overscroll-contain` + `max-h-[65dvh]` | — |
+| M-14 | `CatchForm` : `overscroll-contain` | — |
+| M-18 | `PWAInstallPrompt` : `bottom-14` → `bottom-[calc(3.5rem+env(safe-area-inset-bottom))]` | — |
 
 ---
 

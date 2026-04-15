@@ -149,7 +149,7 @@ export default function JournalClient() {
 
       <button
         onClick={() => setShowForm(true)}
-        className="fixed bottom-16 right-4 z-30 w-12 h-12 bg-cyan-400 text-slate-900 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold hover:bg-cyan-300 transition-colors"
+        className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] right-4 z-30 w-12 h-12 bg-cyan-400 text-slate-900 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold hover:bg-cyan-300 transition-colors"
         aria-label="Nouvelle prise"
       >
         +

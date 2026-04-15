@@ -64,7 +64,7 @@ export default function PWAInstallPrompt() {
   // iOS : instructions manuelles
   if (isIOS) {
     return (
-      <div className="fixed bottom-14 inset-x-0 z-50 px-3 pb-2 pointer-events-none">
+      <div className="fixed bottom-[calc(3.5rem_+_env(safe-area-inset-bottom))] inset-x-0 z-50 px-3 pb-2 pointer-events-none">
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex items-start gap-3 pointer-events-auto shadow-xl">
           <span className="text-lg shrink-0">⬆️</span>
           <div className="flex-1 min-w-0">
@@ -89,7 +89,7 @@ export default function PWAInstallPrompt() {
   if (!installPrompt) return null;
 
   return (
-    <div className="fixed bottom-14 inset-x-0 z-50 px-3 pb-2 pointer-events-none">
+    <div className="fixed bottom-[calc(3.5rem_+_env(safe-area-inset-bottom))] inset-x-0 z-50 px-3 pb-2 pointer-events-none">
       <div className="bg-slate-800 border border-cyan-400/30 rounded-xl p-3 flex items-center gap-3 pointer-events-auto shadow-xl">
         <span className="text-lg shrink-0">🎣</span>
         <div className="flex-1 min-w-0">

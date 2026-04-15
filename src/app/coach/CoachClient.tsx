@@ -249,7 +249,7 @@ export default function CoachClient() {
         )}
       </main>
 
-      <div className="fixed bottom-16 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/80 px-4 py-3">
+      <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/80 px-4 py-3">
         {limitReached ? (
           <p className="text-center text-slate-400 text-sm py-1">
             Limite quotidienne atteinte — revenez demain
