@@ -112,15 +112,25 @@ export default function DayHeroGo({ bestWindow, topSpecies, currentScore }: Prop
     </div>
   );
 
+  const toggle = () => setShowDetail((v) => !v);
+  const stopProp = (e: React.MouseEvent) => e.stopPropagation();
+
   if (!bestWindow) {
     return (
-      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900 rounded-xl border border-slate-700/50 p-4">
+      <div
+        className="bg-gradient-to-br from-slate-800/80 to-slate-900 rounded-xl border border-slate-700/50 p-4 cursor-pointer select-none active:scale-[0.99] transition-transform"
+        onClick={toggle}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-xs text-slate-400 uppercase tracking-wide mb-1.5">Aujourd&apos;hui</p>
             <p className="text-white font-bold text-lg leading-tight">Conditions difficiles</p>
             <p className="text-slate-400 text-sm mt-1">Aucune sortie optimale prévue</p>
-            <Link href="/semaine" className="inline-block mt-3 text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
+            <Link
+              href="/semaine"
+              onClick={stopProp}
+              className="inline-block mt-3 text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
               Voir les prochains jours →
             </Link>
           </div>
@@ -131,12 +141,9 @@ export default function DayHeroGo({ bestWindow, topSpecies, currentScore }: Prop
           </div>
         </div>
         {detailPanel}
-        <button
-          onClick={() => setShowDetail((v) => !v)}
-          className="mt-3 w-full text-center text-xs text-slate-500 hover:text-slate-400 transition-colors py-1 border-t border-slate-700/40"
-        >
+        <p className="mt-3 text-center text-xs text-slate-500 py-1 border-t border-slate-700/40">
           {showDetail ? '↑ Masquer le détail' : '↓ Conditions maintenant'}
-        </button>
+        </p>
       </div>
     );
   }
@@ -144,7 +151,10 @@ export default function DayHeroGo({ bestWindow, topSpecies, currentScore }: Prop
   const theme = getTheme(bestWindow.score);
 
   return (
-    <div className={`bg-gradient-to-br ${theme.gradient} rounded-xl border ${theme.border} p-4`}>
+    <div
+      className={`bg-gradient-to-br ${theme.gradient} rounded-xl border ${theme.border} p-4 cursor-pointer select-none active:scale-[0.99] transition-transform`}
+      onClick={toggle}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-xs text-slate-400 uppercase tracking-wide mb-1.5">Aujourd&apos;hui</p>
@@ -169,12 +179,9 @@ export default function DayHeroGo({ bestWindow, topSpecies, currentScore }: Prop
         </div>
       </div>
       {detailPanel}
-      <button
-        onClick={() => setShowDetail((v) => !v)}
-        className="mt-3 w-full text-center text-xs text-slate-500 hover:text-slate-400 transition-colors py-1 border-t border-slate-700/40"
-      >
+      <p className="mt-3 text-center text-xs text-slate-500 py-1 border-t border-slate-700/40">
         {showDetail ? '↑ Masquer le détail' : '↓ Conditions maintenant'}
-      </button>
+      </p>
     </div>
   );
 }
