@@ -48,27 +48,26 @@
 | CF-14 | Error boundary global (`error.tsx`) créé |
 | CF-15 | `appleWebApp.title` aligné sur le nom définitif "Halioapp" |
 | UX-11 | `FishingScoreCard` : `cursor-pointer hover:bg-slate-800/80 active:scale-[0.99]` |
+| BT-03 | `SemaineClient.tsx` : fallback "Conditions difficiles" si `bestDay` null |
+| BT-09 | `NotificationsClient.tsx` : `onKeyUp` ajouté sur le slider de score |
+| BT-10 | `CompteClient.tsx` : message "Aucune prise à exporter" si journal vide |
+| BT-12 | `DayHero.tsx` : leurre trié par priority ascendant (intent explicite) |
+| CF-03 | Metadata par page : `preferences`, `notifications`, `compte` scindés en server wrapper + client |
+| CF-04 | Manifest : champ `screenshots` ajouté — images PNG à placer dans `/public/screenshots/` |
+| UX-03 | `CarteClient.tsx` : label dynamique "Score min : N" quand filtre actif |
+| UX-06 | `SolunarIndicator.tsx` compact : ☀️/🌙 labellisés explicitement |
+| UX-09 | Standardisation `pb-20` sur toutes les pages `moi/*` |
+| UX-22 | `TideCurve.tsx` : marges ajustées (`right: 8`, `left: -20`, `bottom: 4`) |
+| UX-24 | `CoefficientBadge` : `title` attribut ; `FishingScoreCard` : sous-titre "Composite : marées · vent · lune" |
+| UX-25 | `JournalClient.tsx` : empty state avec bouton "Première prise" |
+| UX-27 | `NotificationsClient.tsx` : section push masquée — "fonctionnalité à venir" |
+| UX-28 | `CompteClient.tsx` : confirmation déconnexion avant signOut |
 
 ---
 
 ## 🟡 Priorité 3 — Améliorations souhaitables
 
-| ID | Description | Fichier |
-|----|-------------|---------|
-| BT-03 | Edge case "meilleure fenêtre" `undefined` non géré — afficher un fallback "Conditions difficiles" | `SemaineClient.tsx` |
-| BT-09 | Slider score min notifications non sauvegardé via clavier (ajouter `onKeyUp`) | `notifications/page.tsx` |
-| BT-10 | Export CSV silencieux si aucune prise — afficher un message | `compte/page.tsx` |
-| BT-12 | `DayHero` affiche `lures[0]` statique au lieu du leurre optimal pour les conditions | `DayHero.tsx` |
-| CF-03 | Titres de pages statiques — chaque page devrait avoir son propre `export const metadata` | Toutes les pages |
-| CF-04 | Manifest PWA incomplet — `screenshots` manquants (requis pour install prompt enrichi Android) | `manifest.json` |
-| UX-03 | Label "Score min" orphelin sur la carte — afficher la valeur active (`Score min : 60`) | `CarteClient.tsx` |
-| UX-06 | Confusion lever soleil / lever lune dans `SolunarIndicator` compact — labelliser explicitement | `SolunarIndicator.tsx` |
-| UX-09 | Spacer BottomNav incohérent (`pb-20` vs `pb-16` vs `pb-24` selon les pages) — standardiser | Diverses pages |
-| UX-22 | `TideCurve` tronquée sur certains viewports — ajuster les marges du graphique | `TideCurve.tsx` |
-| UX-24 | Terminologie opaque — ajouter des tooltips sur "coefficient" et "score" | Dashboard, Semaine |
-| UX-25 | Journal — empty state sans CTA — concevoir un état vide avec bouton "Première prise" | `JournalClient.tsx` |
-| UX-27 | Notifications push — UI présente mais non implémentée (pas de VAPID) — masquer ou implémenter | `notifications/page.tsx` |
-| UX-28 | Pas de confirmation avant déconnexion — risque fat finger | `compte/page.tsx` |
+*(Toutes soldées — voir section ✅)*
 
 ---
 

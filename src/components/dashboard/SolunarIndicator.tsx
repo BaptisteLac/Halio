@@ -48,7 +48,8 @@ export default function SolunarIndicator({ solunar, now, compact = false }: Prop
           {nextMajor && (
             <p>⭐ Majeure : {fmt(nextMajor.start)}</p>
           )}
-          <p>🌅 Lever : {fmt(solunar.sunrise)}</p>
+          <p>☀️ Soleil : {fmt(solunar.sunrise)} – {fmt(solunar.sunset)}</p>
+          {solunar.moonrise && <p>🌙 Lune : {fmt(solunar.moonrise)}</p>}
         </div>
       </div>
     );

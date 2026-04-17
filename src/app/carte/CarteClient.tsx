@@ -157,7 +157,9 @@ export default function CarteClient() {
               {label}
             </button>
           ))}
-          <span className="text-xs text-slate-400 self-center ml-auto">Score min</span>
+          <span className="text-xs text-slate-400 self-center ml-auto">
+            {scoreFilter > 0 ? `Score min : ${scoreFilter}` : 'Score min'}
+          </span>
         </div>
       </div>
 

@@ -97,8 +97,11 @@ export default function DayHero({ score, bestWindow, topSpecies }: Props) {
             <p className="text-sm text-slate-400 mt-0.5">
               🐟{' '}
               <span className="text-slate-200 font-medium">{top.species.name}</span>
-              {top.species.lures[0] && (
-                <span className="text-slate-400"> · {top.species.lures[0].name}</span>
+              {top.species.lures.length > 0 && (
+                <span className="text-slate-400">
+                  {' · '}
+                  {[...top.species.lures].sort((a, b) => a.priority - b.priority)[0]!.name}
+                </span>
               )}
             </p>
           )}

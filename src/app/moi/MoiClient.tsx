@@ -97,7 +97,7 @@ export default function MoiClient() {
   }
 
   return (
-    <div className="min-h-dvh bg-slate-950 pb-24">
+    <div className="min-h-dvh bg-slate-950 pb-20">
       <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800">
         <div className="px-4 py-3 max-w-lg mx-auto">
           <h1 className="text-base font-bold text-white">Mon profil</h1>

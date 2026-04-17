@@ -35,7 +35,8 @@ export default function JournalClient() {
   const [tideData, setTideData]       = useState<TideData | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm]               = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -126,12 +127,29 @@ export default function JournalClient() {
             <h1 className="text-base font-bold text-white">Journal</h1>
             <p className="text-xs text-slate-400 truncate max-w-[180px]">{user.email}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-xs text-slate-400 border border-slate-700 rounded-full px-3 py-1.5 hover:border-slate-500 transition-colors"
-          >
-            Déconnexion
-          </button>
+          {!showLogoutConfirm ? (
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              className="text-xs text-slate-400 border border-slate-700 rounded-full px-3 py-1.5 hover:border-slate-500 transition-colors"
+            >
+              Déconnexion
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handleLogout}
+                className="text-xs text-red-400 border border-red-500/40 rounded-full px-3 py-1.5 hover:bg-red-500/10 transition-colors"
+              >
+                Confirmer
+              </button>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="text-xs text-slate-400 border border-slate-700 rounded-full px-2 py-1.5 hover:border-slate-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -141,7 +159,23 @@ export default function JournalClient() {
             <CatchStats catches={catches} />
           </div>
         )}
-        <CatchList catches={catches} onDelete={handleDelete} />
+        {catches.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-4">
+            <p className="text-4xl">🎣</p>
+            <div>
+              <p className="text-white font-semibold text-base">Aucune prise enregistrée</p>
+              <p className="text-slate-400 text-sm mt-1">Commencez à tracer vos sessions de pêche.</p>
+            </div>
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-cyan-400 text-slate-900 font-semibold rounded-xl px-6 py-3 text-sm hover:bg-cyan-300 transition-colors"
+            >
+              Première prise
+            </button>
+          </div>
+        ) : (
+          <CatchList catches={catches} onDelete={handleDelete} />
+        )}
       </div>
 
       <div className="shrink-0 h-14" />

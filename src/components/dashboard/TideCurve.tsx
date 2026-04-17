@@ -58,9 +58,9 @@ export default function TideCurve({ curve, extremes, now }: Props) {
   });
 
   return (
-    <div className="h-44 w-full -mx-1">
+    <div className="h-44 w-full">
       <ResponsiveContainer width="100%" height="100%" debounce={50}>
-        <AreaChart data={data} margin={{ top: 8, right: 4, left: -24, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 4 }}>
           <defs>
             <linearGradient id="tideGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.25} />

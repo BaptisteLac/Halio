@@ -16,7 +16,10 @@ export default function CoefficientBadge({ coefficient, size = 'md' }: Props) {
   }[size];
 
   return (
-    <div className={`inline-flex flex-col items-center rounded-lg bg-slate-800 border border-slate-700 ${sizes.container}`}>
+    <div
+      title="Coefficient de marée (20–120) : mesure l'amplitude des marées. Vives-eaux > 70, mortes-eaux < 45."
+      className={`inline-flex flex-col items-center rounded-lg bg-slate-800 border border-slate-700 ${sizes.container}`}
+    >
       <span className={`font-bold leading-none ${color} ${sizes.number}`}>{coefficient}</span>
       <span className={`text-slate-400 mt-0.5 ${sizes.sub}`}>{label}</span>
     </div>

@@ -59,6 +59,15 @@ export default function SemaineClient() {
         </div>
       )}
 
+      {!loading && !error && days && !bestDay && (
+        <div className="p-4 max-w-lg mx-auto">
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 text-center">
+            <p className="text-slate-300 font-medium text-sm">Conditions difficiles</p>
+            <p className="text-slate-400 text-xs mt-1">Aucun créneau optimal prévu cette semaine</p>
+          </div>
+        </div>
+      )}
+
       {!loading && !error && days && bestDay && (
         <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
           <BestDayHero best={bestDay} />

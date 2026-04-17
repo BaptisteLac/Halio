@@ -103,13 +103,16 @@ export default function FishingScoreCard({ score }: Props) {
       tabIndex={0}
       aria-expanded={showFactors}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-slate-300 font-medium text-sm">
           Score de pêche{' '}
           <span className="text-xs text-slate-400">{showFactors ? '↑' : '↓'}</span>
         </h3>
         <span className={`text-sm font-semibold ${score.color}`}>{score.label}</span>
       </div>
+      {!showFactors && (
+        <p className="text-xs text-slate-500 mb-1">Composite : marées · vent · pression · lune</p>
+      )}
 
       <div className="flex justify-center my-1">
         <CircularGauge score={score.total} />
