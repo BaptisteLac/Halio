@@ -93,12 +93,14 @@ export default function WeekView({ days, bestDayDate, todayDate }: Props) {
               </span>
             </button>
 
-            {/* Détail inline */}
-            {isSelected && (
-              <div className="mt-1 mb-2">
-                <DayDetail day={day} />
+            {/* Détail inline — animé avec grid-template-rows */}
+            <div className={`grid transition-[grid-template-rows] duration-200 ease-out ${isSelected ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+              <div className="overflow-hidden">
+                <div className="mt-1 mb-2">
+                  <DayDetail day={day} />
+                </div>
               </div>
-            )}
+            </div>
           </div>
         );
       })}

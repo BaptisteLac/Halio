@@ -101,10 +101,10 @@
 | UX-08 | Espacements non uniformes | EspecesClient gap-2→gap-3 ; JournalClient px-3→px-4 sur CatchStats ✅ |
 | UX-10 | Padding horizontal variable | EspecesClient p-3→px-4 py-3 ; reste cohérent px-4 ✅ |
 | UX-14 | View Transitions API entre pages | Expérimental, risque de régression |
-| UX-15 | Animations expand/collapse | Travail transversal |
+| UX-15 | Animations expand/collapse | grid-template-rows 0fr→1fr sur FishingScoreCard + WeekView DayDetail ✅ |
 | UX-19 | Locked preview non-authentifiés | Nécessite maquette |
-| UX-20 | Vides verticaux grands mobiles/desktop | Layout responsive étendu |
+| UX-20 | Vides verticaux grands mobiles/desktop | SemaineClient → h-dvh flex-col (élimine le vide bas d'écran) ✅ |
 | UX-23 | Onboarding | Feature à part entière |
-| UX-29 | Skeletons par composant | Travail transversal |
-| UX-31 | Cartes semaine trop compactes iPhone SE | Edge case 375px |
-| UX-32 | Feedback haptic | Nice-to-have |
+| UX-29 | Skeletons par composant | Dashboard + Semaine + Coach : skeletons dédiés ✅ ; autres : spinners acceptables |
+| UX-31 | Cartes semaine trop compactes iPhone SE | BestDayHero score text-3xl→text-2xl ✅ |
+| UX-32 | Feedback haptic | navigator.vibrate sur FAB journal + tap spot carte ✅ |

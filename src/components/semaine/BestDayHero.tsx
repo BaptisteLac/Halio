@@ -57,7 +57,7 @@ export default function BestDayHero({ best }: Props) {
           </p>
         </div>
         <div className="text-right shrink-0">
-          <p className={`text-3xl font-extrabold ${scoreColor}`}>{best.score}</p>
+          <p className={`text-2xl font-extrabold tabular-nums ${scoreColor}`}>{best.score}</p>
           <p className={`text-xs ${scoreColor}`}>{scoreLabel}</p>
         </div>
       </div>

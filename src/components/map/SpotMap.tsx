@@ -44,6 +44,7 @@ export default function SpotMap({ spots, scoreMap, selectedSpotId, onSelect }: P
             anchor="center"
             onClick={(e) => {
               e.originalEvent.stopPropagation();
+              navigator.vibrate?.(8);
               onSelect(isSelected ? null : spot);
             }}
           >

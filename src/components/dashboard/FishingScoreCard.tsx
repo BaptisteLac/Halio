@@ -118,13 +118,15 @@ export default function FishingScoreCard({ score }: Props) {
         <CircularGauge score={score.total} />
       </div>
 
-      {showFactors && (
-        <div className="space-y-2 mt-3 pt-3 border-t border-slate-700/50">
-          {(Object.entries(score.factors) as [keyof ScoreFactors, number][]).map(([key, value]) => (
-            <FactorBar key={key} label={FACTOR_LABELS[key]} value={value} />
-          ))}
+      <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${showFactors ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+        <div className="overflow-hidden">
+          <div className="space-y-2 mt-3 pt-3 border-t border-slate-700/50">
+            {(Object.entries(score.factors) as [keyof ScoreFactors, number][]).map(([key, value]) => (
+              <FactorBar key={key} label={FACTOR_LABELS[key]} value={value} />
+            ))}
+          </div>
         </div>
-      )}
+      </div>
 
       <p className="text-center text-xs text-slate-400 mt-2">
         {showFactors ? 'Appuyer pour masquer' : 'Appuyer pour voir le détail'}

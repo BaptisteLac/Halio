@@ -33,8 +33,8 @@ export default function SemaineClient() {
   }, [days]);
 
   return (
-    <div className="min-h-dvh bg-slate-950 pb-20">
-      <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800/80">
+    <div className="h-dvh flex flex-col bg-slate-950 overflow-hidden">
+      <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800/80 z-40">
         <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
           <div>
             <h1 className="text-base font-bold text-white">Cette semaine</h1>
@@ -46,34 +46,36 @@ export default function SemaineClient() {
         </div>
       </header>
 
-      {loading && <LoadingSkeleton />}
+      <div className="flex-1 overflow-y-auto touch-pan-y">
+        {loading && <LoadingSkeleton />}
 
-      {!loading && error && (
-        <div className="p-4 max-w-lg mx-auto">
-          <div className="bg-orange-950/40 border border-orange-800/40 rounded-xl p-4 text-center">
-            <p className="text-orange-400 font-medium text-sm">Météo indisponible</p>
-            <p className="text-slate-400 text-xs mt-1">
-              Impossible de charger les prévisions — vérifiez votre connexion
-            </p>
+        {!loading && error && (
+          <div className="p-4 max-w-lg mx-auto">
+            <div className="bg-orange-950/40 border border-orange-800/40 rounded-xl p-4 text-center">
+              <p className="text-orange-400 font-medium text-sm">Météo indisponible</p>
+              <p className="text-slate-400 text-xs mt-1">
+                Impossible de charger les prévisions — vérifiez votre connexion
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {!loading && !error && days && !bestDay && (
-        <div className="p-4 max-w-lg mx-auto">
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 text-center">
-            <p className="text-slate-300 font-medium text-sm">Conditions difficiles</p>
-            <p className="text-slate-400 text-xs mt-1">Aucun créneau optimal prévu cette semaine</p>
+        {!loading && !error && days && !bestDay && (
+          <div className="p-4 max-w-lg mx-auto">
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 text-center">
+              <p className="text-slate-300 font-medium text-sm">Conditions difficiles</p>
+              <p className="text-slate-400 text-xs mt-1">Aucun créneau optimal prévu cette semaine</p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {!loading && !error && days && bestDay && (
-        <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
-          <BestDayHero best={bestDay} />
-          <WeekView days={days} bestDayDate={bestDay.date} todayDate={today} />
-        </main>
-      )}
+        {!loading && !error && days && bestDay && (
+          <main className="px-4 py-4 space-y-4 max-w-lg mx-auto pb-4">
+            <BestDayHero best={bestDay} />
+            <WeekView days={days} bestDayDate={bestDay.date} todayDate={today} />
+          </main>
+        )}
+      </div>
 
       <BottomNav />
     </div>

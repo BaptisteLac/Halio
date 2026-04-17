@@ -167,7 +167,7 @@ export default function JournalClient() {
               <p className="text-slate-400 text-sm mt-1">Commencez à tracer vos sessions de pêche.</p>
             </div>
             <button
-              onClick={() => setShowForm(true)}
+              onClick={() => { navigator.vibrate?.(10); setShowForm(true); }}
               className="bg-cyan-400 text-slate-900 font-semibold rounded-xl px-6 py-3 text-sm hover:bg-cyan-300 transition-colors"
             >
               Première prise
@@ -181,7 +181,7 @@ export default function JournalClient() {
       <div className="shrink-0 h-14" />
 
       <button
-        onClick={() => setShowForm(true)}
+        onClick={() => { navigator.vibrate?.(10); setShowForm(true); }}
         className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] right-4 z-30 w-12 h-12 bg-cyan-400 text-slate-900 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold hover:bg-cyan-300 transition-colors"
         aria-label="Nouvelle prise"
       >
