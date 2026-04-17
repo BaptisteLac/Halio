@@ -73,30 +73,38 @@
 
 ## ⚪ Priorité 4 — Nice-to-have / Polish
 
-| ID | Description | Fichier |
-|----|-------------|---------|
-| BT-13 | Décalage temporel théorique entre données async — capturer `now` avant les appels | `DashboardClient.tsx` |
-| CF-05 | `og:url` hardcodée — utiliser `metadataBase` pour les URLs relatives | `layout.tsx` |
-| CF-11 | CSP présente mais à durcir (actuellement `unsafe-inline`) | `next.config.ts` |
-| CF-12 | HSTS présent — vérifier si Vercel l'ajoute en double | `next.config.ts` |
-| UX-01 | Score affiché deux fois sur le dashboard (DayHero + FishingScoreCard) | `DashboardClient.tsx` |
-| UX-02 | Ordre composants dashboard sous-optimal — FishingScoreCard avant FishingWindows | `DashboardClient.tsx` |
-| UX-04 | Incohérence violet (Coach) / cyan (reste) — décision design à prendre | Global |
-| UX-05 | Détails météo complets jamais accessibles (mode full de WeatherCard inutilisé) | `WeatherCard.tsx` |
-| UX-07 | Absence de légende pour les fenêtres de pêche | `FishingWindows.tsx` |
-| UX-08 | Espacements non uniformes entre composants (`space-y-4` vs `gap-3` vs `gap-4`) | Dashboard |
-| UX-10 | Padding horizontal variable (`px-3` vs `px-4` vs `px-5`) | Diverses pages |
-| UX-12 | `SpotMarker` sans état hover desktop | `SpotMarker.tsx` |
-| UX-13 | Texte "Tap" inadapté sur desktop | `FishingScoreCard.tsx` |
-| UX-14 | Pas de transitions entre pages (View Transitions API) | `layout.tsx` |
-| UX-15 | Animations expand/collapse absentes | Composants conditionnels |
-| UX-16 | `SpotDetail` — vérifier que `transition-transform` est suffisant | `SpotDetail.tsx` |
-| UX-19 | Pages vides pour non-authentifiés (Coach, Moi) — envisager un "locked preview" | `CoachClient.tsx`, `MoiClient.tsx` |
-| UX-20 | Vides verticaux excessifs sur grands mobiles (iPhone Pro Max, desktop) | `/semaine`, `/especes` |
-| UX-21 | `SpotDetail` trop dense — retravailler la hiérarchie visuelle | `SpotDetail.tsx` |
-| UX-23 | Zéro onboarding — 2-3 écrans d'introduction ou tooltips contextuels | Global |
-| UX-26 | Pas d'affordance sur les marqueurs carte (pulsation, tooltip "Tap pour les détails") | `SpotMarker.tsx` |
-| UX-29 | Skeletons par composant absents (flash de contenu au chargement) | Dashboard |
-| UX-30 | Score du jour absent des fiches espèces | `especes/[slug]/page.tsx` |
-| UX-31 | Cartes semaine trop compactes sur iPhone SE (375px) | `SemaineClient.tsx` |
-| UX-32 | Absence de feedback haptic (`navigator.vibrate`) sur actions clés | Global |
+### ✅ Soldés
+
+| ID | Résolution |
+|----|-----------|
+| BT-13 | Déjà fait — `fetchDate` capturé avant les appels async |
+| CF-05 | Déjà fait — `og:url: '/'` relatif + `metadataBase` en place |
+| CF-12 | HSTS retiré de `next.config.ts` — Vercel l'ajoute nativement |
+| UX-01 | `MiniGauge` supprimée de `DayHero` — score unique dans `FishingScoreCard` |
+| UX-02 | `FishingScoreCard` repositionné avant `FishingWindows` |
+| UX-07 | Légende couleurs ajoutée dans `FishingWindows` |
+| UX-12 | `SpotMarker` : `hover:scale-110` desktop |
+| UX-13 | "Tap" → "Appuyer" dans `FishingScoreCard` |
+| UX-16 | Déjà correct — `transition-transform duration-300` suffisant |
+| UX-21 | `SpotDetail` : score + top espèces côte à côte, info grid 14px |
+| UX-26 | Animation `marker-pulse` sur marqueurs non sélectionnés |
+| UX-30 | Déjà fait — `ScoreBlock` présent dans `especes/[slug]/page.tsx` |
+
+### 🔲 Restants (décisions produit ou scope important)
+
+| ID | Description | Note |
+|----|-------------|------|
+| CF-04 | Screenshots manifest Android | Assets PNG à créer dans `/public/screenshots/` |
+| CF-11 | CSP `unsafe-inline` — durcissement | Nécessite un système de nonce (refonte majeure) |
+| UX-04 | Incohérence violet Coach / cyan global | Décision design |
+| UX-05 | WeatherCard mode full inaccessible | Rendre le compact cliquable |
+| UX-08 | Espacements non uniformes | Audit composant par composant |
+| UX-10 | Padding horizontal variable | Audit composant par composant |
+| UX-14 | View Transitions API entre pages | Expérimental, risque de régression |
+| UX-15 | Animations expand/collapse | Travail transversal |
+| UX-19 | Locked preview non-authentifiés | Nécessite maquette |
+| UX-20 | Vides verticaux grands mobiles/desktop | Layout responsive étendu |
+| UX-23 | Onboarding | Feature à part entière |
+| UX-29 | Skeletons par composant | Travail transversal |
+| UX-31 | Cartes semaine trop compactes iPhone SE | Edge case 375px |
+| UX-32 | Feedback haptic | Nice-to-have |
