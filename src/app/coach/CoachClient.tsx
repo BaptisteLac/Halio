@@ -54,7 +54,7 @@ function UnauthenticatedCoach() {
           </div>
         </div>
         <div>
-          <h1 className="text-xl font-bold text-white mb-2">Coach PêcheBoard</h1>
+          <h1 className="text-xl font-bold text-white mb-2">Coach Halio</h1>
           <p className="text-slate-400 text-sm leading-relaxed max-w-xs mx-auto">
             Connectez-vous pour accéder au coach IA — conseils personnalisés sur les conditions du Bassin en temps réel.
           </p>
@@ -190,7 +190,7 @@ export default function CoachClient() {
               <Sparkles size={14} className="text-violet-400" />
             </div>
             <div className="flex items-center gap-2 flex-1">
-              <h1 className="text-base font-bold text-white">Coach PêcheBoard</h1>
+              <h1 className="text-base font-bold text-white">Coach Halio</h1>
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400">
                 Conditions live
               </span>

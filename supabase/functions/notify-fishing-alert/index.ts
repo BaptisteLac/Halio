@@ -105,7 +105,7 @@ function buildEmailHtml(params: {
 
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:36px;">🎣</div>
-      <h1 style="margin:4px 0 0;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">PêcheBoard</h1>
+      <h1 style="margin:4px 0 0;font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">Halio</h1>
       <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Alerte session de pêche</p>
     </div>
 
@@ -143,12 +143,12 @@ function buildEmailHtml(params: {
     </div>
 
     <div style="text-align:center;margin:24px 0;">
-      <a href="https://pecheboard.vercel.app" style="display:inline-block;background:#22d3ee;color:#0f172a;font-weight:700;font-size:15px;padding:14px 36px;border-radius:14px;text-decoration:none;">Voir le tableau de bord →</a>
+      <a href="https://halioapp.com" style="display:inline-block;background:#22d3ee;color:#0f172a;font-weight:700;font-size:15px;padding:14px 36px;border-radius:14px;text-decoration:none;">Voir le tableau de bord →</a>
     </div>
 
     <div style="text-align:center;margin-top:24px;">
-      <p style="font-size:12px;color:#334155;line-height:1.7;">Vous recevez cet email car les alertes pêche sont activées dans PêcheBoard.<br>
-      <a href="https://pecheboard.vercel.app/reglages" style="color:#22d3ee;text-decoration:none;">Gérer mes notifications →</a></p>
+      <p style="font-size:12px;color:#334155;line-height:1.7;">Vous recevez cet email car les alertes pêche sont activées dans Halio.<br>
+      <a href="https://halioapp.com/reglages" style="color:#22d3ee;text-decoration:none;">Gérer mes notifications →</a></p>
     </div>
   </div>
 </body>
@@ -239,7 +239,7 @@ Deno.serve(async (_req: Request) => {
       pressureTrend: weather.pressureTrend,
       moonLabel, dateLabel,
     });
-    const subject = `🎣 ${label} demain — ${score}/100 · PêcheBoard`;
+    const subject = `🎣 ${label} demain — ${score}/100 · Halio`;
 
     let sent = 0;
     for (const user of eligibleUsers) {
@@ -251,7 +251,7 @@ Deno.serve(async (_req: Request) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            sender: { name: "PêcheBoard", email: "noreply@pecheboard.vercel.app" },
+            sender: { name: "Halio", email: "noreply@halioapp.com" },
             to: [{ email: user.email! }],
             subject,
             htmlContent: emailHtml,

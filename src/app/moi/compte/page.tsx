@@ -139,7 +139,7 @@ export default function ComptePage() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `pecheboard-journal-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `halio-journal-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     setExporting(false);
@@ -245,62 +245,66 @@ export default function ComptePage() {
               <p className="text-white text-sm mt-0.5 truncate">{user.email}</p>
             </div>
 
-            {/* Changer mot de passe */}
-            <button
-              onClick={() => showPwForm ? cancelPwForm() : setShowPwForm(true)}
-              className="w-full px-4 py-3 flex items-center justify-between text-sm text-slate-200 hover:bg-slate-700/40 transition-colors"
-            >
-              <span>Changer le mot de passe</span>
-              <ChevronRight size={16} className={`text-slate-400 transition-transform ${showPwForm ? 'rotate-90' : ''}`} />
-            </button>
+            {/* Changer mot de passe — masqué pour les comptes OAuth */}
+            {user.app_metadata?.provider !== 'google' && (
+              <>
+                <button
+                  onClick={() => showPwForm ? cancelPwForm() : setShowPwForm(true)}
+                  className="w-full px-4 py-3 flex items-center justify-between text-sm text-slate-200 hover:bg-slate-700/40 transition-colors"
+                >
+                  <span>Changer le mot de passe</span>
+                  <ChevronRight size={16} className={`text-slate-400 transition-transform ${showPwForm ? 'rotate-90' : ''}`} />
+                </button>
 
-            {showPwForm && (
-              <form onSubmit={handlePasswordChange} className="px-4 pb-4 pt-1 space-y-3 border-t border-slate-700/50">
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Nouveau mot de passe</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="min. 6 caractères"
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-slate-400 mb-1">Confirmer</label>
-                  <input
-                    type="password"
-                    value={pwConfirm}
-                    onChange={(e) => setPwConfirm(e.target.value)}
-                    placeholder="Répéter le mot de passe"
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                {pwError   && <p className="text-red-400 text-xs">{pwError}</p>}
-                {pwSuccess && (
-                  <p className="text-cyan-400 text-xs flex items-center gap-1">
-                    <Check size={12} /> Mot de passe mis à jour
-                  </p>
+                {showPwForm && (
+                  <form onSubmit={handlePasswordChange} className="px-4 pb-4 pt-1 space-y-3 border-t border-slate-700/50">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Nouveau mot de passe</label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="min. 6 caractères"
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">Confirmer</label>
+                      <input
+                        type="password"
+                        value={pwConfirm}
+                        onChange={(e) => setPwConfirm(e.target.value)}
+                        placeholder="Répéter le mot de passe"
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                    {pwError   && <p className="text-red-400 text-xs">{pwError}</p>}
+                    {pwSuccess && (
+                      <p className="text-cyan-400 text-xs flex items-center gap-1">
+                        <Check size={12} /> Mot de passe mis à jour
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={savingPw}
+                        className="flex-1 bg-cyan-400 text-slate-900 font-semibold rounded-lg py-2 text-sm disabled:opacity-50 transition-opacity"
+                      >
+                        {savingPw ? 'Enregistrement…' : 'Enregistrer'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelPwForm}
+                        className="px-4 text-slate-400 border border-slate-700 rounded-lg text-sm hover:border-slate-500 transition-colors"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </form>
                 )}
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={savingPw}
-                    className="flex-1 bg-cyan-400 text-slate-900 font-semibold rounded-lg py-2 text-sm disabled:opacity-50 transition-opacity"
-                  >
-                    {savingPw ? 'Enregistrement…' : 'Enregistrer'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelPwForm}
-                    className="px-4 text-slate-400 border border-slate-700 rounded-lg text-sm hover:border-slate-500 transition-colors"
-                  >
-                    Annuler
-                  </button>
-                </div>
-              </form>
+              </>
             )}
           </div>
         </section>

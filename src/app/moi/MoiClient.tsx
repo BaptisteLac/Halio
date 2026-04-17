@@ -79,7 +79,7 @@ export default function MoiClient() {
         <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
           <div className="text-5xl">🎣</div>
           <div>
-            <h1 className="text-xl font-bold text-white mb-2">Bienvenue sur PêcheBoard</h1>
+            <h1 className="text-xl font-bold text-white mb-2">Bienvenue sur Halio</h1>
             <p className="text-slate-400 text-sm leading-relaxed">
               Connectez-vous pour accéder à votre journal de pêche, vos préférences et vos alertes.
             </p>

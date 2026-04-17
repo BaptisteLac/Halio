@@ -28,7 +28,7 @@ function makeSvg(size, padding = 0) {
   <!-- Texte emoji -->
   <text x="${cx}" y="${cy + inner * 0.13}" font-size="${inner * 0.52}" text-anchor="middle" dominant-baseline="middle" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif">🎣</text>
   <!-- Nom -->
-  <text x="${cx}" y="${size - padding - inner * 0.08}" font-size="${inner * 0.1}" text-anchor="middle" fill="#22d3ee" font-family="system-ui, sans-serif" font-weight="600" letter-spacing="1">PÊCHEBOARD</text>
+  <text x="${cx}" y="${size - padding - inner * 0.08}" font-size="${inner * 0.1}" text-anchor="middle" fill="#22d3ee" font-family="system-ui, sans-serif" font-weight="600" letter-spacing="1">HALIO</text>
 </svg>`;
 }
 

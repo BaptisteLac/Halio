@@ -79,17 +79,22 @@ export default function PreferencesPage() {
   ) {
     if (!user) return;
     setSaving(true);
-    const supabase = createClient();
-    await supabase.from('user_settings').upsert({
-      user_id: user.id,
-      favorite_species: species,
-      favorite_spots: spots,
-      home_port: port,
-      preferred_techniques: techs,
-    });
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.from('user_settings').upsert({
+        user_id: user.id,
+        favorite_species: species,
+        favorite_spots: spots,
+        home_port: port,
+        preferred_techniques: techs,
+      });
+      if (!error) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
   function toggleTechnique(tech: string) {

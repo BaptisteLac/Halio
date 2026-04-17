@@ -58,7 +58,6 @@ export default function JournalClient() {
       .then(([tide, weather]) => {
         setTideData(tide);
         setWeatherData(weather);
-        getSolunarData(now);
       })
       .catch(() => {});
   }, [user, now]);

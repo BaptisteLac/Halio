@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Settings } from 'lucide-react';
 import type { TideData, TideCurvePoint, WeatherData, SolunarData } from '@/types';
@@ -99,6 +99,22 @@ export default function DashboardClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchDate]);
 
+  const topSpecies = useMemo(
+    () => weatherData && tideData && solunarData
+      ? getTopSpeciesForConditions(SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3)
+      : [],
+    [weatherData, tideData, solunarData, now],
+  );
+
+  const overallScore = useMemo(
+    () => weatherData && tideData && solunarData
+      ? (topSpecies.length > 0
+          ? topSpecies[0].score
+          : calculateFishingScore(SPECIES[0]!, DASHBOARD_SPOT, weatherData, tideData, solunarData, now))
+      : null,
+    [weatherData, tideData, solunarData, topSpecies, now],
+  );
+
   if (loading) {
     return (
       <div className="min-h-dvh bg-slate-950 pb-20">
@@ -122,16 +138,6 @@ export default function DashboardClient() {
       </div>
     );
   }
-
-  const topSpecies = weatherData
-    ? getTopSpeciesForConditions(SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3)
-    : [];
-
-  const overallScore = weatherData
-    ? (topSpecies.length > 0
-        ? topSpecies[0].score
-        : calculateFishingScore(SPECIES[0]!, DASHBOARD_SPOT, weatherData, tideData, solunarData, now))
-    : null;
 
   const startOfToday = new Date(now);
   startOfToday.setHours(0, 0, 0, 0);
@@ -157,7 +163,7 @@ export default function DashboardClient() {
       <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800/80">
         <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
           <div>
-            <h1 className="text-base font-bold text-white">PêcheBoard</h1>
+            <h1 className="text-base font-bold text-white">Halio</h1>
             <p className="text-xs text-slate-400 capitalize">{dateLabel}</p>
           </div>
           <div className="flex items-center gap-3">

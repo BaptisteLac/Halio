@@ -1,5 +1,5 @@
 /**
- * Utilitaires géographiques — PêcheBoard
+ * Utilitaires géographiques — Halio
  */
 
 /**

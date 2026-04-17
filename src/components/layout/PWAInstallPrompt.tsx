@@ -68,7 +68,7 @@ export default function PWAInstallPrompt() {
         <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex items-start gap-3 pointer-events-auto shadow-xl">
           <span className="text-lg shrink-0">⬆️</span>
           <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-medium">Installer PêcheBoard</p>
+            <p className="text-white text-xs font-medium">Installer Halio</p>
             <p className="text-slate-400 text-xs mt-0.5">
               Appuyez sur <strong>Partager</strong> puis <strong>&quot;Sur l&apos;écran d&apos;accueil&quot;</strong>
             </p>
@@ -93,7 +93,7 @@ export default function PWAInstallPrompt() {
       <div className="bg-slate-800 border border-cyan-400/30 rounded-xl p-3 flex items-center gap-3 pointer-events-auto shadow-xl">
         <span className="text-lg shrink-0">🎣</span>
         <div className="flex-1 min-w-0">
-          <p className="text-white text-xs font-medium">Installer PêcheBoard</p>
+          <p className="text-white text-xs font-medium">Installer Halio</p>
           <p className="text-slate-400 text-xs mt-0.5">Accès rapide depuis votre écran d&apos;accueil</p>
         </div>
         <button

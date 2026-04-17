@@ -96,7 +96,7 @@ export default function FishingScoreCard({ score }: Props) {
 
   return (
     <div
-      className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 cursor-pointer select-none"
+      className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 cursor-pointer select-none hover:bg-slate-800/80 active:scale-[0.99] transition-transform"
       onClick={() => setShowFactors((v) => !v)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowFactors((v) => !v); } }}
       role="button"

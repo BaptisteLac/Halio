@@ -1,5 +1,5 @@
 /**
- * Utilitaires de formatage de dates — PêcheBoard
+ * Utilitaires de formatage de dates — Halio
  */
 
 /**

@@ -43,7 +43,7 @@ export const useAppStore = create<AppState>()(
       setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
     }),
     {
-      name: 'pecheboard-settings',
+      name: 'halio-settings',
     }
   )
 );

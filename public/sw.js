@@ -1,10 +1,10 @@
-// PêcheBoard Service Worker
+// Halio Service Worker
 // Stratégie : Cache-first pour assets statiques, StaleWhileRevalidate pour API météo, CacheFirst pour tuiles carte
 
-const CACHE_VERSION = 'v2';
-const STATIC_CACHE  = `pecheboard-static-${CACHE_VERSION}`;
-const API_CACHE     = `pecheboard-api-${CACHE_VERSION}`;
-const TILES_CACHE   = `pecheboard-tiles-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v3';
+const STATIC_CACHE  = `halio-static-${CACHE_VERSION}`;
+const API_CACHE     = `halio-api-${CACHE_VERSION}`;
+const TILES_CACHE   = `halio-tiles-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = ['/', '/carte', '/especes', '/journal', '/semaine', '/coach', '/moi'];
 
@@ -22,7 +22,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k.startsWith('pecheboard-') && ![STATIC_CACHE, API_CACHE, TILES_CACHE].includes(k))
+          .filter((k) => (k.startsWith('halio-') || k.startsWith('pecheboard-')) && ![STATIC_CACHE, API_CACHE, TILES_CACHE].includes(k))
           .map((k) => caches.delete(k))
       )
     )
