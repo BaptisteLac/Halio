@@ -30,7 +30,7 @@ export default function WeekView({ days, bestDayDate, todayDate }: Props) {
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-1">
       <div className="flex items-center gap-1 mb-3">
         <h3 className="text-slate-300 font-medium text-sm">Prévisions 7 jours</h3>
-        <InfoTooltip content="Score 0–100 calculé à midi de chaque jour : croise coefficient de marée, vent, pression atmosphérique et période solunaire pour la meilleure espèce en saison. La barre indique la durée relative de la fenêtre optimale." />
+        <InfoTooltip content="Score 0–100 du meilleur créneau de la journée : chaque heure est évaluée avec la prévision météo de cette heure (vent, pression), les marées simulées et le solunaire. Le score affiché est le pic — pas les conditions actuelles." />
       </div>
 
       {days.map((day) => {

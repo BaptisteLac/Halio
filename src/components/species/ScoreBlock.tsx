@@ -8,6 +8,7 @@ import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
 import { getBestScoreForSpecies, getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
 import { SPOTS } from '@/data/spots';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 interface Props {
   species: Species;
@@ -58,9 +59,12 @@ export default function ScoreBlock({ species }: Props) {
 
   return (
     <div className="bg-slate-800 rounded-xl p-4 flex items-center gap-4">
-      <div className="flex items-baseline gap-1">
-        <span className={`text-4xl font-bold tabular-nums ${color}`}>{score.total}</span>
-        <span className="text-slate-400 text-sm">/100</span>
+      <div className="flex items-start gap-1">
+        <div className="flex items-baseline gap-1">
+          <span className={`text-4xl font-bold tabular-nums ${color}`}>{score.total}</span>
+          <span className="text-slate-400 text-sm">/100</span>
+        </div>
+        <InfoTooltip content="Score instantané pour cette espèce en ce moment : croise marées, vent, pression et solunaire au meilleur spot disponible. Mis à jour à chaque visite." />
       </div>
       <div>
         <p className={`font-semibold ${color}`}>{label}</p>

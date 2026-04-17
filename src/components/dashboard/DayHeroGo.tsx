@@ -134,8 +134,11 @@ export default function DayHeroGo({ bestWindow, topSpecies, currentScore }: Prop
               Voir les prochains jours →
             </Link>
           </div>
-          <div className="text-right shrink-0">
-            <p className={`text-3xl font-extrabold tabular-nums ${currentScore.color}`}>{currentScore.total}</p>
+          <div className="text-right shrink-0 flex flex-col items-end">
+            <div className="flex items-start gap-1">
+              <p className={`text-3xl font-extrabold tabular-nums ${currentScore.color}`}>{currentScore.total}</p>
+              <InfoTooltip content="Score instantané : conditions en ce moment (marées, vent, pression, solunaire). Aucun créneau optimal prévu aujourd'hui — ce score ne dépasse pas 65/100 sur la journée." />
+            </div>
             <p className="text-slate-500 text-xs">/100</p>
             <p className="text-slate-500 text-xs mt-0.5">actuel</p>
           </div>
@@ -172,8 +175,11 @@ export default function DayHeroGo({ bestWindow, topSpecies, currentScore }: Prop
             </p>
           )}
         </div>
-        <div className="text-right shrink-0">
-          <p className={`text-3xl font-extrabold tabular-nums ${theme.accent}`}>{bestWindow.score}</p>
+        <div className="text-right shrink-0 flex flex-col items-end">
+          <div className="flex items-start gap-1">
+            <p className={`text-3xl font-extrabold tabular-nums ${theme.accent}`}>{bestWindow.score}</p>
+            <InfoTooltip content="Pic de conditions sur la journée : chaque heure est scorée avec la prévision météo de cette heure, les marées simulées et le solunaire. Ce score correspond au meilleur créneau — pas aux conditions actuelles." />
+          </div>
           <p className="text-slate-500 text-xs">/100</p>
           <p className="text-slate-500 text-xs mt-0.5">sortie</p>
         </div>
