@@ -178,6 +178,22 @@ export default function FishingWindows({
         <span>24h</span>
       </div>
 
+      {/* Légende couleurs */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {[
+          { color: 'bg-cyan-500',       label: 'Excellent' },
+          { color: 'bg-green-500/80',   label: 'Bon' },
+          { color: 'bg-yellow-500/50',  label: 'Moyen' },
+          { color: 'bg-orange-500/40',  label: 'Faible' },
+          { color: 'bg-slate-700/30',   label: 'Nul' },
+        ].map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-1">
+            <div className={`w-2.5 h-2.5 rounded-sm ${color}`} />
+            <span className="text-xs text-slate-500">{label}</span>
+          </div>
+        ))}
+      </div>
+
       {/* Meilleure fenêtre */}
       {bestWindow ? (
         <div className="bg-cyan-950/50 border border-cyan-700/40 rounded-lg px-3 py-2 flex items-center justify-center gap-2">

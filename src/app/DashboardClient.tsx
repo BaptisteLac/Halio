@@ -190,6 +190,8 @@ export default function DashboardClient() {
           />
         )}
 
+        {overallScore && <FishingScoreCard score={overallScore} />}
+
         {weatherData && topSpecies.length > 0 && (
           <FishingWindows
             topSpecies={topSpecies}
@@ -199,8 +201,6 @@ export default function DashboardClient() {
             now={now}
           />
         )}
-
-        {overallScore && <FishingScoreCard score={overallScore} />}
 
         <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
           <div className="flex items-center justify-between">

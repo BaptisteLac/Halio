@@ -10,8 +10,14 @@
   100% { transform: translateX(400%); }
 }
 
+@keyframes marker-pulse {
+  0%, 100% { box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+  50%       { box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 0 0 4px rgba(255,255,255,0.12); }
+}
+
 @theme inline {
   --animate-loading-bar: loading-bar 1.4s ease-in-out infinite;
+  --animate-marker-pulse: marker-pulse 3s ease-in-out infinite;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);

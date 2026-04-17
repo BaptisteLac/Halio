@@ -48,7 +48,9 @@ export default function SpotMarker({ spot, score, isSelected }: Props) {
           : '0 2px 6px rgba(0,0,0,0.4)',
         transition: 'all 0.15s ease',
       }}
-      className="rounded-full flex items-center justify-center cursor-pointer select-none"
+      className={`rounded-full flex items-center justify-center cursor-pointer select-none hover:scale-110 ${
+        !isSelected ? 'animate-[marker-pulse_3s_ease-in-out_infinite]' : ''
+      }`}
     >
       {hasScore ? (
         <span

@@ -92,18 +92,18 @@ export default function SpotDetail({ spot, entry, onClose }: Props) {
 
             {/* Score + top espèces */}
             {entry && (
-              <div className="bg-slate-800 rounded-xl p-3 space-y-3">
+              <div className="flex items-center gap-4 bg-slate-800 rounded-xl px-4 py-3">
                 <ScoreBadge
                   score={entry.best.total}
                   label={entry.best.label}
                   color={entry.best.color}
                 />
                 {entry.top3.length > 0 && (
-                  <div className="space-y-1.5 pt-2 border-t border-slate-700">
+                  <div className="flex-1 space-y-1 border-l border-slate-700 pl-4">
                     {entry.top3.map(({ species, score }) => (
-                      <div key={species.id} className="flex items-center justify-between text-sm">
-                        <span className="text-slate-300">{species.name}</span>
-                        <span className={`font-medium tabular-nums ${score.color}`}>
+                      <div key={species.id} className="flex items-center justify-between">
+                        <span className="text-slate-300 text-xs">{species.name}</span>
+                        <span className={`text-xs font-semibold tabular-nums ${score.color}`}>
                           {score.total}
                         </span>
                       </div>
@@ -114,28 +114,28 @@ export default function SpotDetail({ spot, entry, onClose }: Props) {
             )}
 
             {/* Infos clés */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-slate-800 rounded-lg p-2.5 flex items-center gap-2">
-                <Anchor size={13} className="text-slate-400 shrink-0" />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-slate-800 rounded-lg p-3 flex items-center gap-2">
+                <Anchor size={14} className="text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-slate-400">Profondeur</p>
-                  <p className="text-white font-medium">{spot.depth.min}–{spot.depth.max} m</p>
+                  <p className="text-xs text-slate-400">Profondeur</p>
+                  <p className="text-sm text-white font-medium">{spot.depth.min}–{spot.depth.max} m</p>
                 </div>
               </div>
-              <div className="bg-slate-800 rounded-lg p-2.5 flex items-center gap-2">
-                <Layers size={13} className="text-slate-400 shrink-0" />
+              <div className="bg-slate-800 rounded-lg p-3 flex items-center gap-2">
+                <Layers size={14} className="text-slate-400 shrink-0" />
                 <div>
-                  <p className="text-slate-400">Fond</p>
-                  <p className="text-white font-medium">{BOTTOM_LABELS[spot.bottom] ?? spot.bottom}</p>
+                  <p className="text-xs text-slate-400">Fond</p>
+                  <p className="text-sm text-white font-medium">{BOTTOM_LABELS[spot.bottom] ?? spot.bottom}</p>
                 </div>
               </div>
-              <div className="bg-slate-800 rounded-lg p-2.5">
-                <p className="text-slate-400">Phase optimale</p>
-                <p className="text-white font-medium mt-0.5">{PHASE_LABELS[spot.optimalTidePhase]}</p>
+              <div className="bg-slate-800 rounded-lg p-3">
+                <p className="text-xs text-slate-400">Phase optimale</p>
+                <p className="text-sm text-white font-medium mt-0.5">{PHASE_LABELS[spot.optimalTidePhase]}</p>
               </div>
-              <div className="bg-slate-800 rounded-lg p-2.5">
-                <p className="text-slate-400">Coeff optimal</p>
-                <p className="text-white font-medium mt-0.5">
+              <div className="bg-slate-800 rounded-lg p-3">
+                <p className="text-xs text-slate-400">Coeff optimal</p>
+                <p className="text-sm text-white font-medium mt-0.5">
                   {spot.optimalCoeffRange[0]}–{spot.optimalCoeffRange[1]}
                 </p>
               </div>

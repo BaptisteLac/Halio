@@ -127,7 +127,7 @@ export default function FishingScoreCard({ score }: Props) {
       )}
 
       <p className="text-center text-xs text-slate-400 mt-2">
-        {showFactors ? 'Tap pour masquer' : 'Tap pour voir le détail'}
+        {showFactors ? 'Appuyer pour masquer' : 'Appuyer pour voir le détail'}
       </p>
     </div>
   );
