@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Settings } from 'lucide-react';
+import { ChevronUp, Settings } from 'lucide-react';
 import type { TideData, TideCurvePoint, WeatherData, SolunarData } from '@/types';
 import { getTideData, getTideCurve } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
@@ -54,6 +54,7 @@ function LoadingSkeleton() {
 export default function DashboardClient() {
   const [fetchDate] = useState(() => new Date());
   const [now, setNow] = useState(() => new Date());
+  const [weatherExpanded, setWeatherExpanded] = useState(false);
   const [tideData, setTideData] = useState<TideData | null>(null);
   const [tideCurve, setTideCurve] = useState<TideCurvePoint[] | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -251,9 +252,21 @@ export default function DashboardClient() {
 
         {topSpecies.length > 0 && <SpeciesRecommendation topSpecies={topSpecies} />}
 
-        {weatherData && (
+        {weatherData && weatherExpanded && (
+          <div className="relative">
+            <WeatherCard weather={weatherData} />
+            <button
+              onClick={() => setWeatherExpanded(false)}
+              className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors p-1"
+              aria-label="Réduire la météo"
+            >
+              <ChevronUp size={16} />
+            </button>
+          </div>
+        )}
+        {weatherData && !weatherExpanded && (
           <div className="grid grid-cols-2 gap-3">
-            <WeatherCard weather={weatherData} compact />
+            <WeatherCard weather={weatherData} compact onClick={() => setWeatherExpanded(true)} />
             <SolunarIndicator solunar={solunarData} now={now} compact />
           </div>
         )}

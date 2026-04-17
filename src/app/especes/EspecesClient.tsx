@@ -100,7 +100,7 @@ export default function EspecesClient() {
       {weatherError && <WeatherErrorBanner />}
 
       <div className="flex-1 overflow-y-auto touch-pan-y">
-        <div className="grid grid-cols-2 gap-2 p-3 pb-20 max-w-lg mx-auto">
+        <div className="grid grid-cols-2 gap-3 px-4 py-3 pb-20 max-w-lg mx-auto">
           {displayed.map((species) => (
             <SpeciesCard
               key={species.id}

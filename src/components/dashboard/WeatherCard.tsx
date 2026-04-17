@@ -10,6 +10,7 @@ import type { WeatherData } from '@/types';
 interface Props {
   weather: WeatherData;
   compact?: boolean;
+  onClick?: () => void;
 }
 
 function PressureIcon({ trend }: { trend: 'hausse' | 'stable' | 'baisse' }) {
@@ -18,7 +19,7 @@ function PressureIcon({ trend }: { trend: 'hausse' | 'stable' | 'baisse' }) {
   return <Minus size={13} className="text-slate-500" />;
 }
 
-export default function WeatherCard({ weather, compact = false }: Props) {
+export default function WeatherCard({ weather, compact = false, onClick }: Props) {
   const { current } = weather;
   const windKnots = kmhToKnots(current.windSpeed);
   const gustKnots = kmhToKnots(current.windGusts);
@@ -29,7 +30,12 @@ export default function WeatherCard({ weather, compact = false }: Props) {
   // Affichage condensé pour les vues compactes (ex. grille du dashboard)
   if (compact) {
     return (
-      <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-3 space-y-1.5">
+      <div
+        className={`bg-slate-800/60 rounded-xl border border-slate-700/50 p-3 space-y-1.5${onClick ? ' cursor-pointer active:bg-slate-700/60' : ''}`}
+        onClick={onClick}
+        role={onClick ? 'button' : undefined}
+        aria-label={onClick ? 'Afficher la météo complète' : undefined}
+      >
         <h3 className="text-slate-400 font-medium text-xs">Météo</h3>
         <p className="text-white font-bold text-sm">
           {windDir} {windKnots.toFixed(0)} kt

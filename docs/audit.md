@@ -97,9 +97,9 @@
 | CF-04 | Screenshots manifest Android | Assets PNG à créer dans `/public/screenshots/` |
 | CF-11 | CSP `unsafe-inline` — durcissement | Nécessite un système de nonce (refonte majeure) |
 | UX-04 | Incohérence violet Coach / cyan global | Décision design |
-| UX-05 | WeatherCard mode full inaccessible | Rendre le compact cliquable |
-| UX-08 | Espacements non uniformes | Audit composant par composant |
-| UX-10 | Padding horizontal variable | Audit composant par composant |
+| UX-05 | WeatherCard compact → cliquable, mode full avec bouton collapse | ✅ |
+| UX-08 | Espacements non uniformes | EspecesClient gap-2→gap-3 ; JournalClient px-3→px-4 sur CatchStats ✅ |
+| UX-10 | Padding horizontal variable | EspecesClient p-3→px-4 py-3 ; reste cohérent px-4 ✅ |
 | UX-14 | View Transitions API entre pages | Expérimental, risque de régression |
 | UX-15 | Animations expand/collapse | Travail transversal |
 | UX-19 | Locked preview non-authentifiés | Nécessite maquette |

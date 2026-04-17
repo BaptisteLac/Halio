@@ -155,7 +155,7 @@ export default function JournalClient() {
 
       <div className="flex-1 overflow-hidden flex flex-col">
         {catches.length > 0 && (
-          <div className="shrink-0 px-3 pt-3 max-w-lg mx-auto w-full">
+          <div className="shrink-0 px-4 pt-4 max-w-lg mx-auto w-full">
             <CatchStats catches={catches} />
           </div>
         )}
