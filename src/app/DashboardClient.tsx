@@ -19,7 +19,6 @@ import TideCurve from '@/components/dashboard/TideCurve';
 import WeatherCard from '@/components/dashboard/WeatherCard';
 import CoefficientBadge from '@/components/dashboard/CoefficientBadge';
 import SolunarIndicator from '@/components/dashboard/SolunarIndicator';
-import FishingScoreCard from '@/components/dashboard/FishingScoreCard';
 import SpeciesRecommendation from '@/components/dashboard/SpeciesRecommendation';
 import FishingWindows from '@/components/dashboard/FishingWindows';
 import DayHeroGo from '@/components/dashboard/DayHeroGo';
@@ -190,8 +189,6 @@ export default function DashboardClient() {
             currentScore={currentScore}
           />
         )}
-
-        {currentScore && <FishingScoreCard score={currentScore} />}
 
         {weatherData && topSpecies.length > 0 && (
           <FishingWindows
