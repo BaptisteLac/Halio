@@ -22,7 +22,7 @@ import SolunarIndicator from '@/components/dashboard/SolunarIndicator';
 import FishingScoreCard from '@/components/dashboard/FishingScoreCard';
 import SpeciesRecommendation from '@/components/dashboard/SpeciesRecommendation';
 import FishingWindows from '@/components/dashboard/FishingWindows';
-import DayHero from '@/components/dashboard/DayHero';
+import DayHeroGo from '@/components/dashboard/DayHeroGo';
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -107,7 +107,7 @@ export default function DashboardClient() {
     [weatherData, tideData, solunarData, now],
   );
 
-  const overallScore = useMemo(
+  const currentScore = useMemo(
     () => weatherData && tideData && solunarData
       ? (topSpecies.length > 0
           ? topSpecies[0].score
@@ -183,15 +183,15 @@ export default function DashboardClient() {
       {weatherError && <WeatherErrorBanner />}
 
       <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
-        {overallScore && (
-          <DayHero
-            score={overallScore}
+        {currentScore && (
+          <DayHeroGo
             bestWindow={bestWindow}
             topSpecies={topSpecies}
+            currentScore={currentScore}
           />
         )}
 
-        {overallScore && <FishingScoreCard score={overallScore} />}
+        {currentScore && <FishingScoreCard score={currentScore} />}
 
         {weatherData && topSpecies.length > 0 && (
           <FishingWindows

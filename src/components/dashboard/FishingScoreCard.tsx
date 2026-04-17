@@ -107,15 +107,15 @@ export default function FishingScoreCard({ score }: Props) {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1">
           <h3 className="text-slate-300 font-medium text-sm">
-            Score de pêche{' '}
+            Conditions maintenant{' '}
             <span className="text-xs text-slate-400">{showFactors ? '↑' : '↓'}</span>
           </h3>
-          <InfoTooltip content="Score composite de 0 à 100 qui croise marées, vent, pression atmosphérique, coefficient et période lunaire pour estimer vos chances de prise du moment." />
+          <InfoTooltip content="Score composite à l'instant T : croise marées, vent, pression, coefficient et période lunaire pour l'espèce principale en saison. Mis à jour chaque minute." />
         </div>
         <span className={`text-sm font-semibold ${score.color}`}>{score.label}</span>
       </div>
       {!showFactors && (
-        <p className="text-xs text-slate-500 mb-1">Composite : marées · vent · pression · lune</p>
+        <p className="text-xs text-slate-500 mb-1">Score à cet instant · espèce principale de saison</p>
       )}
 
       <div className="flex justify-center my-1">
