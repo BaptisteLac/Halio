@@ -167,6 +167,25 @@ export function getBestScoreForSpecies(
   }, null)!;
 }
 
+export function getTopSpeciesForSpot(
+  allSpecies: Species[],
+  spot: Spot,
+  weather: WeatherData,
+  tide: TideData,
+  solunar: SolunarData,
+  date: Date,
+  limit = 3
+): Array<{ species: Species; score: FishingScore }> {
+  const currentMonth = date.getMonth() + 1;
+  const inSeason = allSpecies.filter((s) => isSpeciesInSeason(s, currentMonth));
+  const spotSpecies = inSeason.filter((s) => spot.species.includes(s.id));
+  const pool = spotSpecies.length > 0 ? spotSpecies : inSeason;
+  return pool
+    .map((s) => ({ species: s, score: calculateFishingScore(s, spot, weather, tide, solunar, date) }))
+    .sort((a, b) => b.score.total - a.score.total)
+    .slice(0, limit);
+}
+
 export function getTopSpeciesForConditions(
   allSpecies: Species[],
   fallbackSpot: Spot,

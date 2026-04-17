@@ -6,7 +6,7 @@ import type { TideData, WeatherData, SolunarData, Spot, SpotScoreMap, ZoneType }
 import { getTideData } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
-import { getTopSpeciesForConditions, getFishingScoreLabel, getFishingScoreColor } from '@/lib/scoring/fishing-score';
+import { getTopSpeciesForSpot, getFishingScoreLabel, getFishingScoreColor } from '@/lib/scoring/fishing-score';
 import { SPOTS } from '@/data/spots';
 import { SPECIES } from '@/data/species';
 
@@ -73,7 +73,7 @@ export default function CarteClient() {
 
     return new Map(
       SPOTS.map((spot) => {
-        const top3 = getTopSpeciesForConditions(SPECIES, spot, weatherData, tideData, solunarData, now, 3);
+        const top3 = getTopSpeciesForSpot(SPECIES, spot, weatherData, tideData, solunarData, now, 3);
         const best = top3[0]?.score ?? {
           total: 0,
           factors: { coeffScore: 0, tideHourScore: 0, windScore: 0, windDirScore: 0, pressureScore: 0, solunarScore: 0, dawnDuskScore: 0, tempScore: 0 },
@@ -113,56 +113,6 @@ export default function CarteClient() {
 
       {weatherError && <WeatherErrorBanner />}
 
-      <div className="shrink-0 bg-slate-900/80 border-b border-slate-800/60 z-30">
-        <div className="flex gap-1.5 px-3 pt-2 pb-1 overflow-x-auto scrollbar-none">
-          <button
-            onClick={() => setZoneFilter('tous')}
-            className={`shrink-0 text-xs px-3 min-h-[44px] rounded-full border font-medium transition-colors ${
-              zoneFilter === 'tous'
-                ? 'bg-slate-100 text-slate-900 border-slate-100'
-                : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500'
-            }`}
-          >
-            Tous
-          </button>
-          {(Object.entries(ZONE_META) as [ZoneType, { label: string; color: string }][]).map(
-            ([zone, { label, color }]) => (
-              <button
-                key={zone}
-                onClick={() => setZoneFilter(zoneFilter === zone ? 'tous' : zone)}
-                className={`shrink-0 text-xs px-3 min-h-[44px] rounded-full border font-medium transition-colors ${
-                  zoneFilter === zone
-                    ? 'border-transparent text-slate-900'
-                    : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500'
-                }`}
-                style={zoneFilter === zone ? { background: color, borderColor: color } : {}}
-              >
-                {label}
-              </button>
-            )
-          )}
-        </div>
-
-        <div className="flex gap-1.5 px-3 pb-2 pt-1">
-          {SCORE_FILTERS.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => setScoreFilter(scoreFilter === value ? 0 : value)}
-              className={`text-xs px-3 min-h-[44px] rounded-full border font-medium transition-colors ${
-                scoreFilter === value
-                  ? 'bg-cyan-400 text-slate-900 border-cyan-400'
-                  : 'bg-transparent text-slate-400 border-slate-700 hover:border-slate-500'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-          <span className="text-xs text-slate-400 self-center ml-auto">
-            {scoreFilter > 0 ? `Score min : ${scoreFilter}` : 'Score min'}
-          </span>
-        </div>
-      </div>
-
       <div className="flex-1 relative min-h-0">
         <SpotMap
           spots={filteredSpots}
@@ -170,14 +120,61 @@ export default function CarteClient() {
           selectedSpotId={selectedSpot?.id ?? null}
           onSelect={setSelectedSpot}
         />
+
+        {/* Filter overlay */}
+        <div className="absolute top-2 left-0 right-0 z-10 px-3 pointer-events-none">
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <div className="flex-1 flex gap-1.5 overflow-x-auto scrollbar-none">
+              <button
+                onClick={() => setZoneFilter('tous')}
+                className={`shrink-0 text-xs px-3 py-2 rounded-full border font-medium transition-colors backdrop-blur-md ${
+                  zoneFilter === 'tous'
+                    ? 'bg-slate-100 text-slate-900 border-slate-100'
+                    : 'bg-slate-950/70 text-slate-300 border-slate-600/70'
+                }`}
+              >
+                Tous
+              </button>
+              {(Object.entries(ZONE_META) as [ZoneType, { label: string; color: string }][]).map(
+                ([zone, { label, color }]) => (
+                  <button
+                    key={zone}
+                    onClick={() => setZoneFilter(zoneFilter === zone ? 'tous' : zone)}
+                    className={`shrink-0 text-xs px-3 py-2 rounded-full border font-medium transition-colors backdrop-blur-md ${
+                      zoneFilter === zone
+                        ? 'border-transparent text-slate-900'
+                        : 'bg-slate-950/70 text-slate-300 border-slate-600/70'
+                    }`}
+                    style={zoneFilter === zone ? { background: color, borderColor: color } : {}}
+                  >
+                    {label}
+                  </button>
+                )
+              )}
+            </div>
+            <button
+              onClick={() => {
+                const steps: ScoreFilter[] = [0, 40, 60, 80];
+                const idx = steps.indexOf(scoreFilter);
+                setScoreFilter(steps[(idx + 1) % steps.length]!);
+              }}
+              className={`shrink-0 text-xs px-3 py-2 rounded-full border font-medium transition-colors backdrop-blur-md ${
+                scoreFilter > 0
+                  ? 'bg-cyan-400 text-slate-900 border-cyan-400'
+                  : 'bg-slate-950/70 text-slate-300 border-slate-600/70'
+              }`}
+            >
+              {scoreFilter > 0 ? `≥ ${scoreFilter}` : 'Score'}
+            </button>
+          </div>
+        </div>
+
         {!dataReady && (
-          <div className="absolute top-0 inset-x-0 h-0.5 bg-slate-700 z-10 overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-slate-700 z-20 overflow-hidden">
             <div className="h-full w-1/3 bg-cyan-400 animate-[loading-bar_1.4s_ease-in-out_infinite]" />
           </div>
         )}
       </div>
-
-      <div className="shrink-0 h-14" />
 
       <SpotDetail spot={selectedSpot} entry={selectedEntry} onClose={() => setSelectedSpot(null)} />
 

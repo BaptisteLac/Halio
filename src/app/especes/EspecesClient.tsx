@@ -12,6 +12,7 @@ import { SPOTS } from '@/data/spots';
 import BottomNav from '@/components/layout/BottomNav';
 import WeatherErrorBanner from '@/components/layout/WeatherErrorBanner';
 import SpeciesCard from '@/components/species/SpeciesCard';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 type SeasonFilter = 'saison' | 'toutes';
 
@@ -75,9 +76,12 @@ export default function EspecesClient() {
     <div className="h-dvh flex flex-col bg-slate-950 overflow-hidden">
       <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 z-40">
         <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
-          <div>
-            <h1 className="text-base font-bold text-white">Espèces</h1>
-            <p className="text-xs text-slate-400">{displayed.length} espèce{displayed.length > 1 ? 's' : ''}</p>
+          <div className="flex items-center gap-1">
+            <div>
+              <h1 className="text-base font-bold text-white">Espèces</h1>
+              <p className="text-xs text-slate-400">{displayed.length} espèce{displayed.length > 1 ? 's' : ''}</p>
+            </div>
+            <InfoTooltip content="Le score (0–100) indique les conditions actuelles pour chaque espèce, en tenant compte des marées, du vent, de la pression et du solunaire au meilleur spot disponible." />
           </div>
           <div className="flex bg-slate-800 rounded-full p-0.5 gap-0.5">
             {(['saison', 'toutes'] as SeasonFilter[]).map((f) => (

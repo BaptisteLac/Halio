@@ -1,5 +1,8 @@
+'use client';
+
 import { X, AlertTriangle, Anchor, Layers } from 'lucide-react';
 import type { Spot, SpotScoreEntry, ZoneType, TidePhase } from '@/types';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 interface Props {
   spot: Spot | null;
@@ -93,11 +96,14 @@ export default function SpotDetail({ spot, entry, onClose }: Props) {
             {/* Score + top espèces */}
             {entry && (
               <div className="flex items-center gap-4 bg-slate-800 rounded-xl px-4 py-3">
-                <ScoreBadge
-                  score={entry.best.total}
-                  label={entry.best.label}
-                  color={entry.best.color}
-                />
+                <div className="flex items-start gap-1">
+                  <ScoreBadge
+                    score={entry.best.total}
+                    label={entry.best.label}
+                    color={entry.best.color}
+                  />
+                  <InfoTooltip content="Score 0–100 pour ce spot maintenant : croise marées, vent, pression et solunaire pour la meilleure espèce en saison ciblant ce spot." />
+                </div>
                 {entry.top3.length > 0 && (
                   <div className="flex-1 space-y-1 border-l border-slate-700 pl-4">
                     {entry.top3.map(({ species, score }) => (

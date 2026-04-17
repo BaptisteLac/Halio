@@ -31,26 +31,33 @@ export function useWeekForecasts(): {
               calculateCoefficientForDate(daily.date),
             ]);
 
-            // Météo synthétique : on réutilise les données live pour la pression/temp,
-            // mais on surcharge le vent avec les prévisions quotidiennes du jour J.
+            const noonHour = daily.date.getDate();
+            const noonEntry = weather.hourly.find(
+              (h) => h.time.getDate() === noonHour && h.time.getHours() === 12
+            );
+            const noonWindSpeed = noonEntry?.windSpeed ?? daily.windSpeedMax;
+            const noonWindDir = noonEntry?.windDirection ?? daily.windDirectionDominant;
+
             const syntheticWeather = {
               ...weather,
               current: {
                 ...weather.current,
-                windSpeed: daily.windSpeedMax,
-                windDirection: daily.windDirectionDominant,
+                windSpeed: noonWindSpeed,
+                windDirection: noonWindDir,
               },
             };
 
-            const daySolunar = getSolunarData(daily.date);
+            const noon = new Date(daily.date);
+            noon.setHours(12, 0, 0, 0);
+            const daySolunar = getSolunarData(noon);
             const top3 = getTopSpeciesForConditions(
-              SPECIES, DASHBOARD_SPOT, syntheticWeather, tideData, daySolunar, daily.date, 3
+              SPECIES, DASHBOARD_SPOT, syntheticWeather, tideData, daySolunar, noon, 3
             );
             const top = top3[0];
             const bestWindow = getBestWindow(
               top3, tideData, syntheticWeather, daySolunar, daily.date
             );
-            const windKnots = kmhToKnots(daily.windSpeedMax);
+            const windKnots = kmhToKnots(noonWindSpeed);
 
             // Fenêtres individuelles par espèce
             const topSpecies: DaySpecies[] = top3.map((s) => {
@@ -58,7 +65,7 @@ export function useWeekForecasts(): {
               return {
                 id: s.species.id,
                 name: s.species.name,
-                score: s.score.total,
+                score: win?.score ?? s.score.total,
                 lure: s.species.lures[0]?.name ?? null,
                 windowStart: win?.start ?? null,
                 windowEnd: win?.end ?? null,
@@ -69,7 +76,7 @@ export function useWeekForecasts(): {
               date: daily.date,
               daily,
               coefficient,
-              score: top?.score.total ?? 0,
+              score: bestWindow?.score ?? top?.score.total ?? 0,
               topSpeciesId: top?.species.id ?? '',
               topSpeciesName: top?.species.name ?? '—',
               topLure: top?.species.lures[0]?.name ?? null,

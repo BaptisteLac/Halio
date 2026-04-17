@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { WeekDay } from '@/types';
 import { getFishingScoreColor } from '@/lib/scoring/fishing-score';
 import DayDetail from './DayDetail';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 interface Props {
   days: WeekDay[];
@@ -27,7 +28,10 @@ export default function WeekView({ days, bestDayDate, todayDate }: Props) {
 
   return (
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-1">
-      <h3 className="text-slate-300 font-medium text-sm mb-3">Prévisions 7 jours</h3>
+      <div className="flex items-center gap-1 mb-3">
+        <h3 className="text-slate-300 font-medium text-sm">Prévisions 7 jours</h3>
+        <InfoTooltip content="Score 0–100 calculé à midi de chaque jour : croise coefficient de marée, vent, pression atmosphérique et période solunaire pour la meilleure espèce en saison. La barre indique la durée relative de la fenêtre optimale." />
+      </div>
 
       {days.map((day) => {
         const isToday = day.date.toDateString() === todayDate.toDateString();

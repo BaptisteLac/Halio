@@ -70,7 +70,7 @@ export default function SemaineClient() {
         )}
 
         {!loading && !error && days && bestDay && (
-          <main className="px-4 py-4 space-y-4 max-w-lg mx-auto pb-4">
+          <main className="px-4 py-4 space-y-4 max-w-lg mx-auto pb-20">
             <BestDayHero best={bestDay} />
             <WeekView days={days} bestDayDate={bestDay.date} todayDate={today} />
           </main>
