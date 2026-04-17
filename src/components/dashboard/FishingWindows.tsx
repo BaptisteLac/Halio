@@ -5,6 +5,7 @@ import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service
 import { calculateFishingScore, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
 import { getBestWindow } from '@/lib/scoring/fishing-windows';
 import type { TideData, WeatherData, SolunarData, SpeciesResult } from '@/types';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 const SLOTS = 24; // créneaux de 1h sur 24h
 const SLOT_MS = 60 * 60 * 1000;
@@ -92,7 +93,10 @@ export default function FishingWindows({
 
   return (
     <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
-      <h3 className="text-slate-300 font-medium text-sm">Fenêtres de pêche</h3>
+      <div className="flex items-center gap-1">
+        <h3 className="text-slate-300 font-medium text-sm">Fenêtres de pêche</h3>
+        <InfoTooltip content="Créneaux horaires où toutes les conditions convergent : heure de marée optimale, période solunaire active, aube ou crépuscule. Plus la barre est verte, plus le moment est favorable." />
+      </div>
 
       <div
         className="space-y-4"

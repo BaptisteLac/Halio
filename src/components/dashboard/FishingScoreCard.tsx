@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { FishingScore, ScoreFactors } from '@/types';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 
 interface Props {
   score: FishingScore;
@@ -104,10 +105,13 @@ export default function FishingScoreCard({ score }: Props) {
       aria-expanded={showFactors}
     >
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-slate-300 font-medium text-sm">
-          Score de pêche{' '}
-          <span className="text-xs text-slate-400">{showFactors ? '↑' : '↓'}</span>
-        </h3>
+        <div className="flex items-center gap-1">
+          <h3 className="text-slate-300 font-medium text-sm">
+            Score de pêche{' '}
+            <span className="text-xs text-slate-400">{showFactors ? '↑' : '↓'}</span>
+          </h3>
+          <InfoTooltip content="Score composite de 0 à 100 qui croise marées, vent, pression atmosphérique, coefficient et période lunaire pour estimer vos chances de prise du moment." />
+        </div>
         <span className={`text-sm font-semibold ${score.color}`}>{score.label}</span>
       </div>
       {!showFactors && (

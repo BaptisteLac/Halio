@@ -104,7 +104,7 @@
 | UX-15 | Animations expand/collapse | grid-template-rows 0fr→1fr sur FishingScoreCard + WeekView DayDetail ✅ |
 | UX-19 | Locked preview non-authentifiés | Nécessite maquette |
 | UX-20 | Vides verticaux grands mobiles/desktop | SemaineClient → h-dvh flex-col (élimine le vide bas d'écran) ✅ |
-| UX-23 | Onboarding | Feature à part entière |
+| UX-23 | Onboarding | InfoTooltip sur score, coefficient et fenêtres de tir ✅ |
 | UX-29 | Skeletons par composant | Dashboard + Semaine + Coach : skeletons dédiés ✅ ; autres : spinners acceptables |
 | UX-31 | Cartes semaine trop compactes iPhone SE | BestDayHero score text-3xl→text-2xl ✅ |
 | UX-32 | Feedback haptic | navigator.vibrate sur FAB journal + tap spot carte ✅ |
