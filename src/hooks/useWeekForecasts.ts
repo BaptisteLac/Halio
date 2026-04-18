@@ -44,7 +44,7 @@ export function useWeekForecasts(): {
                 )
               : undefined;
             const pressureDiff = prev3Entry ? noonPressure - prev3Entry.pressure : 0;
-            const noonPressureTrend = pressureDiff > 1 ? 'hausse' : pressureDiff < -1 ? 'baisse' : 'stable';
+            const noonPressureTrend: 'hausse' | 'stable' | 'baisse' = pressureDiff > 1 ? 'hausse' : pressureDiff < -1 ? 'baisse' : 'stable';
 
             const syntheticWeather = {
               ...weather,
