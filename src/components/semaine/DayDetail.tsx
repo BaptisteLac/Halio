@@ -16,7 +16,7 @@ function fmt(date: Date | null): string {
 
 function SpeciesRow({ s }: { s: DaySpecies }) {
   const scoreColor = getFishingScoreColor(s.score);
-  const barWidth = Math.round((s.score / 100) * 56);
+  const barWidth = Math.round((s.score / 100) * 40);
 
   return (
     <div className="flex items-center gap-3 py-2 border-b border-slate-700/40 last:border-0">

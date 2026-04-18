@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { getCurrentTideHour, getTidePhaseAtTime } from '@/lib/tides/tide-service';
 import { calculateFishingScore, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
-import { getBestWindow } from '@/lib/scoring/fishing-windows';
+import { getBestWindow, weatherAtSlot } from '@/lib/scoring/fishing-windows';
 import type { TideData, WeatherData, SolunarData, SpeciesResult } from '@/types';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 
@@ -76,8 +76,9 @@ export default function FishingWindows({
         const currentHour = getCurrentTideHour(slotTime, tideData.extremes);
         const currentPhase = getTidePhaseAtTime(slotTime, tideData.extremes);
         const syntheticTide: TideData = { ...tideData, currentHour, currentPhase };
+        const slotWeather = weatherAtSlot(weatherData, slotTime);
         return calculateFishingScore(
-          species, spot, weatherData, syntheticTide, solunarData, slotTime
+          species, spot, slotWeather, syntheticTide, solunarData, slotTime
         ).total;
       })
     );
@@ -182,18 +183,18 @@ export default function FishingWindows({
         <span>24h</span>
       </div>
 
-      {/* Légende couleurs */}
+      {/* Légende couleurs — seuils alignés sur getFishingScoreLabel */}
       <div className="flex items-center gap-3 flex-wrap">
         {[
-          { color: 'bg-cyan-500',       label: 'Excellent' },
-          { color: 'bg-green-500/80',   label: 'Bon' },
-          { color: 'bg-yellow-500/50',  label: 'Moyen' },
-          { color: 'bg-orange-500/40',  label: 'Faible' },
-          { color: 'bg-slate-700/30',   label: 'Nul' },
+          { color: 'bg-cyan-500',       label: 'Exceptionnel' },
+          { color: 'bg-green-500/80',   label: 'Excellent' },
+          { color: 'bg-yellow-500/50',  label: 'Bon' },
+          { color: 'bg-orange-500/40',  label: 'Moyen' },
+          { color: 'bg-slate-700/30',   label: 'Faible' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1">
             <div className={`w-2.5 h-2.5 rounded-sm ${color}`} />
-            <span className="text-xs text-slate-500">{label}</span>
+            <span className="text-xs text-slate-400">{label}</span>
           </div>
         ))}
       </div>

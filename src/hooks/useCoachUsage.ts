@@ -55,7 +55,7 @@ export function useCoachUsage(): CoachUsage {
         .from('coach_usage')
         .select('messages_today, reset_date')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Si reset_date < aujourd'hui → nouveau jour, compteur à 0 (l'API réinitialisera côté serveur)
       if (!data || data.reset_date < today) {

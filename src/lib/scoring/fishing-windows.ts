@@ -37,6 +37,8 @@ function weatherAtSlot(weather: WeatherData, slotTime: Date): WeatherData {
   };
 }
 
+export { weatherAtSlot };
+
 /**
  * Calcule la meilleure fenêtre de pêche sur 24h pour un ensemble d'espèces.
  * Chaque créneau horaire utilise les prévisions météo correspondantes.

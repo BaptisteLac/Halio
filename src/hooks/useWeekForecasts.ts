@@ -37,6 +37,14 @@ export function useWeekForecasts(): {
             );
             const noonWindSpeed = noonEntry?.windSpeed ?? daily.windSpeedMax;
             const noonWindDir = noonEntry?.windDirection ?? daily.windDirectionDominant;
+            const noonPressure = noonEntry?.pressure ?? weather.current.pressure;
+            const prev3Entry = noonEntry
+              ? weather.hourly.find(
+                  (h) => h.time.getDate() === noonHour && h.time.getHours() === 9
+                )
+              : undefined;
+            const pressureDiff = prev3Entry ? noonPressure - prev3Entry.pressure : 0;
+            const noonPressureTrend = pressureDiff > 1 ? 'hausse' : pressureDiff < -1 ? 'baisse' : 'stable';
 
             const syntheticWeather = {
               ...weather,
@@ -44,6 +52,9 @@ export function useWeekForecasts(): {
                 ...weather.current,
                 windSpeed: noonWindSpeed,
                 windDirection: noonWindDir,
+                windGusts: noonEntry?.windGusts ?? weather.current.windGusts,
+                pressure: noonPressure,
+                pressureTrend: noonPressureTrend,
               },
             };
 
@@ -83,7 +94,7 @@ export function useWeekForecasts(): {
               bestWindowStart: bestWindow?.start ?? null,
               bestWindowEnd: bestWindow?.end ?? null,
               windKnots,
-              windDir: getWindDirectionLabel(daily.windDirectionDominant),
+              windDir: getWindDirectionLabel(noonWindDir),
               isHighWind: windKnots > 25,
               topSpecies,
             } satisfies WeekDay;

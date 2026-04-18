@@ -1,5 +1,6 @@
 # Audit/UX screenshots (temporaires, ne pas commiter)
-*.png
+docs/*.png
+public/screenshots/*.png
 
 # Superpowers brainstorm sessions
 .superpowers/

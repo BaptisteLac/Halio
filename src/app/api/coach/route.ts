@@ -39,9 +39,7 @@ function createSupabaseServerClient(cookieStore: Awaited<ReturnType<typeof cooki
 export async function GET() {
   const checks: Record<string, string> = {};
 
-  checks.anthropicApiKey = process.env.ANTHROPIC_API_KEY
-    ? `ok (${process.env.ANTHROPIC_API_KEY.slice(0, 8)}...)`
-    : 'MANQUANT — définir ANTHROPIC_API_KEY dans Vercel';
+  checks.anthropicApiKey = process.env.ANTHROPIC_API_KEY ? 'ok' : 'MANQUANT — définir ANTHROPIC_API_KEY dans Vercel';
 
   try {
     const tideData = await getTideData(new Date());
@@ -105,7 +103,7 @@ export async function POST(req: Request) {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const resetAt = new Date(
-      tomorrow.toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' }) + 'T00:00:00'
+      tomorrow.toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' }) + 'T00:00:00+01:00'
     ).toISOString();
 
     return Response.json(
