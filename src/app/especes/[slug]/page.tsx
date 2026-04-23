@@ -5,6 +5,7 @@ import { ChevronLeft, AlertTriangle, Fish, Thermometer, Wind } from 'lucide-reac
 import { getSpeciesBySlug, SPECIES } from '@/data/species';
 import ScoreBlock from '@/components/species/ScoreBlock';
 import BottomNav from '@/components/layout/BottomNav';
+import SpeciesViewTracker from '@/components/species/SpeciesViewTracker';
 
 export function generateStaticParams() {
   return SPECIES.map((s) => ({ slug: s.slug }));
@@ -73,6 +74,7 @@ export default async function SpeciesSlugPage({
 
   return (
     <div className="min-h-dvh flex flex-col bg-slate-950">
+      <SpeciesViewTracker speciesId={species.id} speciesName={species.name} />
       {/* Header */}
       <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-40">
         <div className="px-4 py-3 flex items-center gap-3 max-w-lg mx-auto">
