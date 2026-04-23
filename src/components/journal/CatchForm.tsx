@@ -9,6 +9,7 @@ import { calculateFishingScore } from '@/lib/scoring/fishing-score';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { createClient } from '@/lib/supabase/client';
 import type { CatchInsert } from '@/lib/supabase/types';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 interface Props {
   tideData:    TideData | null;
@@ -56,6 +57,8 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
   const [saving,     setSaving]     = useState(false);
   const [error,      setError]      = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { trackCatchLogged } = useAnalytics();
 
   const selectedSpecies = SPECIES.find((s) => s.id === speciesId) ?? SPECIES[0];
 
@@ -139,6 +142,11 @@ export default function CatchForm({ tideData, weatherData, onSaved, onClose, vis
     if (dbError) {
       setError(dbError.message);
     } else {
+      trackCatchLogged(
+        selectedSpecies!.name,
+        weightKg ? parseFloat(weightKg) : 0,
+        spot.name,
+      );
       resetForm();
       onSaved();
     }
