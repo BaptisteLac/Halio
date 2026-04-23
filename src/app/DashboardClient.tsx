@@ -52,7 +52,6 @@ function LoadingSkeleton() {
 }
 
 export default function DashboardClient() {
-  const { trackFishingScoreViewed } = useAnalytics();
   const [fetchDate] = useState(() => new Date());
   const [now, setNow] = useState(() => new Date());
   const [weatherExpanded, setWeatherExpanded] = useState(false);
@@ -63,6 +62,24 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [weatherError, setWeatherError] = useState(false);
+
+  const { trackFishingScoreViewed } = useAnalytics();
+
+  const topSpecies = useMemo(
+    () => weatherData && tideData && solunarData
+      ? getTopSpeciesForConditions(SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3)
+      : [],
+    [weatherData, tideData, solunarData, now],
+  );
+
+  const currentScore = useMemo(
+    () => weatherData && tideData && solunarData
+      ? (topSpecies.length > 0
+          ? topSpecies[0].score
+          : calculateFishingScore(SPECIES[0]!, DASHBOARD_SPOT, weatherData, tideData, solunarData, now))
+      : null,
+    [weatherData, tideData, solunarData, topSpecies, now],
+  );
 
   useEffect(() => {
     const update = () => { if (!document.hidden) setNow(new Date()); };
@@ -107,22 +124,6 @@ export default function DashboardClient() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
-
-  const topSpecies = useMemo(
-    () => weatherData && tideData && solunarData
-      ? getTopSpeciesForConditions(SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3)
-      : [],
-    [weatherData, tideData, solunarData, now],
-  );
-
-  const currentScore = useMemo(
-    () => weatherData && tideData && solunarData
-      ? (topSpecies.length > 0
-          ? topSpecies[0].score
-          : calculateFishingScore(SPECIES[0]!, DASHBOARD_SPOT, weatherData, tideData, solunarData, now))
-      : null,
-    [weatherData, tideData, solunarData, topSpecies, now],
-  );
 
   if (loading) {
     return (
