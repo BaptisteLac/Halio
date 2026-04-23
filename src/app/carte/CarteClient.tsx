@@ -10,6 +10,7 @@ import { getTopSpeciesForSpot, getFishingScoreLabel, getFishingScoreColor } from
 import { SPOTS } from '@/data/spots';
 import { SPECIES } from '@/data/species';
 
+import { useAnalytics } from '@/hooks/useAnalytics';
 import BottomNav from '@/components/layout/BottomNav';
 import WeatherErrorBanner from '@/components/layout/WeatherErrorBanner';
 import CoefficientBadge from '@/components/dashboard/CoefficientBadge';
@@ -48,6 +49,8 @@ export default function CarteClient() {
   const [solunarData, setSolunarData] = useState<SolunarData | null>(null);
   const [dataReady, setDataReady]     = useState(false);
   const [weatherError, setWeatherError] = useState(false);
+
+  const { trackSpotSelected } = useAnalytics();
 
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [zoneFilter, setZoneFilter]     = useState<ZoneFilter>('tous');
@@ -96,6 +99,11 @@ export default function CarteClient() {
     });
   }, [zoneFilter, scoreFilter, scoreMap, dataReady]);
 
+  function handleSelectSpot(spot: Spot | null) {
+    setSelectedSpot(spot);
+    if (spot) trackSpotSelected(spot.id, spot.name, spot.zone);
+  }
+
   const coefficient = tideData?.coefficient ?? null;
   const selectedEntry = selectedSpot ? (scoreMap.get(selectedSpot.id) ?? null) : null;
 
@@ -118,7 +126,7 @@ export default function CarteClient() {
           spots={filteredSpots}
           scoreMap={scoreMap}
           selectedSpotId={selectedSpot?.id ?? null}
-          onSelect={setSelectedSpot}
+          onSelect={handleSelectSpot}
         />
 
         {/* Filter overlay */}
