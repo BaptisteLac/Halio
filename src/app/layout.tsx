@@ -4,6 +4,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import PWAInstallPrompt from '@/components/layout/PWAInstallPrompt';
 import ServiceWorkerRegistration from '@/components/layout/ServiceWorkerRegistration';
+import PostHogProvider from '@/app/providers/PostHogProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -54,7 +55,9 @@ export default function RootLayout({
   return (
     <html lang="fr" className="dark">
       <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-100 min-h-dvh`}>
-        {children}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
         <PWAInstallPrompt />
         <ServiceWorkerRegistration />
         <Analytics />
