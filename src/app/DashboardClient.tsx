@@ -13,6 +13,7 @@ import { mslToZH, formatTideHour } from '@/lib/tides/tide-utils';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
 
+import { useAnalytics } from '@/hooks/useAnalytics';
 import BottomNav from '@/components/layout/BottomNav';
 import WeatherErrorBanner from '@/components/layout/WeatherErrorBanner';
 import TideCurve from '@/components/dashboard/TideCurve';
@@ -51,6 +52,7 @@ function LoadingSkeleton() {
 }
 
 export default function DashboardClient() {
+  const { trackFishingScoreViewed } = useAnalytics();
   const [fetchDate] = useState(() => new Date());
   const [now, setNow] = useState(() => new Date());
   const [weatherExpanded, setWeatherExpanded] = useState(false);
@@ -98,6 +100,13 @@ export default function DashboardClient() {
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchDate]);
+
+  useEffect(() => {
+    if (!loading && currentScore !== null && tideData) {
+      trackFishingScoreViewed(currentScore.total, DASHBOARD_SPOT.name, tideData.currentPhase);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   const topSpecies = useMemo(
     () => weatherData && tideData && solunarData
