@@ -1,8 +1,8 @@
 import type { WeekDay } from '@/types';
-import { getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
+import { T, scoreColor, scoreLabel } from '@/design/tokens';
+import { IClock, IFish } from '@/design/icons';
 
 interface Props {
-  // Meilleur jour de la semaine pré-calculé par la page parente (évite la double dérivation)
   best: WeekDay;
 }
 
@@ -16,13 +16,17 @@ function fmt(date: Date | null): string {
 }
 
 export default function BestDayHero({ best }: Props) {
-
   if (best.score < 65) {
     return (
-      <div className="bg-orange-950/40 border border-orange-800/40 rounded-xl p-4">
-        <p className="text-xs text-orange-400/70 uppercase tracking-wide mb-1">Cette semaine</p>
-        <p className="text-white font-bold text-lg">Conditions difficiles</p>
-        <p className="text-orange-400/80 text-sm mt-1">
+      <div style={{
+        background: 'rgba(120,53,15,.25)',
+        border: '1px solid rgba(251,146,60,.2)',
+        borderRadius: 14,
+        padding: 16,
+      }}>
+        <p style={{ fontSize: '0.6875rem', color: 'rgba(251,146,60,.6)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Cette semaine</p>
+        <p style={{ fontSize: '1.125rem', fontWeight: 700, color: T.t1, margin: 0 }}>Conditions difficiles</p>
+        <p style={{ fontSize: '0.875rem', color: 'rgba(251,146,60,.7)', marginTop: 4 }}>
           Aucun créneau optimal prévu — score max : {best.score}/100
         </p>
       </div>
@@ -36,29 +40,36 @@ export default function BestDayHero({ best }: Props) {
     timeZone: 'Europe/Paris',
   });
 
-  const scoreColor = getFishingScoreColor(best.score);
-  const scoreLabel = getFishingScoreLabel(best.score);
+  const color = scoreColor(best.score);
+  const label = scoreLabel(best.score);
 
   return (
-    <div className="bg-gradient-to-br from-green-950/60 to-slate-900 border border-green-800/40 rounded-xl p-4">
-      <p className="text-xs text-green-400/70 uppercase tracking-wide mb-2">
-        ⭐ Meilleur créneau de la semaine
+    <div style={{
+      background: 'linear-gradient(135deg, oklch(15% .02 145), oklch(7% .012 230))',
+      border: `1px solid ${color}22`,
+      borderRadius: 14,
+      padding: 16,
+    }}>
+      <p style={{ fontSize: '0.6875rem', color: 'rgba(74,222,128,.6)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+        ★ Meilleur créneau de la semaine
       </p>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-white font-bold text-lg capitalize">{dayLabel}</p>
-          {best.bestWindowStart && best.bestWindowEnd ? (
-            <p className="text-green-300 text-sm mt-1">
-              ⏰ {fmt(best.bestWindowStart)} → {fmt(best.bestWindowEnd)}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: '1.125rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', textTransform: 'capitalize', margin: 0 }}>{dayLabel}</p>
+          {best.bestWindowStart && best.bestWindowEnd && (
+            <p style={{ fontSize: '0.875rem', color: color, marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <IClock size={13} color={color} />
+              {fmt(best.bestWindowStart)} → {fmt(best.bestWindowEnd)}
             </p>
-          ) : null}
-          <p className="text-slate-400 text-sm mt-0.5">
-            🐟 {best.topSpeciesName} · coeff {best.coefficient} · {best.windDir} {best.windKnots.toFixed(0)} kt
+          )}
+          <p style={{ fontSize: '0.875rem', color: T.t3, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <IFish size={13} color={T.t3} />
+            {best.topSpeciesName} · coeff {best.coefficient} · {best.windDir} {best.windKnots.toFixed(0)} kt
           </p>
         </div>
-        <div className="text-right shrink-0">
-          <p className={`text-2xl font-extrabold tabular-nums ${scoreColor}`}>{best.score}</p>
-          <p className={`text-xs ${scoreColor}`}>{scoreLabel}</p>
+        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <p style={{ fontSize: '1.875rem', fontWeight: 800, letterSpacing: '-0.04em', color, lineHeight: 1, fontVariantNumeric: 'tabular-nums', margin: 0 }}>{best.score}</p>
+          <p style={{ fontSize: '0.75rem', color, marginTop: 2 }}>{label}</p>
         </div>
       </div>
     </div>

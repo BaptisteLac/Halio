@@ -1,9 +1,12 @@
+'use client';
+
 import { useState } from 'react';
-import { Fish, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import type { CatchRow } from '@/lib/supabase/types';
 import { getSpeciesById } from '@/data/species';
 import { getSpotById } from '@/data/spots';
-import { getFishingScoreColor } from '@/lib/scoring/fishing-score';
+import { T, scoreColor } from '@/design/tokens';
+import { IFish } from '@/design/icons';
 
 interface Props {
   catches: CatchRow[];
@@ -11,15 +14,13 @@ interface Props {
 }
 
 function formatDay(dateStr: string): string {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 function formatTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// Grouper par jour (date locale)
 function groupByDay(catches: CatchRow[]): Array<{ day: string; items: CatchRow[] }> {
   const map = new Map<string, CatchRow[]>();
   for (const c of catches) {
@@ -32,7 +33,7 @@ function groupByDay(catches: CatchRow[]): Array<{ day: string; items: CatchRow[]
 
 export default function CatchList({ catches, onDelete }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [confirmId,  setConfirmId]  = useState<string | null>(null);
 
   async function handleDelete(id: string) {
     setDeletingId(id);
@@ -43,10 +44,10 @@ export default function CatchList({ catches, onDelete }: Props) {
 
   if (catches.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center py-16">
-        <Fish size={40} className="text-slate-600" />
-        <p className="text-slate-400 text-sm">Pas encore de prise enregistrée.</p>
-        <p className="text-slate-400 text-xs">Appuyez sur + pour logger votre première prise !</p>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '64px 24px', textAlign: 'center' }}>
+        <IFish size={40} color={T.t4} />
+        <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>Pas encore de prise enregistrée.</p>
+        <p style={{ fontSize: '0.75rem', color: T.t4, margin: 0 }}>Appuyez sur + pour logger votre première prise !</p>
       </div>
     );
   }
@@ -54,106 +55,91 @@ export default function CatchList({ catches, onDelete }: Props) {
   const groups = groupByDay(catches);
 
   return (
-    <div className="flex-1 overflow-y-auto pb-24">
-      <div className="max-w-lg mx-auto px-3 py-3 space-y-4">
+    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 96 }}>
+      <div style={{ maxWidth: 512, margin: '0 auto', padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {groups.map(({ day, items }) => (
           <div key={day}>
-            {/* Header du jour */}
-            <p className="text-slate-400 text-xs font-medium mb-2 px-1 capitalize">
+            <p style={{ fontSize: '0.75rem', fontWeight: 500, color: T.t4, marginBottom: 8, paddingLeft: 4, textTransform: 'capitalize' }}>
               {formatDay(items[0].caught_at)}
             </p>
-
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {items.map((c) => {
-                const species = getSpeciesById(c.species_id);
-                const spot    = getSpotById(c.spot_id);
-                const scoreColor = c.fishing_score !== null
-                  ? getFishingScoreColor(c.fishing_score)
-                  : 'text-slate-400';
-
-                const isConfirming = confirmId === c.id;
-                const isDeleting = deletingId === c.id;
+                const species     = getSpeciesById(c.species_id);
+                const spot        = getSpotById(c.spot_id);
+                const color       = c.fishing_score !== null ? scoreColor(c.fishing_score) : T.t4;
+                const isConfirming = confirmId  === c.id;
+                const isDeleting   = deletingId === c.id;
 
                 return (
-                  <div key={c.id} className="bg-slate-800 rounded-xl overflow-hidden">
-                    {/* Photo pleine largeur si disponible */}
+                  <div key={c.id} style={{ background: T.l2, borderRadius: 12, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
                     {c.photo_url && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={c.photo_url}
-                        alt={species?.name ?? 'Photo de prise'}
-                        className="w-full h-40 object-cover"
-                      />
+                      <img src={c.photo_url} alt={species?.name ?? 'Photo'} style={{ width: '100%', height: 160, objectFit: 'cover' }} />
                     )}
-                    <div className="px-4 py-3 flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-white font-medium text-sm">
-                          {species?.name ?? c.species_id}
-                        </span>
-                        {c.released && (
-                          <span className="text-xs text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-1.5 py-0.5 rounded-full">
-                            Relâché
+                    <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.875rem', fontWeight: 500, color: T.t1 }}>
+                            {species?.name ?? c.species_id}
                           </span>
+                          {c.released && (
+                            <span style={{ fontSize: '0.6875rem', color: T.accent, background: `${T.accent}15`, border: `1px solid ${T.accent}30`, padding: '2px 8px', borderRadius: 9999 }}>
+                              Relâché
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: T.t3, margin: '2px 0 0' }}>
+                          {spot?.name ?? c.spot_id} · {formatTime(c.caught_at)}
+                        </p>
+                        {(c.size_cm || c.weight_kg || c.technique) && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+                            {c.size_cm   && <span style={{ fontSize: '0.75rem', color: T.t2 }}>{c.size_cm} cm</span>}
+                            {c.weight_kg && <span style={{ fontSize: '0.75rem', color: T.t2 }}>{c.weight_kg} kg</span>}
+                            {c.technique && <span style={{ fontSize: '0.75rem', color: T.t3 }}>{c.technique}</span>}
+                          </div>
+                        )}
+                        {c.notes && (
+                          <p style={{ fontSize: '0.75rem', color: T.t3, margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {c.notes}
+                          </p>
                         )}
                       </div>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        {spot?.name ?? c.spot_id} · {formatTime(c.caught_at)}
-                      </p>
-                      {/* Taille / poids / technique */}
-                      <div className="flex flex-wrap gap-2 mt-1.5">
-                        {c.size_cm && (
-                          <span className="text-xs text-slate-300">{c.size_cm} cm</span>
+
+                      <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        {c.fishing_score !== null && (
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '1.125rem', fontWeight: 700, color, fontVariantNumeric: 'tabular-nums' }}>
+                              {c.fishing_score}
+                            </span>
+                            <p style={{ fontSize: '0.6875rem', color: T.t4, margin: 0 }}>/100</p>
+                          </div>
                         )}
-                        {c.weight_kg && (
-                          <span className="text-xs text-slate-300">{c.weight_kg} kg</span>
-                        )}
-                        {c.technique && (
-                          <span className="text-xs text-slate-400">{c.technique}</span>
+                        {isConfirming ? (
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              onClick={() => handleDelete(c.id)}
+                              disabled={isDeleting}
+                              style={{ fontSize: '0.6875rem', background: 'rgba(239,68,68,.15)', color: T.danger, border: `1px solid rgba(239,68,68,.3)`, borderRadius: 8, padding: '4px 8px', cursor: 'pointer', opacity: isDeleting ? 0.5 : 1 }}
+                            >
+                              {isDeleting ? '…' : 'Supprimer'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmId(null)}
+                              style={{ fontSize: '0.6875rem', color: T.t3, background: 'none', border: `1px solid ${T.border}`, borderRadius: 8, padding: '4px 8px', cursor: 'pointer' }}
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmId(c.id)}
+                            aria-label="Supprimer"
+                            style={{ color: T.t4, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         )}
                       </div>
-                      {c.notes && (
-                        <p className="text-slate-400 text-xs mt-1 line-clamp-1">{c.notes}</p>
-                      )}
-                    </div>
-
-                    {/* Score + suppression */}
-                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                      {c.fishing_score !== null && (
-                        <div className="text-right">
-                          <span className={`text-lg font-bold tabular-nums ${scoreColor}`}>
-                            {c.fishing_score}
-                          </span>
-                          <p className="text-slate-400 text-xs">/100</p>
-                        </div>
-                      )}
-
-                      {isConfirming ? (
-                        <div className="flex gap-1.5">
-                          <button
-                            onClick={() => handleDelete(c.id)}
-                            disabled={isDeleting}
-                            className="text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg px-2 py-1 disabled:opacity-50"
-                          >
-                            {isDeleting ? '…' : 'Supprimer'}
-                          </button>
-                          <button
-                            onClick={() => setConfirmId(null)}
-                            className="text-xs text-slate-400 border border-slate-700 rounded-lg px-2 py-1"
-                          >
-                            Annuler
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmId(c.id)}
-                          className="text-slate-600 hover:text-red-400 transition-colors p-1"
-                          aria-label="Supprimer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
                     </div>
                   </div>
                 );

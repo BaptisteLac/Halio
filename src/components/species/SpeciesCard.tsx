@@ -2,6 +2,9 @@ import Link from 'next/link';
 import type { Species } from '@/types';
 import type { FishingScore } from '@/types';
 import { getFishingScoreColor, getFishingScoreLabel } from '@/lib/scoring/fishing-score';
+import { T, scoreColor } from '@/design/tokens';
+import { SeasonDot } from '@/design/primitives';
+import { IMapPin } from '@/design/icons';
 
 interface Props {
   species: Species;
@@ -28,52 +31,51 @@ const TECHNIQUE_LABELS: Record<string, string> = {
 
 export default function SpeciesCard({ species, score, spotName, isInSeason }: Props) {
   const total = score?.total;
-  const color = total !== undefined ? getFishingScoreColor(total) : 'text-slate-400';
-  const label = total !== undefined ? getFishingScoreLabel(total) : '—';
+  const scoreLabel = total !== undefined ? getFishingScoreLabel(total) : '—';
+  const color = total !== undefined ? scoreColor(total) : T.t3;
 
   return (
     <Link
       href={`/especes/${species.slug}`}
-      className="block bg-slate-800 rounded-xl p-3 active:scale-[0.98] transition-transform"
+      style={{
+        display: 'block',
+        background: T.l2,
+        borderRadius: 14,
+        padding: 12,
+        textDecoration: 'none',
+        transition: 'transform 0.12s ease, opacity 0.12s ease',
+      }}
+      className="active:scale-[0.975] active:opacity-85"
     >
-      {/* En saison */}
-      <div className="flex items-center justify-between mb-2">
-        <span
-          className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-            isInSeason
-              ? 'bg-green-400/15 text-green-400'
-              : 'bg-slate-700 text-slate-400'
-          }`}
-        >
-          {isInSeason ? 'En saison' : 'Hors saison'}
-        </span>
-        {/* Score */}
-        <div className="flex items-baseline gap-1">
-          <span className={`text-lg font-bold tabular-nums leading-none ${color}`}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <SeasonDot inSeason={isInSeason} />
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+          <span style={{ fontSize: '1.125rem', fontWeight: 700, letterSpacing: '-0.02em', color, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
             {total ?? '·'}
           </span>
           {total !== undefined && (
-            <span className={`text-xs font-medium ${color}`}>{label}</span>
+            <span style={{ fontSize: '0.6875rem', fontWeight: 500, color }}>{scoreLabel}</span>
           )}
         </div>
       </div>
 
-      {/* Nom */}
-      <p className="text-white font-semibold text-sm leading-tight">{species.name}</p>
-      <p className="text-slate-400 text-xs italic mt-0.5 leading-tight">{species.scientificName}</p>
+      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t1, lineHeight: 1.3 }}>{species.name}</p>
+      <p style={{ fontSize: '0.75rem', color: T.t3, fontStyle: 'italic', marginTop: 2, lineHeight: 1.3 }}>{species.scientificName}</p>
       {spotName && (
-        <p className="text-slate-400 text-xs mt-0.5 leading-tight">📍 {spotName}</p>
+        <p style={{ fontSize: '0.75rem', color: T.t3, marginTop: 2, lineHeight: 1.3, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <IMapPin size={12} color={T.t3} />
+          {spotName}
+        </p>
       )}
 
-      {/* Infos clés */}
-      <div className="mt-2 flex flex-wrap gap-1">
+      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {species.minSize && (
-          <span className="text-xs text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
+          <span style={{ fontSize: '0.75rem', color: T.t3, background: T.l3, padding: '2px 6px', borderRadius: 6 }}>
             ≥{species.minSize} cm
           </span>
         )}
         {species.techniques.slice(0, 2).map((t) => (
-          <span key={t} className="text-xs text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded">
+          <span key={t} style={{ fontSize: '0.75rem', color: T.t3, background: T.l3, padding: '2px 6px', borderRadius: 6 }}>
             {TECHNIQUE_LABELS[t] ?? t}
           </span>
         ))}

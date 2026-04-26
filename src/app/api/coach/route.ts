@@ -10,13 +10,13 @@ import { fetchWeatherDataDirect } from '@/lib/weather/weather-service';
 import { getTopSpeciesForConditions } from '@/lib/scoring/fishing-score';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
+import { COACH_DAILY_LIMIT } from '@/lib/coach/constants';
 import type { CoachContext } from '@/types';
 
 const SLIDING_WINDOW = 10;
-const DAILY_LIMIT = 10;
 
 function getParisDate(): string {
-  return new Date().toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' }); // YYYY-MM-DD
+  return new Date().toLocaleDateString('fr-CA', { timeZone: 'Europe/Paris' });
 }
 
 function createSupabaseServerClient(cookieStore: Awaited<ReturnType<typeof cookies>>) {
@@ -33,9 +33,6 @@ function createSupabaseServerClient(cookieStore: Awaited<ReturnType<typeof cooki
   );
 }
 
-/**
- * GET /api/coach — diagnostic de santé (public)
- */
 export async function GET() {
   const checks: Record<string, string> = {};
 
@@ -66,15 +63,11 @@ export async function GET() {
   return Response.json({ status: allOk ? 'ok' : 'degraded', checks });
 }
 
-/**
- * POST /api/coach — chat avec le coach (authentification requise)
- */
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: 'Configuration serveur incomplète' }, { status: 500 });
   }
 
-  // ── 1. Auth ─────────────────────────────────────────────────────────────
   const cookieStore = await cookies();
   const supabase = createSupabaseServerClient(cookieStore);
   const { data: { user } } = await supabase.auth.getUser();
@@ -86,10 +79,8 @@ export async function POST(req: Request) {
     );
   }
 
-  // ── 2. Rate limiting ─────────────────────────────────────────────────────
   const today = getParisDate();
 
-  // maybeSingle() retourne null sans erreur si la ligne n'existe pas encore
   const { data: usage } = await supabase
     .from('coach_usage')
     .select('messages_today, reset_date')
@@ -99,7 +90,7 @@ export async function POST(req: Request) {
   const isNewDay = !usage || usage.reset_date < today;
   const currentCount = isNewDay ? 0 : (usage?.messages_today ?? 0);
 
-  if (currentCount >= DAILY_LIMIT) {
+  if (currentCount >= COACH_DAILY_LIMIT) {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const resetAt = new Date(
@@ -107,12 +98,11 @@ export async function POST(req: Request) {
     ).toISOString();
 
     return Response.json(
-      { error: 'Limite journalière atteinte', resetAt, limit: DAILY_LIMIT },
+      { error: 'Limite journalière atteinte', resetAt, limit: COACH_DAILY_LIMIT },
       { status: 429 },
     );
   }
 
-  // ── 3. Parse body ────────────────────────────────────────────────────────
   let messages: UIMessage[];
   let clientContext: CoachContext | null = null;
 
@@ -120,11 +110,10 @@ export async function POST(req: Request) {
     const body = await req.json() as { messages: UIMessage[]; context?: CoachContext };
     messages = body.messages ?? [];
     clientContext = body.context ?? null;
-  } catch (e) {
+  } catch {
     return Response.json({ error: 'Corps de requête invalide' }, { status: 400 });
   }
 
-  // ── 4. Incrémenter avant de streamer ─────────────────────────────────────
   await supabase
     .from('coach_usage')
     .upsert(
@@ -132,17 +121,13 @@ export async function POST(req: Request) {
       { onConflict: 'user_id' },
     );
 
-  // ── 5. Convertir les messages ─────────────────────────────────────────────
   let recentMessages;
   try {
     recentMessages = await convertToModelMessages(messages.slice(-SLIDING_WINDOW));
-  } catch (e) {
+  } catch {
     return Response.json({ error: 'Format de messages invalide' }, { status: 400 });
   }
 
-  // ── 6. Construire le system prompt ───────────────────────────────────────
-  // Priorité : contexte envoyé par le client (déjà chargé côté page)
-  // Fallback  : re-fetch serveur si le client n'a pas envoyé le contexte
   let systemPrompt: string;
   if (clientContext) {
     try {
@@ -151,7 +136,6 @@ export async function POST(req: Request) {
       systemPrompt = buildFallbackSystemPrompt();
     }
   } else {
-    // Fallback : collecte serveur (compatibilité avec les anciens clients)
     try {
       const now = new Date();
       const [tideData, weatherData] = await Promise.all([
@@ -168,23 +152,18 @@ export async function POST(req: Request) {
     }
   }
 
-  // ── 7. Streamer la réponse ────────────────────────────────────────────────
-  try {
-    const result = streamText({
-      model: anthropic('claude-haiku-4-5-20251001'),
-      system: systemPrompt,
-      messages: recentMessages,
-    });
-    return result.toUIMessageStreamResponse({
-      headers: {
-        'X-Coach-Remaining': String(DAILY_LIMIT - (currentCount + 1)),
-        'X-Coach-Limit': String(DAILY_LIMIT),
-      },
-    });
-  } catch (e) {
-    console.error('[coach] Erreur streamText:', e);
-    return Response.json({ error: 'Erreur lors de la génération de la réponse' }, { status: 500 });
-  }
+  const result = streamText({
+    model: anthropic('claude-haiku-4-5-20251001'),
+    system: systemPrompt,
+    messages: recentMessages,
+  });
+
+  return result.toUIMessageStreamResponse({
+    headers: {
+      'X-Coach-Remaining': String(COACH_DAILY_LIMIT - (currentCount + 1)),
+      'X-Coach-Limit': String(COACH_DAILY_LIMIT),
+    },
+  });
 }
 
 function buildFallbackSystemPrompt(): string {

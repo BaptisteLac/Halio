@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, AlertTriangle, Fish, Thermometer, Wind } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { getSpeciesBySlug, SPECIES } from '@/data/species';
 import ScoreBlock from '@/components/species/ScoreBlock';
 import BottomNav from '@/components/layout/BottomNav';
 import SpeciesViewTracker from '@/components/species/SpeciesViewTracker';
+import { T } from '@/design/tokens';
+import { IFish, IWind, IAlertTri, IArrowUp, IArrowDown } from '@/design/icons';
 
 export function generateStaticParams() {
   return SPECIES.map((s) => ({ slug: s.slug }));
@@ -22,13 +24,18 @@ export async function generateMetadata({
   return { title: `${species.name} — Halioapp` };
 }
 
-// ─── Labels ───────────────────────────────────────────────────────────────────
-
 const PHASE_LABELS: Record<string, string> = {
-  montant:    '↑ Montant',
-  descendant: '↓ Descendant',
-  etale:      '⇒ Étale',
+  montant:    'Montant',
+  descendant: 'Descendant',
+  etale:      'Étale',
   tous:       'Toutes phases',
+};
+
+const PHASE_ICONS: Record<string, React.ReactNode> = {
+  montant:    <IArrowUp size={11} color={T.accent} />,
+  descendant: <IArrowDown size={11} color={T.t3} />,
+  etale:      null,
+  tous:       null,
 };
 
 const TECHNIQUE_LABELS: Record<string, string> = {
@@ -49,7 +56,26 @@ const TECHNIQUE_LABELS: Record<string, string> = {
 
 const MONTH_LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-// ─── Composant ────────────────────────────────────────────────────────────────
+function Section({ title, icon, children }: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section style={{ background: T.l2, borderRadius: 14, border: `1px solid ${T.border}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <h2 style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+        {icon}
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function InfoCell({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div style={{ background: T.l3, borderRadius: 10, padding: '8px 10px' }}>
+      <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '0 0 2px' }}>{label}</p>
+      <p style={{ fontSize: '0.875rem', fontWeight: 500, color: accent ? T.accent : T.t1, margin: 0 }}>{value}</p>
+    </div>
+  );
+}
 
 export default async function SpeciesSlugPage({
   params,
@@ -73,186 +99,153 @@ export default async function SpeciesSlugPage({
   })();
 
   return (
-    <div className="min-h-dvh flex flex-col bg-slate-950">
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: T.page }}>
       <SpeciesViewTracker speciesId={species.id} speciesName={species.name} />
-      {/* Header */}
-      <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-40">
-        <div className="px-4 py-3 flex items-center gap-3 max-w-lg mx-auto">
+
+      <header style={{
+        flexShrink: 0,
+        background: T.l1,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${T.border}`,
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+      }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, maxWidth: 512, margin: '0 auto' }}>
           <Link
             href="/especes"
-            className="p-1.5 -ml-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
+            style={{ padding: 6, marginLeft: -6, borderRadius: 8, color: T.t3, display: 'flex', transition: 'color 0.12s ease' }}
             aria-label="Retour"
           >
             <ChevronLeft size={20} />
           </Link>
-          <div className="min-w-0">
-            <h1 className="text-base font-bold text-white truncate">{species.name}</h1>
-            <p className="text-xs text-slate-400 italic truncate">{species.scientificName}</p>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {species.name}
+            </h1>
+            <p style={{ fontSize: '0.75rem', color: T.t3, fontStyle: 'italic', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {species.scientificName}
+            </p>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-20">
-        <div className="px-4 py-4 space-y-4 max-w-lg mx-auto">
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 80 }}>
+        <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 512, margin: '0 auto' }}>
 
-          {/* Noms locaux */}
           {species.localNames.length > 0 && (
-            <p className="text-slate-400 text-sm">
-              Aussi appelé : <span className="text-slate-300">{species.localNames.join(', ')}</span>
+            <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>
+              Aussi appelé : <span style={{ color: T.t2 }}>{species.localNames.join(', ')}</span>
             </p>
           )}
 
-          {/* Score actuel */}
           <ScoreBlock species={species} />
 
           {/* Réglementation */}
-          <section className="bg-slate-800 rounded-xl p-4 space-y-2">
-            <h2 className="text-white font-semibold text-sm flex items-center gap-2">
-              <Fish size={14} className="text-cyan-400" />
-              Réglementation
-            </h2>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Taille min</p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.minSize ? `${species.minSize} cm` : 'Aucune'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Quota journalier</p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.dailyQuota ? `${species.dailyQuota} / jour` : 'Illimité'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Marquage</p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.markingRequired ? 'Obligatoire' : 'Non requis'}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Fermeture</p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.closedPeriod ?? 'Aucune'}
-                </p>
-              </div>
+          <Section title="Réglementation" icon={<IFish size={14} color={T.accent} />}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <InfoCell label="Taille min" value={species.minSize ? `${species.minSize} cm` : 'Aucune'} />
+              <InfoCell label="Quota journalier" value={species.dailyQuota ? `${species.dailyQuota} / jour` : 'Illimité'} />
+              <InfoCell label="Marquage" value={species.markingRequired ? 'Obligatoire' : 'Non requis'} />
+              <InfoCell label="Fermeture" value={species.closedPeriod ?? 'Aucune'} />
             </div>
-          </section>
+          </Section>
 
           {/* Saison */}
-          <section className="bg-slate-800 rounded-xl p-4 space-y-3">
-            <h2 className="text-white font-semibold text-sm">Saison</h2>
-            <div className="flex gap-1">
+          <Section title="Saison">
+            <div style={{ display: 'flex', gap: 3 }}>
               {MONTH_LABELS.map((label, i) => {
                 const month = i + 1;
                 const inSeason = seasonMonths.includes(month);
                 const isPeak = species.peakMonths.includes(month);
                 return (
-                  <div key={month} className="flex-1 text-center">
-                    <div
-                      className={`h-5 rounded-sm ${
-                        isPeak
-                          ? 'bg-cyan-400'
-                          : inSeason
-                          ? 'bg-cyan-400/30'
-                          : 'bg-slate-700'
-                      }`}
-                    />
-                    <p className="text-[8px] text-slate-400 mt-0.5">{label}</p>
+                  <div key={month} style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{
+                      height: 20,
+                      borderRadius: 4,
+                      background: isPeak ? T.accent : inSeason ? `${T.accent}40` : T.l3,
+                    }} />
+                    <p style={{ fontSize: '0.5rem', color: T.t4, marginTop: 2 }}>{label}</p>
                   </div>
                 );
               })}
             </div>
-            <p className="text-xs text-slate-400">
-              Cyan foncé = pic d&apos;activité
-            </p>
-          </section>
+            <p style={{ fontSize: '0.75rem', color: T.t4, margin: 0 }}>Cyan plein = pic d&apos;activité</p>
+          </Section>
 
           {/* Conditions optimales */}
-          <section className="bg-slate-800 rounded-xl p-4 space-y-2">
-            <h2 className="text-white font-semibold text-sm flex items-center gap-2">
-              <Wind size={14} className="text-cyan-400" />
-              Conditions optimales
-            </h2>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Coefficient</p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.optimalCoeffRange[0]}–{species.optimalCoeffRange[1]}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Phase marée</p>
-                <p className="text-white font-medium mt-0.5">
+          <Section title="Conditions optimales" icon={<IWind size={14} color={T.accent} />}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <InfoCell label="Coefficient" value={`${species.optimalCoeffRange[0]}–${species.optimalCoeffRange[1]}`} />
+              <div style={{ background: T.l3, borderRadius: 10, padding: '8px 10px' }}>
+                <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '0 0 2px' }}>Phase marée</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: 500, color: T.t1, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {PHASE_ICONS[species.optimalTidePhase]}
                   {PHASE_LABELS[species.optimalTidePhase]}
                 </p>
               </div>
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400">Heures de marée</p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.optimalTideHours.map((h) => `H${h}`).join(', ')}
-                </p>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-2.5">
-                <p className="text-slate-400 flex items-center gap-1">
-                  <Thermometer size={10} />
-                  Temp. eau
-                </p>
-                <p className="text-white font-medium mt-0.5">
-                  {species.optimalWaterTemp.min}–{species.optimalWaterTemp.max} °C
-                </p>
-              </div>
+              <InfoCell label="Heures de marée" value={species.optimalTideHours.map((h) => `H${h}`).join(', ')} />
+              <InfoCell label="Temp. eau" value={`${species.optimalWaterTemp.min}–${species.optimalWaterTemp.max} °C`} />
             </div>
-          </section>
+          </Section>
 
           {/* Techniques */}
-          <section className="bg-slate-800 rounded-xl p-4 space-y-3">
-            <h2 className="text-white font-semibold text-sm">Techniques</h2>
-            <div className="flex flex-wrap gap-1.5">
+          <Section title="Techniques">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {species.techniques.map((t) => (
-                <span
-                  key={t}
-                  className="text-xs text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-2 py-1 rounded-full"
-                >
+                <span key={t} style={{
+                  fontSize: '0.75rem',
+                  color: T.accent,
+                  background: `${T.accent}15`,
+                  border: `1px solid ${T.accent}30`,
+                  padding: '4px 10px',
+                  borderRadius: 9999,
+                }}>
                   {TECHNIQUE_LABELS[t] ?? t}
                 </span>
               ))}
             </div>
 
-            {/* Leurres */}
             {species.lures.length > 0 && (
-              <div className="space-y-1.5 pt-2 border-t border-slate-700">
-                <p className="text-slate-400 text-xs font-medium">Leurres recommandés</p>
+              <div style={{ paddingTop: 8, borderTop: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 500, color: T.t3, margin: '0 0 4px' }}>Leurres recommandés</p>
                 {species.lures.slice(0, 5).map((lure) => (
-                  <div
-                    key={lure.name}
-                    className="flex items-center justify-between text-xs py-1.5 border-b border-slate-700/50 last:border-0"
+                  <div key={lure.name} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '0.75rem',
+                    padding: '6px 0',
+                    borderBottom: `1px solid ${T.border}`,
+                  }}
+                  className="last:border-0"
                   >
                     <div>
-                      <span className="text-slate-200">{lure.name}</span>
-                      <span className="text-slate-400 ml-1.5">{lure.brand}</span>
+                      <span style={{ color: T.t1 }}>{lure.name}</span>
+                      <span style={{ color: T.t3, marginLeft: 6 }}>{lure.brand}</span>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-slate-400">{lure.weight}</span>
-                      <span className="text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded text-xs">
-                        {lure.type}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                      <span style={{ color: T.t3 }}>{lure.weight}</span>
+                      <span style={{ color: T.t3, background: T.l3, padding: '2px 6px', borderRadius: 4 }}>{lure.type}</span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Appâts */}
             {species.baits.length > 0 && (
-              <div className="pt-2 border-t border-slate-700">
-                <p className="text-slate-400 text-xs font-medium mb-1.5">Appâts naturels</p>
-                <div className="flex flex-wrap gap-1.5">
+              <div style={{ paddingTop: 8, borderTop: `1px solid ${T.border}` }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 500, color: T.t3, margin: '0 0 8px' }}>Appâts naturels</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {species.baits.map((bait) => (
-                    <span
-                      key={bait}
-                      className="text-xs text-slate-300 bg-slate-700/60 px-2 py-1 rounded-full"
-                    >
+                    <span key={bait} style={{
+                      fontSize: '0.75rem',
+                      color: T.t2,
+                      background: T.l3,
+                      padding: '4px 10px',
+                      borderRadius: 9999,
+                    }}>
                       {bait}
                     </span>
                   ))}
@@ -260,38 +253,48 @@ export default async function SpeciesSlugPage({
               </div>
             )}
 
-            {/* Couleurs */}
             {species.colors.length > 0 && (
-              <div className="pt-2 border-t border-slate-700">
-                <p className="text-slate-400 text-xs font-medium mb-1.5">Couleurs</p>
-                <ul className="space-y-1">
+              <div style={{ paddingTop: 8, borderTop: `1px solid ${T.border}` }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 500, color: T.t3, margin: '0 0 8px' }}>Couleurs</p>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {species.colors.map((color) => (
-                    <li key={color} className="text-xs text-slate-300 flex items-start gap-1.5">
-                      <span className="text-cyan-400 mt-0.5">·</span>
+                    <li key={color} style={{ fontSize: '0.75rem', color: T.t2, display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                      <span style={{ color: T.accent, marginTop: 1 }}>·</span>
                       {color}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-          </section>
+          </Section>
 
           {/* Description */}
-          <section className="space-y-2">
-            <p className="text-slate-300 text-sm leading-relaxed">{species.description}</p>
-          </section>
+          <p style={{ fontSize: '0.875rem', color: T.t2, lineHeight: 1.6, margin: 0 }}>{species.description}</p>
 
-          {/* Tips */}
-          <section className="bg-cyan-400/5 border border-cyan-400/20 rounded-xl p-3">
-            <p className="text-cyan-400 text-xs font-medium mb-1">💡 Conseil local</p>
-            <p className="text-slate-300 text-xs leading-relaxed">{species.tips}</p>
-          </section>
+          {/* Conseil local */}
+          <div style={{
+            background: `${T.accent}08`,
+            border: `1px solid ${T.accent}20`,
+            borderRadius: 14,
+            padding: '10px 12px',
+          }}>
+            <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: T.accent, margin: '0 0 4px' }}>Conseil local</p>
+            <p style={{ fontSize: '0.8125rem', color: T.t2, lineHeight: 1.55, margin: 0 }}>{species.tips}</p>
+          </div>
 
-          {/* Alerte période fermée */}
+          {/* Alerte fermeture */}
           {species.closedPeriod && (
-            <div className="flex gap-2 bg-red-900/20 border border-red-500/30 rounded-xl p-3">
-              <AlertTriangle size={15} className="text-red-400 shrink-0 mt-0.5" />
-              <p className="text-red-300 text-xs leading-relaxed">
+            <div style={{
+              display: 'flex',
+              gap: 8,
+              background: 'rgba(127,29,29,.2)',
+              border: `1px solid rgba(239,68,68,.25)`,
+              borderRadius: 14,
+              padding: '10px 12px',
+              alignItems: 'flex-start',
+            }}>
+              <IAlertTri size={15} color={T.danger} style={{ flexShrink: 0, marginTop: 2 }} />
+              <p style={{ fontSize: '0.8125rem', color: '#fca5a5', lineHeight: 1.5, margin: 0 }}>
                 Période de fermeture : {species.closedPeriod}
               </p>
             </div>

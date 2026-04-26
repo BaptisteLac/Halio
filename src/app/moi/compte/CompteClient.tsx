@@ -2,13 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Check, LogOut, Download, Trash2, User } from 'lucide-react';
+import { Check, LogOut, Download, Trash2 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
+import { T } from '@/design/tokens';
+import { IChevRight, IUser, IChevDown } from '@/design/icons';
 import BottomNav from '@/components/layout/BottomNav';
 
-const inputClass =
-  'w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors';
+const sectionLabel: React.CSSProperties = {
+  fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: T.t4, marginBottom: 6,
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: T.l3,
+  border: `1px solid ${T.border2}`,
+  borderRadius: 10,
+  padding: '10px 12px',
+  color: T.t1,
+  fontSize: '0.875rem',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
 
 export default function CompteClient() {
   const router = useRouter();
@@ -18,40 +33,33 @@ export default function CompteClient() {
     else router.push('/moi');
   }
 
-  const [user, setUser]               = useState<SupabaseUser | null | undefined>(undefined);
+  const [user,        setUser]        = useState<SupabaseUser | null | undefined>(undefined);
   const [displayName, setDisplayName] = useState('');
   const [nameSaved,   setNameSaved]   = useState(false);
 
-  const [showPwForm, setShowPwForm]   = useState(false);
-  const [password,   setPassword]     = useState('');
-  const [pwConfirm,  setPwConfirm]    = useState('');
-  const [pwError,    setPwError]      = useState<string | null>(null);
-  const [pwSuccess,  setPwSuccess]    = useState(false);
-  const [savingPw,   setSavingPw]     = useState(false);
+  const [showPwForm, setShowPwForm] = useState(false);
+  const [password,   setPassword]   = useState('');
+  const [pwConfirm,  setPwConfirm]  = useState('');
+  const [pwError,    setPwError]    = useState<string | null>(null);
+  const [pwSuccess,  setPwSuccess]  = useState(false);
+  const [savingPw,   setSavingPw]   = useState(false);
 
-  const [exporting,    setExporting]    = useState(false);
-  const [exportEmpty,  setExportEmpty]  = useState(false);
+  const [exporting,   setExporting]   = useState(false);
+  const [exportEmpty, setExportEmpty] = useState(false);
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteInput,       setDeleteInput]        = useState('');
-  const [deleting,          setDeleting]           = useState(false);
-  const [deleteError,       setDeleteError]        = useState<string | null>(null);
+  const [deleteInput,       setDeleteInput]       = useState('');
+  const [deleting,          setDeleting]          = useState(false);
+  const [deleteError,       setDeleteError]       = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
       if (!data.user) return;
-      supabase
-        .from('user_settings')
-        .select('display_name')
-        .eq('user_id', data.user.id)
-        .single()
-        .then(({ data: s }) => {
-          if (s?.display_name) setDisplayName(s.display_name);
-        });
+      supabase.from('user_settings').select('display_name').eq('user_id', data.user.id).single()
+        .then(({ data: s }) => { if (s?.display_name) setDisplayName(s.display_name); });
     });
   }, []);
 
@@ -62,10 +70,7 @@ export default function CompteClient() {
   async function saveDisplayName() {
     if (!user) return;
     const supabase = createClient();
-    await supabase.from('user_settings').upsert({
-      user_id: user.id,
-      display_name: displayName.trim() || null,
-    });
+    await supabase.from('user_settings').upsert({ user_id: user.id, display_name: displayName.trim() || null });
     setNameSaved(true);
     setTimeout(() => setNameSaved(false), 2000);
   }
@@ -73,14 +78,8 @@ export default function CompteClient() {
   async function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
     setPwError(null);
-    if (password !== pwConfirm) {
-      setPwError('Les mots de passe ne correspondent pas');
-      return;
-    }
-    if (password.length < 6) {
-      setPwError('Le mot de passe doit faire au moins 6 caractères');
-      return;
-    }
+    if (password !== pwConfirm) { setPwError('Les mots de passe ne correspondent pas'); return; }
+    if (password.length < 6)    { setPwError('Le mot de passe doit faire au moins 6 caractères'); return; }
     setSavingPw(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
@@ -95,44 +94,24 @@ export default function CompteClient() {
     }
   }
 
-  function cancelPwForm() {
-    setShowPwForm(false);
-    setPassword('');
-    setPwConfirm('');
-    setPwError(null);
-    setPwSuccess(false);
-  }
+  function cancelPwForm() { setShowPwForm(false); setPassword(''); setPwConfirm(''); setPwError(null); setPwSuccess(false); }
 
   async function exportCsv() {
     if (!user) return;
     setExporting(true);
     const supabase = createClient();
-    const { data } = await supabase
-      .from('catches')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('caught_at', { ascending: false });
-
-    if (!data || data.length === 0) {
-      setExporting(false);
-      setExportEmpty(true);
-      setTimeout(() => setExportEmpty(false), 3000);
-      return;
-    }
-
+    const { data } = await supabase.from('catches').select('*').eq('user_id', user.id).order('caught_at', { ascending: false });
+    if (!data || data.length === 0) { setExporting(false); setExportEmpty(true); setTimeout(() => setExportEmpty(false), 3000); return; }
     const headers = Object.keys(data[0]);
     const rows = data.map((row) =>
       headers.map((h) => {
         const val = (row as Record<string, unknown>)[h];
         if (val === null || val === undefined) return '';
         const str = String(val);
-        return str.includes(',') || str.includes('"') || str.includes('\n')
-          ? `"${str.replace(/"/g, '""')}"`
-          : str;
+        return str.includes(',') || str.includes('"') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str;
       }).join(',')
     );
-    const csv = [headers.join(','), ...rows].join('\n');
-
+    const csv  = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -154,11 +133,7 @@ export default function CompteClient() {
     setDeleting(true);
     setDeleteError(null);
     const res = await fetch('/api/account/delete', { method: 'POST' });
-    if (!res.ok) {
-      setDeleteError("Impossible de supprimer le compte. Réessayez.");
-      setDeleting(false);
-      return;
-    }
+    if (!res.ok) { setDeleteError("Impossible de supprimer le compte. Réessayez."); setDeleting(false); return; }
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/');
@@ -166,9 +141,9 @@ export default function CompteClient() {
 
   if (user === undefined || !user) {
     return (
-      <div className="h-dvh flex flex-col bg-slate-950">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', border: `2px solid ${T.accent}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
         </div>
         <BottomNav />
       </div>
@@ -176,119 +151,76 @@ export default function CompteClient() {
   }
 
   return (
-    <div className="min-h-dvh bg-slate-950 pb-20">
-      <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800">
-        <div className="px-4 py-3 max-w-lg mx-auto flex items-center gap-3">
-          <button
-            onClick={handleBack}
-            className="text-slate-400 hover:text-white transition-colors p-1 -ml-1"
-            aria-label="Retour"
-          >
-            <ChevronLeft size={22} />
+    <div style={{ minHeight: '100dvh', background: T.page, paddingBottom: 80 }}>
+      <header style={{ background: T.l1, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 40, borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ padding: '12px 16px', maxWidth: 512, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={handleBack} aria-label="Retour" style={{ padding: 6, marginLeft: -6, background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+            <IChevRight size={22} color={T.t3} style={{ transform: 'rotate(180deg)' }} />
           </button>
-          <h1 className="text-base font-bold text-white">Mon compte</h1>
+          <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', margin: 0 }}>Mon compte</h1>
         </div>
       </header>
 
-      <main className="px-4 py-4 space-y-5 max-w-lg mx-auto">
+      <main style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 512, margin: '0 auto' }}>
 
-        <section className="space-y-1">
-          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Profil</h2>
-          <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-cyan-400/15 rounded-full flex items-center justify-center shrink-0">
-                <User size={20} className="text-cyan-400" />
+        <section>
+          <p style={sectionLabel}>Profil</p>
+          <div style={{ background: T.l2, borderRadius: 12, border: `1px solid ${T.border}`, padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{ width: 40, height: 40, background: `${T.accent}18`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <IUser size={20} color={T.accent} />
               </div>
-              <div className="min-w-0">
-                <p className="text-white text-sm font-medium truncate">{user.email}</p>
-                <p className="text-slate-400 text-xs">Pêcheur du Bassin d'Arcachon</p>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: '0.875rem', fontWeight: 500, color: T.t1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</p>
+                <p style={{ fontSize: '0.75rem', color: T.t3, margin: 0 }}>Pêcheur du Bassin d'Arcachon</p>
               </div>
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Pseudo affiché</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  onBlur={saveDisplayName}
-                  placeholder="Pêcheur du Bassin"
-                  maxLength={40}
-                  className={inputClass}
-                />
-                {nameSaved && (
-                  <span className="shrink-0 flex items-center text-emerald-400">
-                    <Check size={16} />
-                  </span>
-                )}
+              <label style={{ display: 'block', fontSize: '0.6875rem', color: T.t4, marginBottom: 4 }}>Pseudo affiché</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} onBlur={saveDisplayName} placeholder="Pêcheur du Bassin" maxLength={40} style={inputStyle} />
+                {nameSaved && <span style={{ flexShrink: 0, display: 'flex', alignItems: 'center', color: T.ok }}><Check size={16} /></span>}
               </div>
-              <p className="text-xs text-slate-400 mt-1">Sauvegardé automatiquement</p>
+              <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '4px 0 0' }}>Sauvegardé automatiquement</p>
             </div>
           </div>
         </section>
 
-        <section className="space-y-1">
-          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Connexion</h2>
-          <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 overflow-hidden">
-
-            <div className="px-4 py-3 border-b border-slate-700/50">
-              <p className="text-xs text-slate-400">Email</p>
-              <p className="text-white text-sm mt-0.5 truncate">{user.email}</p>
+        <section>
+          <p style={sectionLabel}>Connexion</p>
+          <div style={{ background: T.l2, borderRadius: 12, border: `1px solid ${T.border}`, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}` }}>
+              <p style={{ fontSize: '0.6875rem', color: T.t4, margin: 0 }}>Email</p>
+              <p style={{ fontSize: '0.875rem', color: T.t1, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</p>
             </div>
 
             {user.app_metadata?.provider !== 'google' && (
               <>
                 <button
                   onClick={() => showPwForm ? cancelPwForm() : setShowPwForm(true)}
-                  className="w-full px-4 py-3 flex items-center justify-between text-sm text-slate-200 hover:bg-slate-700/40 transition-colors"
+                  style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.875rem', color: T.t2, background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   <span>Changer le mot de passe</span>
-                  <ChevronRight size={16} className={`text-slate-400 transition-transform ${showPwForm ? 'rotate-90' : ''}`} />
+                  <IChevDown size={16} color={T.t4} style={{ transform: showPwForm ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
                 </button>
 
                 {showPwForm && (
-                  <form onSubmit={handlePasswordChange} className="px-4 pb-4 pt-1 space-y-3 border-t border-slate-700/50">
+                  <form onSubmit={handlePasswordChange} style={{ padding: '4px 16px 16px', borderTop: `1px solid ${T.border}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Nouveau mot de passe</label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="min. 6 caractères"
-                        required
-                        className={inputClass}
-                      />
+                      <label style={{ display: 'block', fontSize: '0.6875rem', color: T.t4, marginBottom: 4 }}>Nouveau mot de passe</label>
+                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="min. 6 caractères" required style={inputStyle} />
                     </div>
                     <div>
-                      <label className="block text-xs text-slate-400 mb-1">Confirmer</label>
-                      <input
-                        type="password"
-                        value={pwConfirm}
-                        onChange={(e) => setPwConfirm(e.target.value)}
-                        placeholder="Répéter le mot de passe"
-                        required
-                        className={inputClass}
-                      />
+                      <label style={{ display: 'block', fontSize: '0.6875rem', color: T.t4, marginBottom: 4 }}>Confirmer</label>
+                      <input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} placeholder="Répéter le mot de passe" required style={inputStyle} />
                     </div>
-                    {pwError   && <p className="text-red-400 text-xs">{pwError}</p>}
-                    {pwSuccess && (
-                      <p className="text-cyan-400 text-xs flex items-center gap-1">
-                        <Check size={12} /> Mot de passe mis à jour
-                      </p>
-                    )}
-                    <div className="flex gap-2">
-                      <button
-                        type="submit"
-                        disabled={savingPw}
-                        className="flex-1 bg-cyan-400 text-slate-900 font-semibold rounded-lg py-2 text-sm disabled:opacity-50 transition-opacity"
-                      >
+                    {pwError   && <p style={{ fontSize: '0.75rem', color: T.danger, margin: 0 }}>{pwError}</p>}
+                    {pwSuccess && <p style={{ fontSize: '0.75rem', color: T.accent, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}><Check size={12} /> Mot de passe mis à jour</p>}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="submit" disabled={savingPw} style={{ flex: 1, background: T.accent, color: '#0f172a', fontWeight: 600, borderRadius: 10, padding: '10px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', opacity: savingPw ? 0.5 : 1 }}>
                         {savingPw ? 'Enregistrement…' : 'Enregistrer'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={cancelPwForm}
-                        className="px-4 text-slate-400 border border-slate-700 rounded-lg text-sm hover:border-slate-500 transition-colors"
-                      >
+                      <button type="button" onClick={cancelPwForm} style={{ padding: '10px 16px', color: T.t3, border: `1px solid ${T.border}`, borderRadius: 10, fontSize: '0.875rem', background: 'none', cursor: 'pointer' }}>
                         Annuler
                       </button>
                     </div>
@@ -299,96 +231,81 @@ export default function CompteClient() {
           </div>
         </section>
 
-        <section className="space-y-1">
-          <h2 className="text-xs text-slate-400 font-medium uppercase tracking-wide px-1">Mes données</h2>
-          <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-4">
-            <p className="text-xs text-slate-400 mb-3 leading-relaxed">
+        <section>
+          <p style={sectionLabel}>Mes données</p>
+          <div style={{ background: T.l2, borderRadius: 12, border: `1px solid ${T.border}`, padding: 16 }}>
+            <p style={{ fontSize: '0.75rem', color: T.t3, lineHeight: 1.6, margin: '0 0 12px' }}>
               Exportez l'intégralité de votre journal de pêche au format CSV, lisible dans Excel ou Google Sheets.
             </p>
             <button
               onClick={exportCsv}
               disabled={exporting}
-              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: T.l3, color: T.t1, border: `1px solid ${T.border}`, borderRadius: 10, padding: '10px 16px', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', opacity: exporting ? 0.5 : 1 }}
             >
               <Download size={16} />
               {exporting ? 'Exportation…' : 'Exporter mon journal (CSV)'}
             </button>
-            {exportEmpty && (
-              <p className="text-slate-400 text-xs mt-2">Aucune prise enregistrée à exporter.</p>
-            )}
+            {exportEmpty && <p style={{ fontSize: '0.75rem', color: T.t4, margin: '8px 0 0' }}>Aucune prise enregistrée à exporter.</p>}
           </div>
         </section>
 
         {!showLogoutConfirm ? (
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center justify-center gap-2 bg-slate-800/60 text-slate-300 border border-slate-700/50 rounded-xl py-3 text-sm font-medium hover:bg-slate-700/60 transition-colors"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: T.l2, color: T.t2, border: `1px solid ${T.border}`, borderRadius: 12, padding: '12px', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}
           >
             <LogOut size={16} />
             Déconnexion
           </button>
         ) : (
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-4 space-y-3">
-            <p className="text-sm text-slate-300 font-medium text-center">Confirmer la déconnexion ?</p>
-            <div className="flex gap-2">
-              <button
-                onClick={handleLogout}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-2.5 text-sm font-medium transition-colors"
-              >
-                <LogOut size={15} />
-                Déconnexion
+          <div style={{ background: T.l2, border: `1px solid ${T.border}`, borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: '0.875rem', color: T.t2, fontWeight: 500, textAlign: 'center', margin: 0 }}>Confirmer la déconnexion ?</p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleLogout} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: T.l3, color: T.t1, border: `1px solid ${T.border}`, borderRadius: 10, padding: '10px', fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer' }}>
+                <LogOut size={15} /> Déconnexion
               </button>
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                className="px-4 text-slate-400 border border-slate-700 rounded-lg text-sm hover:border-slate-500 transition-colors"
-              >
+              <button onClick={() => setShowLogoutConfirm(false)} style={{ padding: '10px 16px', color: T.t3, border: `1px solid ${T.border}`, borderRadius: 10, fontSize: '0.875rem', background: 'none', cursor: 'pointer' }}>
                 Annuler
               </button>
             </div>
           </div>
         )}
 
-        <section className="space-y-1">
-          <h2 className="text-xs text-red-500/70 font-medium uppercase tracking-wide px-1">Zone danger</h2>
-          <div className="bg-red-500/5 rounded-xl border border-red-500/20 px-4 py-4">
+        <section>
+          <p style={{ ...sectionLabel, color: 'rgba(239,68,68,.6)' }}>Zone danger</p>
+          <div style={{ background: 'rgba(239,68,68,.05)', borderRadius: 12, border: 'rgba(239,68,68,.2) 1px solid', padding: 16 }}>
             {!showDeleteConfirm ? (
               <>
-                <p className="text-xs text-slate-400 mb-3 leading-relaxed">
+                <p style={{ fontSize: '0.75rem', color: T.t3, lineHeight: 1.6, margin: '0 0 12px' }}>
                   La suppression est définitive. Toutes vos prises, préférences et données seront effacées sans possibilité de récupération.
                 </p>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-2 text-red-400 border border-red-500/30 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-red-500/10 transition-colors"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, color: T.danger, border: 'rgba(239,68,68,.3) 1px solid', borderRadius: 10, padding: '10px 16px', fontSize: '0.875rem', fontWeight: 500, background: 'none', cursor: 'pointer' }}
                 >
                   <Trash2 size={16} />
                   Supprimer mon compte
                 </button>
               </>
             ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-red-400 font-medium">Confirmer la suppression</p>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Tapez <span className="text-white font-mono">SUPPRIMER</span> pour confirmer.
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <p style={{ fontSize: '0.875rem', color: T.danger, fontWeight: 500, margin: 0 }}>Confirmer la suppression</p>
+                <p style={{ fontSize: '0.75rem', color: T.t3, lineHeight: 1.5, margin: 0 }}>
+                  Tapez <span style={{ color: T.t1, fontFamily: 'monospace' }}>SUPPRIMER</span> pour confirmer.
                 </p>
-                <input
-                  type="text"
-                  value={deleteInput}
-                  onChange={(e) => setDeleteInput(e.target.value)}
-                  placeholder="SUPPRIMER"
-                  className="w-full bg-slate-700 border border-red-500/30 rounded-lg px-3 py-2 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-red-400 transition-colors"
-                />
-                {deleteError && <p className="text-red-400 text-xs">{deleteError}</p>}
-                <div className="flex gap-2">
+                <input type="text" value={deleteInput} onChange={(e) => setDeleteInput(e.target.value)} placeholder="SUPPRIMER" style={{ ...inputStyle, borderColor: 'rgba(239,68,68,.35)' }} />
+                {deleteError && <p style={{ fontSize: '0.75rem', color: T.danger, margin: 0 }}>{deleteError}</p>}
+                <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     onClick={handleDeleteAccount}
                     disabled={deleteInput !== 'SUPPRIMER' || deleting}
-                    className="flex-1 bg-red-500 text-white font-semibold rounded-lg py-2 text-sm disabled:opacity-40 hover:bg-red-400 transition-colors"
+                    style={{ flex: 1, background: T.danger, color: '#fff', fontWeight: 600, borderRadius: 10, padding: '10px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', opacity: deleteInput !== 'SUPPRIMER' || deleting ? 0.4 : 1 }}
                   >
                     {deleting ? 'Suppression…' : 'Supprimer définitivement'}
                   </button>
                   <button
                     onClick={() => { setShowDeleteConfirm(false); setDeleteInput(''); setDeleteError(null); }}
-                    className="px-4 text-slate-400 border border-slate-700 rounded-lg text-sm hover:border-slate-500 transition-colors"
+                    style={{ padding: '10px 16px', color: T.t3, border: `1px solid ${T.border}`, borderRadius: 10, fontSize: '0.875rem', background: 'none', cursor: 'pointer' }}
                   >
                     Annuler
                   </button>

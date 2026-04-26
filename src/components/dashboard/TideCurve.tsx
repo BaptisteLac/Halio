@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import type { TideCurvePoint, TideExtreme } from '@/types';
 import { mslToZH } from '@/lib/tides/tide-utils';
+import { T } from '@/design/tokens';
 
 interface Props {
   curve: TideCurvePoint[];
@@ -24,9 +25,16 @@ interface Props {
 const CustomTooltip = ({ active, payload }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm shadow-lg">
-      <p className="text-slate-400 text-xs">{payload[0]?.payload?.label}</p>
-      <p className="text-cyan-400 font-bold">{Number(payload[0]?.value).toFixed(2)} m</p>
+    <div style={{
+      background: T.l2,
+      border: `1px solid ${T.border2}`,
+      borderRadius: 10,
+      padding: '6px 12px',
+      fontSize: '0.875rem',
+      boxShadow: '0 4px 16px rgba(0,0,0,.4)',
+    }}>
+      <p style={{ color: T.t3, fontSize: '0.75rem' }}>{payload[0]?.payload?.label}</p>
+      <p style={{ color: T.accent, fontWeight: 700 }}>{Number(payload[0]?.value).toFixed(2)} m</p>
     </div>
   );
 };
@@ -35,7 +43,6 @@ export default function TideCurve({ curve, extremes, now }: Props) {
   const midnight = new Date(now);
   midnight.setHours(0, 0, 0, 0);
 
-  // Extrêmes du jour uniquement
   const todayStr = now.toDateString();
   const todayExtremes = extremes.filter((e) => e.time.toDateString() === todayStr);
 
@@ -58,16 +65,16 @@ export default function TideCurve({ curve, extremes, now }: Props) {
   });
 
   return (
-    <div className="h-44 w-full">
+    <div style={{ height: 176, width: '100%' }}>
       <ResponsiveContainer width="100%" height="100%" debounce={50}>
         <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 4 }}>
           <defs>
             <linearGradient id="tideGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.25} />
-              <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.02} />
+              <stop offset="5%" stopColor={T.accent} stopOpacity={0.22} />
+              <stop offset="95%" stopColor={T.accent} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={T.l3} vertical={false} />
           <XAxis
             dataKey="time"
             type="number"
@@ -81,14 +88,14 @@ export default function TideCurve({ curve, extremes, now }: Props) {
                 timeZone: 'Europe/Paris',
               })
             }
-            tick={{ fill: '#475569', fontSize: 10 }}
+            tick={{ fill: T.t4, fontSize: 10 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
             domain={[minH, maxH]}
             tickFormatter={(v: number) => v.toFixed(1)}
-            tick={{ fill: '#475569', fontSize: 10 }}
+            tick={{ fill: T.t4, fontSize: 10 }}
             axisLine={false}
             tickLine={false}
             tickCount={4}
@@ -96,18 +103,18 @@ export default function TideCurve({ curve, extremes, now }: Props) {
           <Tooltip content={<CustomTooltip />} />
           <ReferenceLine
             x={now.getTime()}
-            stroke="#f59e0b"
+            stroke={T.t3}
             strokeWidth={1.5}
             strokeDasharray="4 3"
           />
           <Area
             type="monotone"
             dataKey="height"
-            stroke="#22d3ee"
+            stroke={T.accent}
             strokeWidth={2}
             fill="url(#tideGrad)"
             dot={false}
-            activeDot={{ r: 3, fill: '#22d3ee', stroke: '#0f172a', strokeWidth: 2 }}
+            activeDot={{ r: 4, fill: T.accent, stroke: T.page, strokeWidth: 2 }}
           />
           {todayExtremes.map((e, i) => (
             <ReferenceDot
@@ -115,13 +122,13 @@ export default function TideCurve({ curve, extremes, now }: Props) {
               x={e.time.getTime()}
               y={mslToZH(e.height)}
               r={4}
-              fill={e.type === 'high' ? '#22d3ee' : '#475569'}
-              stroke="#0f172a"
+              fill={e.type === 'high' ? T.accent : T.t3}
+              stroke={T.page}
               strokeWidth={2}
               label={{
                 value: `${e.type === 'high' ? 'PM' : 'BM'} ${mslToZH(e.height).toFixed(2)}m`,
                 position: e.type === 'high' ? 'insideTop' : 'insideBottom',
-                fill: '#94a3b8',
+                fill: T.t3,
                 fontSize: 9,
                 dy: e.type === 'high' ? -10 : 12,
               }}

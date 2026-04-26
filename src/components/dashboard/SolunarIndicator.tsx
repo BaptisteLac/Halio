@@ -1,5 +1,6 @@
-import { Sun, Moon, Clock } from 'lucide-react';
 import type { SolunarData } from '@/types';
+import { T } from '@/design/tokens';
+import { ISun, IMoon, IClock } from '@/design/icons';
 
 interface Props {
   solunar: SolunarData;
@@ -35,81 +36,110 @@ export default function SolunarIndicator({ solunar, now, compact = false }: Prop
     ? Math.round((nextPeriod.start.getTime() - now.getTime()) / 60000)
     : null;
 
-  // Prochaine période majeure (pour l'affichage compact)
   const nextMajor = solunar.periods.find((p) => p.type === 'majeure' && p.start > now) ?? null;
 
-  // Affichage condensé pour les vues compactes (ex. grille du dashboard)
   if (compact) {
     return (
-      <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-3 space-y-1.5">
-        <h3 className="text-slate-400 font-medium text-xs">Solunaire</h3>
-        <p className="text-white font-bold text-sm">{moonEmoji} {moonLabel}</p>
-        <div className="text-xs text-slate-400 space-y-0.5">
+      <div style={{
+        background: T.l2,
+        borderRadius: 14,
+        border: `1px solid ${T.border}`,
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+      }}>
+        <h3 style={{ fontSize: '0.75rem', fontWeight: 500, color: T.t3, margin: 0 }}>Solunaire</h3>
+        <p style={{ fontSize: '0.875rem', fontWeight: 700, color: T.t1, margin: 0 }}>
+          {moonEmoji} {moonLabel}
+        </p>
+        <div style={{ fontSize: '0.75rem', color: T.t3, display: 'flex', flexDirection: 'column', gap: 2 }}>
           {nextMajor && (
-            <p>⭐ Majeure : {fmt(nextMajor.start)}</p>
+            <p style={{ margin: 0 }}>★ Majeure : {fmt(nextMajor.start)}</p>
           )}
-          <p>☀️ Soleil : {fmt(solunar.sunrise)} – {fmt(solunar.sunset)}</p>
-          {solunar.moonrise && <p>🌙 Lune : {fmt(solunar.moonrise)}</p>}
+          <p style={{ margin: 0 }}>Soleil : {fmt(solunar.sunrise)} – {fmt(solunar.sunset)}</p>
+          {solunar.moonrise && <p style={{ margin: 0 }}>Lune : {fmt(solunar.moonrise)}</p>}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-slate-300 font-medium text-sm">Solunaire & Lune</h3>
+    <div style={{
+      background: T.l2,
+      borderRadius: 14,
+      border: `1px solid ${T.border}`,
+      padding: 16,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 12,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t2, margin: 0 }}>Solunaire & Lune</h3>
         {currentPeriod ? (
-          <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
-              currentPeriod === 'majeure'
-                ? 'bg-cyan-400/15 text-cyan-400 border-cyan-400/30'
-                : 'bg-yellow-400/15 text-yellow-400 border-yellow-400/30'
-            }`}
-          >
+          <span style={{
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            padding: '2px 8px',
+            borderRadius: 9999,
+            border: `1px solid ${currentPeriod === 'majeure' ? 'rgba(34,211,238,.3)' : 'rgba(250,204,21,.3)'}`,
+            background: currentPeriod === 'majeure' ? 'rgba(34,211,238,.1)' : 'rgba(250,204,21,.1)',
+            color: currentPeriod === 'majeure' ? T.accent : '#facc15',
+          }}>
             Période {currentPeriod}
           </span>
         ) : (
-          <span className="text-xs text-slate-400">Hors période</span>
+          <span style={{ fontSize: '0.75rem', color: T.t4 }}>Hors période</span>
         )}
       </div>
 
-      {/* Lune */}
-      <div className="flex items-center gap-3">
-        <span className="text-3xl">{moonEmoji}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontSize: '2rem', lineHeight: 1 }}>{moonEmoji}</span>
         <div>
-          <p className="text-white font-medium text-sm">{solunar.moonPhaseName}</p>
-          <p className="text-slate-400 text-xs">{Math.round(solunar.moonFraction * 100)}% illuminée</p>
+          <p style={{ fontSize: '0.875rem', fontWeight: 500, color: T.t1, margin: 0 }}>{solunar.moonPhaseName}</p>
+          <p style={{ fontSize: '0.75rem', color: T.t3, margin: 0 }}>{Math.round(solunar.moonFraction * 100)}% illuminée</p>
         </div>
       </div>
 
-      {/* Lever/coucher soleil + lune */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-400">
-        <div className="flex items-center gap-1.5">
-          <Sun size={11} className="text-yellow-400 shrink-0" />
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '10px 16px',
+        fontSize: '0.75rem',
+        color: T.t3,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <ISun size={11} color="#facc15" />
           <span>Lever {fmt(solunar.sunrise)}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Sun size={11} className="text-orange-400 shrink-0" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <ISun size={11} color="#fb923c" />
           <span>Coucher {fmt(solunar.sunset)}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Moon size={11} className="text-slate-300 shrink-0" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IMoon size={11} color={T.t2} />
           <span>Lever {fmt(solunar.moonrise)}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Moon size={11} className="text-slate-500 shrink-0" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IMoon size={11} color={T.t3} />
           <span>Coucher {fmt(solunar.moonset)}</span>
         </div>
       </div>
 
-      {/* Prochaine période */}
       {nextPeriod && minutesToNext !== null && (
-        <div className="flex items-start gap-1.5 text-xs text-slate-400 pt-2 border-t border-slate-700/50">
-          <Clock size={11} className="shrink-0 mt-0.5" />
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 6,
+          fontSize: '0.75rem',
+          color: T.t3,
+          paddingTop: 8,
+          borderTop: `1px solid ${T.border}`,
+        }}>
+          <IClock size={11} color={T.t3} style={{ flexShrink: 0, marginTop: 2 }} />
           <span>
             Prochaine {nextPeriod.type} dans{' '}
-            <span className="text-slate-200 font-medium">{formatDuration(minutesToNext)}</span>
+            <span style={{ color: T.t1, fontWeight: 500 }}>{formatDuration(minutesToNext)}</span>
             {' '}({fmt(nextPeriod.start)} – {fmt(nextPeriod.end)})
           </span>
         </div>

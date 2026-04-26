@@ -2,6 +2,7 @@
 
 import { getCoefficientLabel, getCoefficientColor } from '@/lib/tides/coefficient';
 import InfoTooltip from '@/components/ui/InfoTooltip';
+import { T } from '@/design/tokens';
 
 interface Props {
   coefficient: number;
@@ -15,16 +16,38 @@ export default function CoefficientBadge({ coefficient, size = 'md' }: Props) {
   const label = getCoefficientLabel(coefficient);
 
   const sizes = {
-    sm: { container: 'px-2 py-0.5', number: 'text-base', sub: 'text-xs' },
-    md: { container: 'px-3 py-1.5', number: 'text-xl', sub: 'text-xs' },
-    lg: { container: 'px-4 py-2', number: 'text-3xl', sub: 'text-sm' },
+    sm: { padding: '2px 8px', numberSize: '1rem', subSize: '0.75rem' },
+    md: { padding: '6px 12px', numberSize: '1.25rem', subSize: '0.75rem' },
+    lg: { padding: '8px 16px', numberSize: '1.875rem', subSize: '0.875rem' },
   }[size];
 
   return (
-    <div className="flex items-center gap-1">
-      <div className={`inline-flex flex-col items-center rounded-lg bg-slate-800 border border-slate-700 ${sizes.container}`}>
-        <span className={`font-bold leading-none ${color} ${sizes.number}`}>{coefficient}</span>
-        <span className={`text-slate-400 mt-0.5 ${sizes.sub}`}>{label}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{
+        display: 'inline-flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        borderRadius: 10,
+        background: T.l3,
+        border: `1px solid ${T.border2}`,
+        padding: sizes.padding,
+      }}>
+        <span style={{
+          fontWeight: 700,
+          lineHeight: 1,
+          fontSize: sizes.numberSize,
+          color,
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {coefficient}
+        </span>
+        <span style={{
+          fontSize: sizes.subSize,
+          color: T.t4,
+          marginTop: 2,
+        }}>
+          {label}
+        </span>
       </div>
       <InfoTooltip content={TOOLTIP} />
     </div>

@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { COACH_DAILY_LIMIT } from '@/lib/coach/constants';
 
-const DAILY_LIMIT = 10;
 const PARIS_TZ = 'Europe/Paris';
 
 export interface CoachUsage {
@@ -11,19 +11,16 @@ export interface CoachUsage {
   limit: number;
   remaining: number;
   isLimitReached: boolean;
-  isWarning: boolean; // true si remaining <= 2
+  isWarning: boolean;
   resetAt: Date | null;
   loading: boolean;
   refresh: () => void;
 }
 
-/** Retourne minuit Paris ce soir (en UTC). */
 function getParisResetAt(): Date {
   const todayParis = new Intl.DateTimeFormat('fr-CA', { timeZone: PARIS_TZ }).format(new Date());
   const [yr, mo, dy] = todayParis.split('-').map(Number);
-  // Minuit UTC pour la date "demain Paris"
   const tomorrowMidnightUTC = Date.UTC(yr, mo - 1, dy + 1);
-  // Trouver l'offset Paris à ce moment (UTC+1 hiver, UTC+2 été)
   const testDate = new Date(tomorrowMidnightUTC);
   const parisHour = parseInt(
     new Intl.DateTimeFormat('en-US', {
@@ -57,7 +54,6 @@ export function useCoachUsage(): CoachUsage {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      // Si reset_date < aujourd'hui → nouveau jour, compteur à 0 (l'API réinitialisera côté serveur)
       if (!data || data.reset_date < today) {
         setCount(0);
       } else {
@@ -72,11 +68,11 @@ export function useCoachUsage(): CoachUsage {
     load();
   }, [load]);
 
-  const remaining = Math.max(0, DAILY_LIMIT - count);
+  const remaining = Math.max(0, COACH_DAILY_LIMIT - count);
 
   return {
     count,
-    limit: DAILY_LIMIT,
+    limit: COACH_DAILY_LIMIT,
     remaining,
     isLimitReached: remaining === 0,
     isWarning: remaining <= 2 && remaining > 0,

@@ -8,6 +8,7 @@ import { fetchWeatherData } from '@/lib/weather/weather-service';
 import { getBestScoreForSpecies } from '@/lib/scoring/fishing-score';
 import { SPECIES, getSpeciesInSeason as filterSeason } from '@/data/species';
 import { SPOTS } from '@/data/spots';
+import { T } from '@/design/tokens';
 
 import BottomNav from '@/components/layout/BottomNav';
 import WeatherErrorBanner from '@/components/layout/WeatherErrorBanner';
@@ -18,11 +19,9 @@ type SeasonFilter = 'saison' | 'toutes';
 
 export default function EspecesClient() {
   const [now, setNow] = useState(() => new Date());
-
   const [tideData, setTideData]       = useState<TideData | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [solunarData, setSolunarData] = useState<SolunarData | null>(null);
-
   const [weatherError, setWeatherError] = useState(false);
   const [seasonFilter, setSeasonFilter] = useState<SeasonFilter>('saison');
 
@@ -49,7 +48,6 @@ export default function EspecesClient() {
 
   const scoreMap = useMemo<Map<string, { score: FishingScore; spot: Spot }>>(() => {
     if (!tideData || !weatherData || !solunarData) return new Map();
-
     return new Map(
       SPECIES.map((species) => {
         const result = getBestScoreForSpecies(species, SPOTS, weatherData, tideData, solunarData, now, SPOTS[0]!);
@@ -59,40 +57,54 @@ export default function EspecesClient() {
   }, [tideData, weatherData, solunarData, now]);
 
   const currentMonth = now.getMonth() + 1;
-
   const inSeasonIds = useMemo(
     () => new Set(filterSeason(currentMonth).map((s) => s.id)),
     [currentMonth]
   );
 
   const displayed = useMemo(() => {
-    if (seasonFilter === 'saison') {
-      return SPECIES.filter((s) => inSeasonIds.has(s.id));
-    }
+    if (seasonFilter === 'saison') return SPECIES.filter((s) => inSeasonIds.has(s.id));
     return SPECIES;
   }, [seasonFilter, inSeasonIds]);
 
   return (
-    <div className="h-dvh flex flex-col bg-slate-950 overflow-hidden">
-      <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 z-40">
-        <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
-          <div className="flex items-center gap-1">
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page, overflow: 'hidden' }}>
+      <header style={{
+        flexShrink: 0,
+        background: T.l1,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${T.border}`,
+        zIndex: 40,
+      }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 512, margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <div>
-              <h1 className="text-base font-bold text-white">Espèces</h1>
-              <p className="text-xs text-slate-400">{displayed.length} espèce{displayed.length > 1 ? 's' : ''}</p>
+              <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', margin: 0 }}>Espèces</h1>
+              <p style={{ fontSize: '0.6875rem', color: T.t3, marginTop: 1 }}>
+                {displayed.length} espèce{displayed.length > 1 ? 's' : ''}
+              </p>
             </div>
             <InfoTooltip content="Le score (0–100) indique les conditions actuelles pour chaque espèce, en tenant compte des marées, du vent, de la pression et du solunaire au meilleur spot disponible." />
           </div>
-          <div className="flex bg-slate-800 rounded-full p-0.5 gap-0.5">
+
+          <div style={{ display: 'flex', background: T.l3, borderRadius: 9999, padding: 3, gap: 2 }}>
             {(['saison', 'toutes'] as SeasonFilter[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setSeasonFilter(f)}
-                className={`text-xs px-3 min-h-[44px] rounded-full font-medium transition-colors ${
-                  seasonFilter === f
-                    ? 'bg-cyan-400 text-slate-900'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '6px 14px',
+                  minHeight: 36,
+                  borderRadius: 9999,
+                  fontWeight: 500,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease, color 0.15s ease',
+                  background: seasonFilter === f ? T.accent : 'transparent',
+                  color: seasonFilter === f ? '#0f172a' : T.t3,
+                }}
               >
                 {f === 'saison' ? 'En saison' : 'Toutes'}
               </button>
@@ -103,8 +115,15 @@ export default function EspecesClient() {
 
       {weatherError && <WeatherErrorBanner />}
 
-      <div className="flex-1 overflow-y-auto touch-pan-y">
-        <div className="grid grid-cols-2 gap-3 px-4 py-3 pb-20 max-w-lg mx-auto">
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 10,
+          padding: '12px 16px 80px',
+          maxWidth: 512,
+          margin: '0 auto',
+        }}>
           {displayed.map((species) => (
             <SpeciesCard
               key={species.id}
