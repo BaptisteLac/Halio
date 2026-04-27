@@ -23,7 +23,7 @@ const ContentSecurityPolicy = [
     'https://va.vercel-scripts.com',
   ].join(' '),
   // MapLibre uses Web Workers via blob: URLs
-  "worker-src blob:",
+  "worker-src 'self' blob:",
   "frame-src 'none'",
   "object-src 'none'",
   "base-uri 'self'",
