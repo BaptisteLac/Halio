@@ -5,12 +5,13 @@ import { useWeekForecasts } from '@/hooks/useWeekForecasts';
 import BottomNav from '@/components/layout/BottomNav';
 import BestDayHero from '@/components/semaine/BestDayHero';
 import WeekView from '@/components/semaine/WeekView';
+import { T } from '@/design/tokens';
 
 function LoadingSkeleton() {
   return (
-    <div className="animate-pulse space-y-4 p-4 max-w-lg mx-auto">
-      <div className="h-24 bg-slate-800 rounded-xl" />
-      <div className="h-64 bg-slate-800 rounded-xl" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 16, maxWidth: 512, margin: '0 auto' }}>
+      <div style={{ height: 96, background: T.l2, borderRadius: 14 }} />
+      <div style={{ height: 260, background: T.l2, borderRadius: 14 }} />
     </div>
   );
 }
@@ -33,27 +34,46 @@ export default function SemaineClient() {
   }, [days]);
 
   return (
-    <div className="h-dvh flex flex-col bg-slate-950 overflow-hidden">
-      <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800/80 z-40">
-        <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page, overflow: 'hidden' }}>
+      <header style={{
+        flexShrink: 0,
+        background: T.l1,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${T.border}`,
+        zIndex: 40,
+      }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 512, margin: '0 auto' }}>
           <div>
-            <h1 className="text-base font-bold text-white">Cette semaine</h1>
-            {weekRange && <p className="text-xs text-slate-400">{weekRange}</p>}
+            <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', margin: 0 }}>Cette semaine</h1>
+            {weekRange && <p style={{ fontSize: '0.6875rem', color: T.t3, marginTop: 1 }}>{weekRange}</p>}
           </div>
-          <div className="text-xs text-slate-400 bg-slate-800 rounded-md px-2 py-1">
+          <div style={{
+            fontSize: '0.75rem',
+            color: T.t3,
+            background: T.l3,
+            borderRadius: 8,
+            padding: '4px 8px',
+          }}>
             Bassin d&apos;Arcachon
           </div>
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto touch-pan-y">
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {loading && <LoadingSkeleton />}
 
         {!loading && error && (
-          <div className="p-4 max-w-lg mx-auto">
-            <div className="bg-orange-950/40 border border-orange-800/40 rounded-xl p-4 text-center">
-              <p className="text-orange-400 font-medium text-sm">Météo indisponible</p>
-              <p className="text-slate-400 text-xs mt-1">
+          <div style={{ padding: 16, maxWidth: 512, margin: '0 auto' }}>
+            <div style={{
+              background: 'rgba(120,53,15,.3)',
+              border: '1px solid rgba(251,146,60,.2)',
+              borderRadius: 14,
+              padding: 16,
+              textAlign: 'center',
+            }}>
+              <p style={{ color: T.warn, fontWeight: 500, fontSize: '0.875rem', margin: 0 }}>Météo indisponible</p>
+              <p style={{ color: T.t3, fontSize: '0.75rem', marginTop: 4, margin: '4px 0 0' }}>
                 Impossible de charger les prévisions — vérifiez votre connexion
               </p>
             </div>
@@ -61,16 +81,22 @@ export default function SemaineClient() {
         )}
 
         {!loading && !error && days && !bestDay && (
-          <div className="p-4 max-w-lg mx-auto">
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 text-center">
-              <p className="text-slate-300 font-medium text-sm">Conditions difficiles</p>
-              <p className="text-slate-400 text-xs mt-1">Aucun créneau optimal prévu cette semaine</p>
+          <div style={{ padding: 16, maxWidth: 512, margin: '0 auto' }}>
+            <div style={{
+              background: T.l2,
+              border: `1px solid ${T.border}`,
+              borderRadius: 14,
+              padding: 16,
+              textAlign: 'center',
+            }}>
+              <p style={{ color: T.t2, fontWeight: 500, fontSize: '0.875rem', margin: 0 }}>Conditions difficiles</p>
+              <p style={{ color: T.t3, fontSize: '0.75rem', marginTop: 4 }}>Aucun créneau optimal prévu cette semaine</p>
             </div>
           </div>
         )}
 
         {!loading && !error && days && bestDay && (
-          <main className="px-4 py-4 space-y-4 max-w-lg mx-auto pb-20">
+          <main style={{ padding: '16px 16px 80px', display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 512, margin: '0 auto' }}>
             <BestDayHero best={bestDay} />
             <WeekView days={days} bestDayDate={bestDay.date} todayDate={today} />
           </main>

@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import PWAInstallPrompt from '@/components/layout/PWAInstallPrompt';
 import ServiceWorkerRegistration from '@/components/layout/ServiceWorkerRegistration';
 import PostHogProvider from '@/app/providers/PostHogProvider';
+import AppFabs from '@/components/layout/AppFabs';
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-sans',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -43,7 +45,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0f172a',
+  themeColor: 'oklch(7% .012 230)',
   viewportFit: 'cover',
 };
 
@@ -53,11 +55,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark">
-      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-100 min-h-dvh`}>
+    <html lang="fr">
+      <body className={`${dmSans.variable} font-sans antialiased min-h-dvh`} style={{ background: 'oklch(7% .012 230)', color: '#ffffff' }}>
         <PostHogProvider>
           {children}
         </PostHogProvider>
+        <AppFabs />
         <PWAInstallPrompt />
         <ServiceWorkerRegistration />
         <Analytics />

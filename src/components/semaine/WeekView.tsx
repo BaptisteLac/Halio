@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { WeekDay } from '@/types';
-import { getFishingScoreColor } from '@/lib/scoring/fishing-score';
+import { T, scoreColor } from '@/design/tokens';
 import DayDetail from './DayDetail';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 
@@ -23,27 +23,52 @@ function fmt(date: Date | null): string {
 
 const SHORT_DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
+function barColor(score: number): string {
+  if (score >= 70) return T.accent;
+  if (score >= 55) return '#4ade80';
+  if (score >= 40) return '#facc15';
+  return T.l3;
+}
+
 export default function WeekView({ days, bestDayDate, todayDate }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   return (
-    <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-1">
-      <div className="flex items-center gap-1 mb-3">
-        <h3 className="text-slate-300 font-medium text-sm">Prévisions 7 jours</h3>
-        <InfoTooltip content="Score 0–100 du meilleur créneau de la journée : chaque heure est évaluée avec la prévision météo de cette heure (vent, pression), les marées simulées et le solunaire. Le score affiché est le pic — pas les conditions actuelles." />
+    <div style={{
+      background: T.l2,
+      borderRadius: 14,
+      border: `1px solid ${T.border}`,
+      padding: 16,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 4,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+        <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t2, margin: 0 }}>Prévisions 7 jours</h3>
+        <InfoTooltip content="Score 0–100 du meilleur créneau de la journée : chaque heure est évaluée avec la prévision météo (vent, pression), les marées simulées et le solunaire. Le score affiché est le pic — pas les conditions actuelles." />
       </div>
 
       {days.map((day) => {
         const isToday = day.date.toDateString() === todayDate.toDateString();
         const isBest = day.date.toDateString() === bestDayDate.toDateString();
         const isSelected = selectedDate?.toDateString() === day.date.toDateString();
-        const scoreColor = getFishingScoreColor(day.score);
+        const color = scoreColor(day.score);
         const dayNum = day.date.getDay();
         const dayName = SHORT_DAYS[dayNum] ?? '---';
         const dayOfMonth = day.date.getDate();
-
-        // Largeur de la barre de fenêtre proportionnelle au score (max ~80px)
         const barWidth = Math.round((day.score / 100) * 72);
+
+        const rowBg = isBest
+          ? 'rgba(74,222,128,.08)'
+          : isToday
+          ? 'rgba(34,211,238,.06)'
+          : 'transparent';
+
+        const rowBorder = isBest
+          ? '1px solid rgba(74,222,128,.2)'
+          : isToday
+          ? `1px solid rgba(34,211,238,.15)`
+          : '1px solid transparent';
 
         return (
           <div key={day.date.toISOString()}>
@@ -52,55 +77,85 @@ export default function WeekView({ days, bestDayDate, todayDate }: Props) {
               onClick={() => setSelectedDate((prev) =>
                 prev?.toDateString() === day.date.toDateString() ? null : day.date
               )}
-              className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-xl transition-colors text-left ${
-                isBest
-                  ? 'bg-green-950/50 border border-green-800/40'
-                  : isToday
-                  ? 'bg-slate-700/30 border border-cyan-800/30'
-                  : 'hover:bg-slate-700/20 border border-transparent'
-              }`}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 8px',
+                borderRadius: 10,
+                background: rowBg,
+                border: rowBorder,
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'background 0.12s ease',
+              }}
             >
               {/* Jour */}
-              <div className="w-9 text-center shrink-0">
-                <p className={`text-xs uppercase ${isBest ? 'text-green-400' : isToday ? 'text-cyan-400' : 'text-slate-400'}`}>
-                  {isBest ? '⭐' : dayName}
+              <div style={{ width: 36, textAlign: 'center', flexShrink: 0 }}>
+                <p style={{
+                  fontSize: '0.6875rem',
+                  textTransform: 'uppercase',
+                  color: isBest ? '#4ade80' : isToday ? T.accent : T.t4,
+                  margin: 0,
+                }}>
+                  {isBest ? '★' : dayName}
                 </p>
-                <p className={`text-base font-bold leading-tight ${isBest ? 'text-green-300' : isToday ? 'text-cyan-300' : 'text-slate-300'}`}>
+                <p style={{
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  color: isBest ? '#4ade80' : isToday ? T.accent : T.t2,
+                  margin: 0,
+                }}>
                   {dayOfMonth}
                 </p>
               </div>
 
-              {/* Barre + fenêtre */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <div
-                    className={`h-2 rounded-full ${day.score >= 70 ? 'bg-cyan-500' : day.score >= 55 ? 'bg-green-500/80' : day.score >= 40 ? 'bg-yellow-500/60' : 'bg-slate-600/40'}`}
-                    style={{ width: `${barWidth}px` }}
-                  />
+              {/* Barre + infos */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{
+                    height: 8,
+                    borderRadius: 999,
+                    background: barColor(day.score),
+                    width: `${barWidth}px`,
+                    flexShrink: 0,
+                  }} />
                   {day.bestWindowStart && (
-                    <span className="text-xs text-slate-400">
+                    <span style={{ fontSize: '0.75rem', color: T.t3 }}>
                       {fmt(day.bestWindowStart)}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-400 truncate">
+                <p style={{ fontSize: '0.75rem', color: T.t3, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   Coeff {day.coefficient} · {day.windDir} {day.windKnots.toFixed(0)} kt
-                  {day.isHighWind && ' ⚠️'}
+                  {day.isHighWind && <span style={{ color: T.warn }}> ⚠</span>}
                   {' · '}
                   {day.topSpeciesName}
                 </p>
               </div>
 
               {/* Score */}
-              <span className={`font-bold text-base tabular-nums shrink-0 ${scoreColor}`}>
+              <span style={{
+                fontWeight: 700,
+                fontSize: '1rem',
+                fontVariantNumeric: 'tabular-nums',
+                flexShrink: 0,
+                color,
+              }}>
                 {day.score}
               </span>
             </button>
 
-            {/* Détail inline — animé avec grid-template-rows */}
-            <div className={`grid transition-[grid-template-rows] duration-200 ease-out ${isSelected ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-              <div className="overflow-hidden">
-                <div className="mt-1 mb-2">
+            {/* Détail inline animé */}
+            <div style={{
+              display: 'grid',
+              gridTemplateRows: isSelected ? '1fr' : '0fr',
+              transition: 'grid-template-rows 0.2s ease',
+            }}>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ marginTop: 4, marginBottom: 8 }}>
                   <DayDetail day={day} />
                 </div>
               </div>

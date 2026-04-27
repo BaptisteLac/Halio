@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { T } from '@/design/tokens';
 
 type Mode = 'login' | 'signup' | 'forgot';
 
@@ -15,14 +16,26 @@ function toFrench(msg: string): string {
   return msg;
 }
 
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: T.l3,
+  border: `1px solid ${T.border2}`,
+  borderRadius: 12,
+  padding: '12px 16px',
+  color: T.t1,
+  fontSize: '0.875rem',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
+
 export default function AuthForm() {
   const [mode, setMode]                     = useState<Mode>('login');
   const [email, setEmail]                   = useState('');
   const [password, setPassword]             = useState('');
   const [error, setError]                   = useState<string | null>(null);
   const [loading, setLoading]               = useState(false);
-  const [sent, setSent]                     = useState(false); // email de confirmation / reset envoyé
-  const [needsConfirmation, setNeedsConfirmation] = useState(false); // compte non confirmé
+  const [sent, setSent]                     = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -53,18 +66,15 @@ export default function AuthForm() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     const supabase = createClient();
 
     if (mode === 'forgot') {
-      const redirectTo = `${window.location.origin}/auth/callback?type=recovery`;
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      });
       setLoading(false);
-      if (resetError) {
-        setError(toFrench(resetError.message));
-      } else {
-        setSent(true);
-      }
+      if (resetError) setError(toFrench(resetError.message));
+      else setSent(true);
       return;
     }
 
@@ -75,87 +85,18 @@ export default function AuthForm() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       setLoading(false);
-      if (signupError) {
-        setError(toFrench(signupError.message));
-      } else {
-        setSent(true);
-      }
+      if (signupError) setError(toFrench(signupError.message));
+      else setSent(true);
       return;
     }
 
-    // login
     const { error: loginError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (loginError) {
-      if (loginError.message.includes('Email not confirmed')) {
-        setNeedsConfirmation(true);
-      } else {
-        setError(toFrench(loginError.message));
-      }
+      if (loginError.message.includes('Email not confirmed')) setNeedsConfirmation(true);
+      else setError(toFrench(loginError.message));
     }
   }
-
-  // ── Écran "email envoyé" ────────────────────────────────────────────────────
-  if (sent) {
-    const isReset = mode === 'forgot';
-    return (
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-sm space-y-6 text-center">
-          <p className="text-5xl">📧</p>
-          <div>
-            <h2 className="text-white font-bold text-xl">Email envoyé !</h2>
-            <p className="text-slate-400 text-sm mt-2">
-              {isReset
-                ? 'Vérifiez votre boîte mail et cliquez sur le lien pour réinitialiser votre mot de passe.'
-                : 'Vérifiez votre boîte mail et cliquez sur le lien pour activer votre compte.'}
-            </p>
-          </div>
-          <button
-            onClick={() => switchMode('login')}
-            className="text-slate-400 text-sm hover:text-slate-200 transition-colors"
-          >
-            ← Retour à la connexion
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Écran "compte non confirmé" ────────────────────────────────────────────
-  if (needsConfirmation) {
-    return (
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-sm space-y-6 text-center">
-          <p className="text-5xl">✉️</p>
-          <div>
-            <h2 className="text-white font-bold text-xl">Email non confirmé</h2>
-            <p className="text-slate-400 text-sm mt-2">
-              Votre compte existe mais l&apos;email <span className="text-slate-200">{email}</span> n&apos;a pas encore été confirmé.
-              Renvoyez le lien d&apos;activation pour pouvoir vous connecter.
-            </p>
-          </div>
-          {error && <p className="text-red-400 text-xs">{error}</p>}
-
-          <button
-            onClick={handleResend}
-            disabled={loading}
-            className="w-full bg-cyan-400 text-slate-900 font-semibold rounded-xl py-3 text-sm disabled:opacity-50 transition-opacity"
-          >
-            {loading ? 'Envoi…' : "Renvoyer l'email de confirmation"}
-          </button>
-          <button
-            onClick={() => switchMode('login')}
-            className="block w-full text-slate-400 text-sm hover:text-slate-200 transition-colors"
-          >
-            ← Retour à la connexion
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Formulaire ──────────────────────────────────────────────────────────────
-  const isForgot = mode === 'forgot';
 
   async function handleGoogle() {
     const supabase = createClient();
@@ -165,28 +106,78 @@ export default function AuthForm() {
     });
   }
 
+  if (sent) {
+    return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
+        <div style={{ width: '100%', maxWidth: 384, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <p style={{ fontSize: '3rem' }}>📧</p>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: T.t1, margin: '0 0 8px' }}>Email envoyé !</h2>
+            <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>
+              {mode === 'forgot'
+                ? 'Vérifiez votre boîte mail et cliquez sur le lien pour réinitialiser votre mot de passe.'
+                : 'Vérifiez votre boîte mail et cliquez sur le lien pour activer votre compte.'}
+            </p>
+          </div>
+          <button onClick={() => switchMode('login')} style={{ fontSize: '0.875rem', color: T.t3, background: 'none', border: 'none', cursor: 'pointer' }}>
+            ← Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsConfirmation) {
+    return (
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
+        <div style={{ width: '100%', maxWidth: 384, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <p style={{ fontSize: '3rem' }}>✉️</p>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: T.t1, margin: '0 0 8px' }}>Email non confirmé</h2>
+            <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>
+              L&apos;email <span style={{ color: T.t2 }}>{email}</span> n&apos;a pas encore été confirmé.
+              Renvoyez le lien d&apos;activation pour pouvoir vous connecter.
+            </p>
+          </div>
+          {error && <p style={{ fontSize: '0.75rem', color: T.danger, margin: 0 }}>{error}</p>}
+          <button
+            onClick={handleResend}
+            disabled={loading}
+            style={{ width: '100%', background: T.accent, color: '#0f172a', fontWeight: 600, borderRadius: 12, padding: '12px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', opacity: loading ? 0.5 : 1 }}
+          >
+            {loading ? 'Envoi…' : "Renvoyer l'email de confirmation"}
+          </button>
+          <button onClick={() => switchMode('login')} style={{ fontSize: '0.875rem', color: T.t3, background: 'none', border: 'none', cursor: 'pointer' }}>
+            ← Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isForgot = mode === 'forgot';
+
   return (
-    <div className="flex-1 flex items-center justify-center px-6">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <p className="text-4xl mb-3">🎣</p>
-          <h2 className="text-white font-bold text-xl">Journal de pêche</h2>
-          <p className="text-slate-400 text-sm mt-1">
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
+      <div style={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '2.5rem', margin: '0 0 12px' }}>🎣</p>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: T.t1, margin: '0 0 4px' }}>Journal de pêche</h2>
+          <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>
             {mode === 'login'  && 'Connectez-vous pour accéder à vos prises'}
             {mode === 'signup' && 'Créez un compte pour commencer à logger'}
             {isForgot          && 'Entrez votre email pour réinitialiser votre mot de passe'}
           </p>
         </div>
 
-        {/* Bouton Google — affiché uniquement sur login et signup */}
         {!isForgot && (
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <button
               type="button"
               onClick={handleGoogle}
-              className="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-semibold rounded-xl py-3 text-sm hover:bg-slate-100 transition-colors"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#ffffff', color: '#0f172a', fontWeight: 600, borderRadius: 12, padding: '12px', fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
                 <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
                 <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
@@ -194,25 +185,23 @@ export default function AuthForm() {
               </svg>
               Continuer avec Google
             </button>
-
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-slate-700" />
-              <span className="text-slate-400 text-xs">ou</span>
-              <div className="flex-1 h-px bg-slate-700" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, height: 1, background: T.border }} />
+              <span style={{ fontSize: '0.75rem', color: T.t4 }}>ou</span>
+              <div style={{ flex: 1, height: 1, background: T.border }} />
             </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             required
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
+            style={inputStyle}
           />
-
           {!isForgot && (
             <input
               type="password"
@@ -221,16 +210,14 @@ export default function AuthForm() {
               placeholder="Mot de passe"
               required
               minLength={6}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 transition-colors"
+              style={inputStyle}
             />
           )}
-
-          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
-
+          {error && <p style={{ fontSize: '0.75rem', color: T.danger, textAlign: 'center', margin: 0 }}>{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-400 text-slate-900 font-semibold rounded-xl py-3 text-sm disabled:opacity-50 transition-opacity"
+            style={{ width: '100%', background: T.accent, color: '#0f172a', fontWeight: 600, borderRadius: 12, padding: '12px', fontSize: '0.875rem', border: 'none', cursor: 'pointer', opacity: loading ? 0.5 : 1 }}
           >
             {loading
               ? 'Chargement…'
@@ -240,28 +227,19 @@ export default function AuthForm() {
           </button>
         </form>
 
-        <div className="space-y-2 text-center">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'center' }}>
           {mode === 'login' && (
             <>
-              <button
-                onClick={() => switchMode('signup')}
-                className="block w-full text-slate-400 text-sm hover:text-slate-200 transition-colors py-3"
-              >
+              <button onClick={() => switchMode('signup')} style={{ fontSize: '0.875rem', color: T.t3, background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0' }}>
                 Pas encore de compte ? S&apos;inscrire
               </button>
-              <button
-                onClick={() => switchMode('forgot')}
-                className="block w-full text-slate-400 text-xs hover:text-slate-200 transition-colors py-3"
-              >
+              <button onClick={() => switchMode('forgot')} style={{ fontSize: '0.75rem', color: T.t4, background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0' }}>
                 Mot de passe oublié ?
               </button>
             </>
           )}
           {(mode === 'signup' || mode === 'forgot') && (
-            <button
-              onClick={() => switchMode('login')}
-              className="block w-full text-slate-400 text-sm hover:text-slate-200 transition-colors"
-            >
+            <button onClick={() => switchMode('login')} style={{ fontSize: '0.875rem', color: T.t3, background: 'none', border: 'none', cursor: 'pointer' }}>
               Déjà un compte ? Se connecter
             </button>
           )}

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { Sparkles, Send, Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { CoachContext } from '@/types';
 import { createClient } from '@/lib/supabase/client';
@@ -14,6 +14,8 @@ import { fetchWeatherData } from '@/lib/weather/weather-service';
 import { getTopSpeciesForConditions } from '@/lib/scoring/fishing-score';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
+import { T } from '@/design/tokens';
+import { ISparkles, ISend } from '@/design/icons';
 import BottomNav from '@/components/layout/BottomNav';
 import ChatMessage from '@/components/coach/ChatMessage';
 import SuggestionCards from '@/components/coach/SuggestionCards';
@@ -23,19 +25,19 @@ import { useCoachUsage } from '@/hooks/useCoachUsage';
 
 function LoadingCoach() {
   return (
-    <div className="min-h-dvh bg-slate-950 pb-20 flex flex-col">
-      <div className="bg-slate-900/90 border-b border-slate-800 px-4 py-3">
-        <div className="flex items-center gap-2 max-w-lg mx-auto">
-          <div className="w-7 h-7 rounded-full bg-violet-500/20 animate-pulse" />
-          <div className="h-5 w-36 bg-slate-800 rounded animate-pulse" />
+    <div style={{ minHeight: '100dvh', background: T.page, paddingBottom: 80, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ background: T.l1, borderBottom: `1px solid ${T.border}`, padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 512, margin: '0 auto' }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${T.coach}20`, animation: 'pulse 1.5s ease-in-out infinite' }} />
+          <div style={{ height: 20, width: 144, background: T.l3, borderRadius: 6, animation: 'pulse 1.5s ease-in-out infinite' }} />
         </div>
       </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto animate-pulse">
-            <Sparkles size={18} className="text-violet-400" />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: `${T.coach}10`, border: `1px solid ${T.coach}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ISparkles size={18} color={T.coach} />
           </div>
-          <p className="text-slate-400 text-sm">Chargement…</p>
+          <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>Chargement…</p>
         </div>
       </div>
       <BottomNav />
@@ -45,23 +47,25 @@ function LoadingCoach() {
 
 function UnauthenticatedCoach() {
   return (
-    <div className="h-dvh flex flex-col bg-slate-950">
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-8 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center relative">
-          <Sparkles size={28} className="text-violet-400" />
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center">
-            <Lock size={11} className="text-slate-400" />
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, padding: '0 32px', textAlign: 'center' }}>
+        <div style={{ position: 'relative', width: 64, height: 64 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 18, background: `${T.coach}10`, border: `1px solid ${T.coach}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ISparkles size={28} color={T.coach} />
+          </div>
+          <div style={{ position: 'absolute', bottom: -4, right: -4, width: 24, height: 24, borderRadius: '50%', background: T.l1, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Lock size={11} color={T.t3} />
           </div>
         </div>
         <div>
-          <h1 className="text-xl font-bold text-white mb-2">Coach Halio</h1>
-          <p className="text-slate-400 text-sm leading-relaxed max-w-xs mx-auto">
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: T.t1, margin: '0 0 8px' }}>Coach Halio</h1>
+          <p style={{ fontSize: '0.875rem', color: T.t3, lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
             Connectez-vous pour accéder au coach IA — conseils personnalisés sur les conditions du Bassin en temps réel.
           </p>
         </div>
         <Link
           href="/journal"
-          className="bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-xl px-8 py-3 text-sm transition-colors"
+          style={{ background: T.coach, color: '#fff', fontWeight: 600, borderRadius: 12, padding: '12px 32px', fontSize: '0.875rem', textDecoration: 'none' }}
         >
           Se connecter
         </Link>
@@ -72,12 +76,11 @@ function UnauthenticatedCoach() {
 }
 
 export default function CoachClient() {
-  const [user, setUser] = useState<SupabaseUser | null | undefined>(undefined);
+  const [user,         setUser]         = useState<SupabaseUser | null | undefined>(undefined);
   const [coachContext, setCoachContext] = useState<CoachContext | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [inputValue, setInputValue] = useState('');
+  const [loadError,    setLoadError]    = useState<string | null>(null);
+  const [inputValue,   setInputValue]   = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const usage = useCoachUsage();
 
   useEffect(() => {
@@ -92,7 +95,6 @@ export default function CoachClient() {
   useEffect(() => {
     if (!user) return;
     const now = new Date();
-
     Promise.allSettled([getTideData(now), fetchWeatherData()])
       .then(([tideResult, weatherResult]) => {
         if (tideResult.status === 'rejected' || weatherResult.status === 'rejected') {
@@ -103,12 +105,10 @@ export default function CoachClient() {
           setLoadError(`Impossible de charger les données de ${failed}.`);
           return;
         }
-        const tideData = tideResult.value;
+        const tideData    = tideResult.value;
         const weatherData = weatherResult.value;
         const solunarData = getSolunarData(now);
-        const topSpecies = getTopSpeciesForConditions(
-          SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3,
-        );
+        const topSpecies  = getTopSpeciesForConditions(SPECIES, DASHBOARD_SPOT, weatherData, tideData, solunarData, now, 3);
         setCoachContext({ tideData, weatherData, solunarData, topSpecies });
       });
   }, [user]);
@@ -117,24 +117,18 @@ export default function CoachClient() {
   useEffect(() => { contextRef.current = coachContext; }, [coachContext]);
 
   const transport = useMemo(
-    () => new DefaultChatTransport({
-      api: '/api/coach',
-      body: () => ({ context: contextRef.current }),
-    }),
+    () => new DefaultChatTransport({ api: '/api/coach', body: () => ({ context: contextRef.current }) }),
     [],
   );
 
   const { messages, sendMessage, status } = useChat({ transport });
-
   const isLoading = status === 'streaming' || status === 'submitted';
 
   const prevStatus = useRef(status);
   useEffect(() => {
     const prev = prevStatus.current;
     prevStatus.current = status;
-    if ((prev === 'streaming' || prev === 'submitted') && status === 'ready') {
-      usage.refresh();
-    }
+    if ((prev === 'streaming' || prev === 'submitted') && status === 'ready') usage.refresh();
   }, [status, usage]);
 
   useEffect(() => {
@@ -142,15 +136,15 @@ export default function CoachClient() {
   }, [messages]);
 
   if (user === undefined) return <LoadingCoach />;
-  if (user === null) return <UnauthenticatedCoach />;
+  if (user === null)      return <UnauthenticatedCoach />;
 
   if (loadError) {
     return (
-      <div className="min-h-dvh bg-slate-950 pb-20 flex flex-col">
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <p className="text-red-400 font-medium">Erreur de chargement</p>
-            <p className="text-slate-400 text-sm mt-1">{loadError}</p>
+      <div style={{ minHeight: '100dvh', background: T.page, paddingBottom: 80, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '0.875rem', fontWeight: 500, color: T.danger, margin: '0 0 4px' }}>Erreur de chargement</p>
+            <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>{loadError}</p>
           </div>
         </div>
         <BottomNav />
@@ -162,86 +156,72 @@ export default function CoachClient() {
 
   const limitReached = usage.isLimitReached;
 
-  const handleSend = () => {
+  function handleSend() {
     const text = inputValue.trim();
     if (!text || isLoading || limitReached) return;
     setInputValue('');
     sendMessage({ text });
-  };
+  }
 
-  const handleSuggestionSelect = (text: string) => {
-    if (limitReached) return;
-    sendMessage({ text });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  }
 
   return (
-    <div className="min-h-dvh bg-slate-950 pb-20 flex flex-col">
-      <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800/80">
-        <div className="px-4 py-3 max-w-lg mx-auto space-y-2.5">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-violet-500/15 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
-              <Sparkles size={14} className="text-violet-400" />
+    <div style={{ minHeight: '100dvh', background: T.page, paddingBottom: 80, display: 'flex', flexDirection: 'column' }}>
+      <header style={{ background: T.l1, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 40, borderBottom: `1px solid ${T.border}` }}>
+        <div style={{ padding: '12px 16px', maxWidth: 512, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${T.coach}18`, border: `1px solid ${T.coach}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <ISparkles size={14} color={T.coach} />
             </div>
-            <div className="flex items-center gap-2 flex-1">
-              <h1 className="text-base font-bold text-white">Coach Halio</h1>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-400">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+              <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', margin: 0 }}>Coach Halio</h1>
+              <span style={{ fontSize: '0.6875rem', fontWeight: 500, padding: '2px 8px', borderRadius: 9999, background: `${T.coach}10`, border: `1px solid ${T.coach}25`, color: T.coach }}>
                 Conditions live
               </span>
             </div>
           </div>
           <ConditionBadges context={coachContext} />
         </div>
-        <div className="max-w-lg mx-auto pb-3">
+        <div style={{ maxWidth: 512, margin: '0 auto' }}>
           <CoachUsageBar usage={usage} />
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto touch-pan-y px-4 py-4 max-w-lg mx-auto w-full">
+      <main style={{ flex: 1, overflowY: 'auto', padding: '16px', maxWidth: 512, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         {messages.length === 0 ? (
-          <div className="space-y-6 pt-2">
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto">
-                <Sparkles size={24} className="text-violet-400" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingTop: 8 }}>
+            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: `${T.coach}10`, border: `1px solid ${T.coach}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ISparkles size={24} color={T.coach} />
               </div>
-              <h2 className="text-white font-semibold">Comment puis-je vous aider ?</h2>
-              <p className="text-slate-400 text-sm max-w-xs mx-auto">
+              <h2 style={{ fontSize: '1rem', fontWeight: 600, color: T.t1, margin: 0 }}>Comment puis-je vous aider ?</h2>
+              <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0, maxWidth: 280 }}>
                 Je connais les conditions actuelles du Bassin — marées, météo, espèces, réglementations.
               </p>
             </div>
-            {!limitReached && <SuggestionCards onSelect={handleSuggestionSelect} />}
+            {!limitReached && <SuggestionCards onSelect={(text) => sendMessage({ text })} />}
             {limitReached && (
-              <p className="text-center text-orange-400/80 text-sm bg-orange-500/10 border border-orange-500/20 rounded-xl px-4 py-3">
+              <p style={{ textAlign: 'center', fontSize: '0.875rem', color: T.warn, background: `${T.warn}10`, border: `1px solid ${T.warn}20`, borderRadius: 12, padding: '12px 16px' }}>
                 Vous avez atteint la limite de {usage.limit} messages pour aujourd&apos;hui.<br />
-                <span className="text-slate-400">Revenez demain !</span>
+                <span style={{ color: T.t3 }}>Revenez demain !</span>
               </p>
             )}
           </div>
         ) : (
-          <div className="space-y-1 py-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 8 }}>
             {messages.map((m) => {
               const textContent = m.parts
                 .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
                 .map((p) => p.text)
                 .join('');
-              return (
-                <ChatMessage
-                  key={m.id}
-                  role={m.role as 'user' | 'assistant'}
-                  content={textContent}
-                />
-              );
+              return <ChatMessage key={m.id} role={m.role as 'user' | 'assistant'} content={textContent} />;
             })}
             {isLoading && (
-              <div className="flex items-center gap-2 pl-9 pb-2">
-                <Loader2 size={14} className="text-violet-400 animate-spin" />
-                <span className="text-slate-400 text-xs">Le coach réfléchit…</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 36 }}>
+                <Loader2 size={14} color={T.coach} style={{ animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '0.75rem', color: T.t4 }}>Le coach réfléchit…</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -249,13 +229,24 @@ export default function CoachClient() {
         )}
       </main>
 
-      <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/80 px-4 py-3">
+      <div style={{
+        position: 'fixed',
+        bottom: 'calc(3.5rem + env(safe-area-inset-bottom))',
+        left: 0,
+        right: 0,
+        zIndex: 30,
+        background: `${T.page}f5`,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderTop: `1px solid ${T.border}`,
+        padding: '12px 16px',
+      }}>
         {limitReached ? (
-          <p className="text-center text-slate-400 text-sm py-1">
+          <p style={{ textAlign: 'center', fontSize: '0.875rem', color: T.t4, margin: 0, padding: '4px 0' }}>
             Limite quotidienne atteinte — revenez demain
           </p>
         ) : (
-          <div className="flex items-center gap-2 max-w-lg mx-auto">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 512, margin: '0 auto' }}>
             <input
               id="coach-input"
               type="text"
@@ -263,18 +254,41 @@ export default function CoachClient() {
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               onFocus={() => setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)}
-              placeholder={limitReached ? 'Limite atteinte — revenez demain' : 'Posez votre question…'}
+              placeholder="Posez votre question…"
               disabled={isLoading || limitReached || usage.loading}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{
+                flex: 1,
+                background: T.l2,
+                border: `1px solid ${T.border2}`,
+                borderRadius: 12,
+                padding: '10px 16px',
+                fontSize: '0.875rem',
+                color: T.t1,
+                outline: 'none',
+                opacity: isLoading || limitReached || usage.loading ? 0.5 : 1,
+              }}
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={isLoading || !inputValue.trim() || limitReached || usage.loading}
-              className="w-10 h-10 flex-shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all duration-150 active:scale-95"
               aria-label="Envoyer"
+              style={{
+                width: 40,
+                height: 40,
+                flexShrink: 0,
+                borderRadius: 12,
+                background: T.coach,
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                opacity: isLoading || !inputValue.trim() || limitReached || usage.loading ? 0.4 : 1,
+                transition: 'opacity 0.15s ease',
+              }}
             >
-              <Send size={16} className="text-white" />
+              <ISend size={16} color="#fff" />
             </button>
           </div>
         )}

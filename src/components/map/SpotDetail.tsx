@@ -1,7 +1,8 @@
 'use client';
 
-import { X, AlertTriangle, Anchor, Layers } from 'lucide-react';
 import type { Spot, SpotScoreEntry, ZoneType, TidePhase } from '@/types';
+import { T, scoreColor, ZONE_COLORS } from '@/design/tokens';
+import { IX, IAnchor, ILayers, IAlertTri, IArrowUp, IArrowDown } from '@/design/icons';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 
 interface Props {
@@ -20,96 +21,131 @@ const ZONE_LABELS: Record<ZoneType, string> = {
   plages:       'Plages',
 };
 
-const ZONE_COLORS: Record<ZoneType, string> = {
-  passes:       'bg-cyan-400/20 text-cyan-400 border-cyan-400/30',
-  bancs:        'bg-green-400/20 text-green-400 border-green-400/30',
-  fosses:       'bg-violet-400/20 text-violet-400 border-violet-400/30',
-  parcs:        'bg-yellow-400/20 text-yellow-400 border-yellow-400/30',
-  chenaux:      'bg-orange-400/20 text-orange-400 border-orange-400/30',
-  'cap-ferret': 'bg-pink-400/20 text-pink-400 border-pink-400/30',
-  plages:       'bg-slate-400/20 text-slate-400 border-slate-400/30',
-};
-
 const BOTTOM_LABELS: Record<string, string> = {
   sable: 'Sable',
-  vase: 'Vase',
+  vase:  'Vase',
   roche: 'Roche',
   epave: 'Épave',
   mixte: 'Mixte',
 };
 
 const PHASE_LABELS: Record<TidePhase, string> = {
-  montant:   '↑ Montant',
-  descendant:'↓ Descendant',
-  etale:     '⇒ Étale',
-  tous:      'Toutes phases',
+  montant:    'Montant',
+  descendant: 'Descendant',
+  etale:      'Étale',
+  tous:       'Toutes phases',
 };
 
-function ScoreBadge({ score, label, color }: { score: number; label: string; color: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className={`text-3xl font-bold tabular-nums ${color}`}>{score}</span>
-      <div>
-        <p className={`text-sm font-medium ${color}`}>{label}</p>
-        <p className="text-slate-400 text-xs">/100</p>
-      </div>
-    </div>
-  );
-}
+const PHASE_ICONS: Record<TidePhase, React.ReactNode> = {
+  montant:    <IArrowUp size={11} color={T.accent} />,
+  descendant: <IArrowDown size={11} color={T.t3} />,
+  etale:      null,
+  tous:       null,
+};
 
 export default function SpotDetail({ spot, entry, onClose }: Props) {
   const visible = spot !== null;
 
   return (
-    <div
-      className={`fixed left-0 right-0 bottom-[calc(3.5rem_+_env(safe-area-inset-bottom))] z-40 transition-transform duration-300 ${
-        visible ? 'translate-y-0' : 'translate-y-full'
-      }`}
-    >
-      <div className="bg-slate-900 border-t border-slate-700 rounded-t-2xl max-h-[65dvh] overflow-y-auto overscroll-contain">
-        {/* Handle */}
-        <div className="flex justify-center pt-2 pb-1 sticky top-0 bg-slate-900">
-          <div className="w-10 h-1 rounded-full bg-slate-600" />
+    <div style={{
+      position: 'fixed',
+      left: 0,
+      right: 0,
+      bottom: 'calc(3.5rem + env(safe-area-inset-bottom))',
+      zIndex: 40,
+      transform: visible ? 'translateY(0)' : 'translateY(100%)',
+      transition: 'transform 300ms ease',
+    }}>
+      <div style={{
+        background: T.l1,
+        borderTop: `1px solid ${T.border}`,
+        borderRadius: '16px 16px 0 0',
+        maxHeight: '65dvh',
+        overflowY: 'auto',
+        overscrollBehavior: 'contain',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          paddingTop: 8,
+          paddingBottom: 4,
+          position: 'sticky',
+          top: 0,
+          background: T.l1,
+        }}>
+          <div style={{ width: 40, height: 4, borderRadius: 9999, background: T.border2 }} />
         </div>
 
         {spot && (
-          <div className="px-4 pb-6 space-y-4">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h2 className="text-white font-bold text-lg leading-tight">{spot.name}</h2>
-                <span
-                  className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full border font-medium ${ZONE_COLORS[spot.zone]}`}
-                >
+          <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <h2 style={{ fontSize: '1.125rem', fontWeight: 700, color: T.t1, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+                  {spot.name}
+                </h2>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                  color: ZONE_COLORS[spot.zone] ?? T.accent,
+                  background: `${ZONE_COLORS[spot.zone] ?? T.accent}18`,
+                  border: `1px solid ${ZONE_COLORS[spot.zone] ?? T.accent}35`,
+                  padding: '3px 10px',
+                  borderRadius: 9999,
+                }}>
                   {ZONE_LABELS[spot.zone]}
                 </span>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors shrink-0"
                 aria-label="Fermer"
+                style={{
+                  padding: 6,
+                  borderRadius: 8,
+                  background: T.l3,
+                  border: 'none',
+                  color: T.t3,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <X size={18} />
+                <IX size={18} color={T.t3} />
               </button>
             </div>
 
-            {/* Score + top espèces */}
             {entry && (
-              <div className="flex items-center gap-4 bg-slate-800 rounded-xl px-4 py-3">
-                <div className="flex items-start gap-1">
-                  <ScoreBadge
-                    score={entry.best.total}
-                    label={entry.best.label}
-                    color={entry.best.color}
-                  />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+                background: T.l2,
+                borderRadius: 12,
+                padding: '12px 16px',
+                border: `1px solid ${T.border}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '2rem', fontWeight: 800, color: scoreColor(entry.best.total), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+                      {entry.best.total}
+                    </span>
+                    <div>
+                      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: scoreColor(entry.best.total), margin: 0 }}>
+                        {entry.best.label}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: T.t4, margin: 0 }}>/100</p>
+                    </div>
+                  </div>
                   <InfoTooltip content="Score 0–100 pour ce spot maintenant : croise marées, vent, pression et solunaire pour la meilleure espèce en saison ciblant ce spot." />
                 </div>
                 {entry.top3.length > 0 && (
-                  <div className="flex-1 space-y-1 border-l border-slate-700 pl-4">
+                  <div style={{ flex: 1, borderLeft: `1px solid ${T.border}`, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {entry.top3.map(({ species, score }) => (
-                      <div key={species.id} className="flex items-center justify-between">
-                        <span className="text-slate-300 text-xs">{species.name}</span>
-                        <span className={`text-xs font-semibold tabular-nums ${score.color}`}>
+                      <div key={species.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.75rem', color: T.t3 }}>{species.name}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: scoreColor(score.total), fontVariantNumeric: 'tabular-nums' }}>
                           {score.total}
                         </span>
                       </div>
@@ -119,51 +155,61 @@ export default function SpotDetail({ spot, entry, onClose }: Props) {
               </div>
             )}
 
-            {/* Infos clés */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-slate-800 rounded-lg p-3 flex items-center gap-2">
-                <Anchor size={14} className="text-slate-400 shrink-0" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div style={{ background: T.l2, borderRadius: 10, padding: '10px 12px', border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <IAnchor size={14} color={T.t4} />
                 <div>
-                  <p className="text-xs text-slate-400">Profondeur</p>
-                  <p className="text-sm text-white font-medium">{spot.depth.min}–{spot.depth.max} m</p>
+                  <p style={{ fontSize: '0.6875rem', color: T.t4, margin: 0 }}>Profondeur</p>
+                  <p style={{ fontSize: '0.875rem', color: T.t1, fontWeight: 500, margin: 0 }}>{spot.depth.min}–{spot.depth.max} m</p>
                 </div>
               </div>
-              <div className="bg-slate-800 rounded-lg p-3 flex items-center gap-2">
-                <Layers size={14} className="text-slate-400 shrink-0" />
+              <div style={{ background: T.l2, borderRadius: 10, padding: '10px 12px', border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ILayers size={14} color={T.t4} />
                 <div>
-                  <p className="text-xs text-slate-400">Fond</p>
-                  <p className="text-sm text-white font-medium">{BOTTOM_LABELS[spot.bottom] ?? spot.bottom}</p>
+                  <p style={{ fontSize: '0.6875rem', color: T.t4, margin: 0 }}>Fond</p>
+                  <p style={{ fontSize: '0.875rem', color: T.t1, fontWeight: 500, margin: 0 }}>{BOTTOM_LABELS[spot.bottom] ?? spot.bottom}</p>
                 </div>
               </div>
-              <div className="bg-slate-800 rounded-lg p-3">
-                <p className="text-xs text-slate-400">Phase optimale</p>
-                <p className="text-sm text-white font-medium mt-0.5">{PHASE_LABELS[spot.optimalTidePhase]}</p>
+              <div style={{ background: T.l2, borderRadius: 10, padding: '10px 12px', border: `1px solid ${T.border}` }}>
+                <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '0 0 2px' }}>Phase optimale</p>
+                <p style={{ fontSize: '0.875rem', color: T.t1, fontWeight: 500, margin: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {PHASE_ICONS[spot.optimalTidePhase]}
+                  {PHASE_LABELS[spot.optimalTidePhase]}
+                </p>
               </div>
-              <div className="bg-slate-800 rounded-lg p-3">
-                <p className="text-xs text-slate-400">Coeff optimal</p>
-                <p className="text-sm text-white font-medium mt-0.5">
+              <div style={{ background: T.l2, borderRadius: 10, padding: '10px 12px', border: `1px solid ${T.border}` }}>
+                <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '0 0 2px' }}>Coeff optimal</p>
+                <p style={{ fontSize: '0.875rem', color: T.t1, fontWeight: 500, margin: 0 }}>
                   {spot.optimalCoeffRange[0]}–{spot.optimalCoeffRange[1]}
                 </p>
               </div>
             </div>
 
-            {/* Danger */}
             {spot.danger && (
-              <div className="flex gap-2 bg-red-900/20 border border-red-500/30 rounded-xl p-3">
-                <AlertTriangle size={15} className="text-red-400 shrink-0 mt-0.5" />
-                <p className="text-red-300 text-xs leading-relaxed">{spot.danger}</p>
+              <div style={{
+                display: 'flex',
+                gap: 8,
+                background: 'rgba(127,29,29,.2)',
+                border: `1px solid rgba(239,68,68,.25)`,
+                borderRadius: 12,
+                padding: '10px 12px',
+                alignItems: 'flex-start',
+              }}>
+                <IAlertTri size={15} color={T.danger} style={{ flexShrink: 0, marginTop: 2 }} />
+                <p style={{ fontSize: '0.8125rem', color: '#fca5a5', lineHeight: 1.5, margin: 0 }}>{spot.danger}</p>
               </div>
             )}
 
-            {/* Description */}
-            <div>
-              <p className="text-slate-300 text-sm leading-relaxed">{spot.description}</p>
-            </div>
+            <p style={{ fontSize: '0.875rem', color: T.t2, lineHeight: 1.6, margin: 0 }}>{spot.description}</p>
 
-            {/* Tips */}
-            <div className="bg-cyan-400/5 border border-cyan-400/20 rounded-xl p-3">
-              <p className="text-cyan-400 text-xs font-medium mb-1">💡 Conseil local</p>
-              <p className="text-slate-300 text-xs leading-relaxed">{spot.tips}</p>
+            <div style={{
+              background: `${T.accent}08`,
+              border: `1px solid ${T.accent}20`,
+              borderRadius: 12,
+              padding: '10px 12px',
+            }}>
+              <p style={{ fontSize: '0.6875rem', fontWeight: 600, color: T.accent, margin: '0 0 4px' }}>Conseil local</p>
+              <p style={{ fontSize: '0.8125rem', color: T.t2, lineHeight: 1.55, margin: 0 }}>{spot.tips}</p>
             </div>
           </div>
         )}

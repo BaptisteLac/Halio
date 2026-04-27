@@ -1,76 +1,114 @@
 import Link from 'next/link';
 import type { Species, FishingScore, Spot } from '@/types';
+import { T, scoreColor } from '@/design/tokens';
+import { IMapPin, ILayers } from '@/design/icons';
 
 interface Props {
   topSpecies: Array<{ species: Species; score: FishingScore; spot: Spot }>;
 }
 
 function ScoreDot({ score }: { score: number }) {
-  const color =
-    score >= 85 ? 'bg-cyan-400'
-    : score >= 70 ? 'bg-green-400'
-    : score >= 55 ? 'bg-yellow-400'
-    : score >= 40 ? 'bg-orange-400'
-    : 'bg-red-400';
-  return <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${color}`} />;
+  return (
+    <div style={{
+      width: 8,
+      height: 8,
+      borderRadius: '50%',
+      background: scoreColor(score),
+      flexShrink: 0,
+    }} />
+  );
 }
 
 export default function SpeciesRecommendation({ topSpecies }: Props) {
   if (topSpecies.length === 0) return null;
 
   const [first, ...rest] = topSpecies;
+  const firstBg = first.score.total >= 70 ? 'rgba(34,211,238,.1)' : T.l3;
+  const firstBorder = first.score.total >= 70 ? 'rgba(34,211,238,.25)' : T.border;
 
   return (
-    <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-2.5">
-      <h3 className="text-slate-300 font-medium text-sm">Espèces recommandées</h3>
+    <div style={{
+      background: T.l2,
+      borderRadius: 14,
+      border: `1px solid ${T.border}`,
+      padding: 16,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+    }}>
+      <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t2, margin: 0 }}>Espèces recommandées</h3>
 
-      {/* Top espèce — lien vers la fiche détaillée */}
       <Link
         href={`/especes/${first.species.slug}`}
-        className={`block rounded-lg p-3 border transition-colors ${
-          first.score.total >= 70
-            ? 'bg-cyan-400/10 border-cyan-400/25 hover:bg-cyan-400/15'
-            : 'bg-slate-800 border-slate-700 hover:bg-slate-700/50'
-        }`}
+        style={{
+          display: 'block',
+          borderRadius: 10,
+          padding: 12,
+          border: `1px solid ${firstBorder}`,
+          background: firstBg,
+          textDecoration: 'none',
+          transition: 'opacity 0.12s ease',
+        }}
+        className="active:opacity-70"
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <span className="text-white font-semibold">{first.species.name}</span>
-            {first.species.localNames.length > 0 && (
-              <span className="text-slate-400 text-xs ml-1.5">({first.species.localNames[0]})</span>
-            )}
-            <p className="text-slate-400 text-xs mt-0.5">📍 {first.spot.name}</p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div>
+              <span style={{ color: T.t1, fontWeight: 600, fontSize: '0.875rem' }}>{first.species.name}</span>
+              {first.species.localNames.length > 0 && (
+                <span style={{ color: T.t3, fontSize: '0.75rem', marginLeft: 6 }}>({first.species.localNames[0]})</span>
+              )}
+            </div>
+            <p style={{ display: 'flex', alignItems: 'center', gap: 4, color: T.t3, fontSize: '0.75rem', margin: 0 }}>
+              <IMapPin size={11} color={T.t3} />
+              {first.spot.name}
+            </p>
             {first.species.lures.length > 0 && (
-              <p className="text-slate-400 text-xs mt-1 truncate">
-                💡 {first.species.lures[0].name}
+              <p style={{ color: T.t3, fontSize: '0.75rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <ILayers size={11} color={T.t3} />
+                {first.species.lures[0].name}
                 {first.species.lures[1] ? ` · ${first.species.lures[1].name}` : ''}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <ScoreDot score={first.score.total} />
-            <span className={`font-bold text-lg ${first.score.color}`}>{first.score.total}</span>
+            <span style={{ fontWeight: 700, fontSize: '1.125rem', color: scoreColor(first.score.total), fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}>
+              {first.score.total}
+            </span>
           </div>
         </div>
       </Link>
 
-      {/* Autres espèces */}
       {rest.length > 0 && (
-        <div className="space-y-1.5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {rest.map(({ species, score, spot }) => (
             <Link
               key={species.id}
               href={`/especes/${species.slug}`}
-              className="flex items-center justify-between text-sm hover:bg-slate-700/30 rounded-lg px-1 min-h-[44px] transition-colors"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '0.875rem',
+                padding: '8px 4px',
+                borderRadius: 10,
+                minHeight: 44,
+                textDecoration: 'none',
+                transition: 'opacity 0.12s ease',
+              }}
+              className="active:opacity-70"
             >
-              <div className="flex items-center gap-2 min-w-0">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                 <ScoreDot score={score.total} />
-                <div className="min-w-0">
-                  <span className="text-slate-300">{species.name}</span>
-                  <span className="text-slate-400 text-xs ml-1.5 truncate">· {spot.name}</span>
+                <div style={{ minWidth: 0 }}>
+                  <span style={{ color: T.t2, fontSize: '0.875rem' }}>{species.name}</span>
+                  <span style={{ color: T.t3, fontSize: '0.75rem', marginLeft: 6 }}>· {spot.name}</span>
                 </div>
               </div>
-              <span className={`font-medium tabular-nums shrink-0 ${score.color}`}>{score.total}</span>
+              <span style={{ fontWeight: 500, color: scoreColor(score.total), fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                {score.total}
+              </span>
             </Link>
           ))}
         </div>

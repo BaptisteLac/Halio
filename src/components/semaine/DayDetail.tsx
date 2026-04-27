@@ -1,5 +1,5 @@
 import type { WeekDay, DaySpecies } from '@/types';
-import { getFishingScoreColor } from '@/lib/scoring/fishing-score';
+import { T, scoreColor } from '@/design/tokens';
 
 interface Props {
   day: WeekDay;
@@ -15,38 +15,45 @@ function fmt(date: Date | null): string {
 }
 
 function SpeciesRow({ s }: { s: DaySpecies }) {
-  const scoreColor = getFishingScoreColor(s.score);
+  const color = scoreColor(s.score);
   const barWidth = Math.round((s.score / 100) * 40);
 
   return (
-    <div className="flex items-center gap-3 py-2 border-b border-slate-700/40 last:border-0">
-      {/* Nom + leurre */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-slate-200 font-medium truncate">{s.name}</p>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+      padding: '8px 0',
+      borderBottom: `1px solid ${T.border}`,
+    }}
+    className="last:border-0"
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: '0.875rem', color: T.t1, fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</p>
         {s.lure && (
-          <p className="text-[11px] text-slate-400 truncate">{s.lure}</p>
+          <p style={{ fontSize: '0.6875rem', color: T.t3, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.lure}</p>
         )}
       </div>
 
-      {/* Fenêtre de tir */}
-      <div className="text-right shrink-0">
+      <div style={{ textAlign: 'right', flexShrink: 0 }}>
         {s.windowStart ? (
-          <p className="text-[11px] text-cyan-400 font-medium tabular-nums">
+          <p style={{ fontSize: '0.6875rem', color: T.accent, fontWeight: 500, fontVariantNumeric: 'tabular-nums', margin: 0 }}>
             {fmt(s.windowStart)}{s.windowEnd ? ` → ${fmt(s.windowEnd)}` : ''}
           </p>
         ) : (
-          <p className="text-xs text-slate-400">—</p>
+          <p style={{ fontSize: '0.75rem', color: T.t4, margin: 0 }}>—</p>
         )}
       </div>
 
-      {/* Score + barre */}
-      <div className="flex flex-col items-end gap-0.5 shrink-0 w-10">
-        <span className={`text-sm font-bold tabular-nums ${scoreColor}`}>{s.score}</span>
-        <div className="h-1 bg-slate-700 rounded-full overflow-hidden" style={{ width: '40px' }}>
-          <div
-            className={`h-full rounded-full ${s.score >= 70 ? 'bg-cyan-500' : s.score >= 55 ? 'bg-green-500' : s.score >= 40 ? 'bg-yellow-500' : 'bg-slate-500'}`}
-            style={{ width: `${barWidth}px` }}
-          />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0, width: 40 }}>
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color }}>{s.score}</span>
+        <div style={{ height: 4, width: 40, background: T.l2, borderRadius: 999, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            borderRadius: 999,
+            background: color,
+            width: `${barWidth}px`,
+          }} />
         </div>
       </div>
     </div>
@@ -55,32 +62,47 @@ function SpeciesRow({ s }: { s: DaySpecies }) {
 
 export default function DayDetail({ day }: Props) {
   return (
-    <div className="bg-slate-900/80 border border-slate-700/50 rounded-xl p-3 space-y-3">
-      {/* Pills résumé */}
-      <div className="flex gap-2">
-        <div className="bg-slate-800 rounded-lg px-3 py-2 text-center flex-1">
-          <p className="text-xs text-slate-400">Coefficient</p>
-          <p className="text-base font-bold text-cyan-400">{day.coefficient}</p>
-        </div>
-        <div className="bg-slate-800 rounded-lg px-3 py-2 text-center flex-1">
-          <p className="text-xs text-slate-400">Vent</p>
-          <p className="text-sm font-bold text-slate-200">
-            {day.windDir} {day.windKnots.toFixed(0)} kt
-            {day.isHighWind && <span className="text-orange-400 ml-1">⚠️</span>}
-          </p>
-        </div>
-        <div className="bg-slate-800 rounded-lg px-3 py-2 text-center flex-1">
-          <p className="text-xs text-slate-400">Meilleure fenêtre</p>
-          <p className="text-sm font-bold text-slate-200">
-            {day.bestWindowStart ? fmt(day.bestWindowStart) : '—'}
-          </p>
-        </div>
+    <div style={{
+      background: T.l3,
+      border: `1px solid ${T.border}`,
+      borderRadius: 10,
+      padding: 12,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 12,
+    }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        {[
+          { label: 'Coefficient', value: String(day.coefficient), color: T.accent },
+          { label: 'Vent', value: `${day.windDir} ${day.windKnots.toFixed(0)} kt`, color: day.isHighWind ? T.warn : T.t1 },
+          { label: 'Meilleure fenêtre', value: day.bestWindowStart ? fmt(day.bestWindowStart) : '—', color: T.t1 },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{
+            background: T.l2,
+            borderRadius: 8,
+            padding: '8px 10px',
+            textAlign: 'center',
+          }}>
+            <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '0 0 2px' }}>{label}</p>
+            <p style={{ fontSize: '0.875rem', fontWeight: 700, color, margin: 0 }}>{value}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Espèces de saison avec leurs fenêtres */}
       {day.topSpecies.length > 0 && (
-        <div className="bg-slate-800/60 rounded-lg px-3 py-1">
-          <p className="text-xs uppercase tracking-wide text-slate-400 pt-1.5 pb-1">
+        <div style={{
+          background: T.l2,
+          borderRadius: 8,
+          padding: '4px 12px',
+        }}>
+          <p style={{
+            fontSize: '0.6875rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.07em',
+            color: T.t4,
+            padding: '6px 0 4px',
+            margin: 0,
+          }}>
             Espèces de saison · fenêtres de tir
           </p>
           {day.topSpecies.map((s) => (

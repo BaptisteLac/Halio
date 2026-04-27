@@ -2,43 +2,80 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CalendarCheck, CalendarDays, Fish, Map, Sparkles, User } from 'lucide-react';
+import { ICalCheck, ICalDays, IMap, IFish, IUser } from '@/design/icons';
+import { T } from '@/design/tokens';
 
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ElementType;
-  activeColor?: string;
+  icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: "Aujourd'hui", icon: CalendarCheck },
-  { href: '/semaine', label: 'Semaine', icon: CalendarDays },
-  { href: '/carte', label: 'Carte', icon: Map },
-  { href: '/especes', label: 'Espèces', icon: Fish },
-  { href: '/coach', label: 'Coach', icon: Sparkles, activeColor: 'text-violet-400' },
-  { href: '/moi', label: 'Moi', icon: User },
+  { href: '/',        label: "Aujourd'hui", icon: ICalCheck },
+  { href: '/semaine', label: 'Semaine',     icon: ICalDays  },
+  { href: '/carte',   label: 'Carte',       icon: IMap      },
+  { href: '/especes', label: 'Espèces',     icon: IFish     },
+  { href: '/moi',     label: 'Moi',         icon: IUser     },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 z-50 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex max-w-lg mx-auto">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, activeColor }) => {
+    <nav style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0,
+      background: T.l1,
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderTop: `1px solid ${T.border}`,
+      zIndex: 50,
+      paddingBottom: 'env(safe-area-inset-bottom)',
+    }}>
+      <div style={{ display: 'flex', maxWidth: 512, margin: '0 auto' }}>
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
-          const activeClass = activeColor ?? 'text-cyan-400';
           return (
             <Link
               key={href}
               href={href}
-              className={`flex-1 flex flex-col items-center justify-center py-3 gap-0.5 min-h-[56px] transition-colors ${
-                active ? activeClass : 'text-slate-400 hover:text-slate-200'
-              }`}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingTop: 10,
+                paddingBottom: 10,
+                gap: 4,
+                minHeight: 56,
+                position: 'relative',
+                textDecoration: 'none',
+                transition: 'opacity 0.12s ease',
+              }}
             >
-              <Icon size={20} strokeWidth={active ? 2.5 : 1.5} />
-              <span className="text-xs font-medium">{label}</span>
+              {active && (
+                <div style={{
+                  position: 'absolute', top: 0,
+                  left: '50%', transform: 'translateX(-50%)',
+                  width: 24, height: 2,
+                  background: T.accent,
+                  borderRadius: '0 0 2px 2px',
+                }} />
+              )}
+              <Icon
+                size={20}
+                color={active ? T.accent : T.t3}
+                strokeWidth={active ? 2.5 : 1.5}
+              />
+              <span style={{
+                fontSize: '0.6875rem',
+                fontWeight: active ? 600 : 400,
+                color: active ? T.accent : T.t3,
+                lineHeight: 1,
+              }}>
+                {label}
+              </span>
             </Link>
           );
         })}

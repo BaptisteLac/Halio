@@ -1,27 +1,17 @@
 'use client';
 
+import { T } from '@/design/tokens';
+
 interface Suggestion {
   title: string;
   subtitle: string;
 }
 
 const SUGGESTIONS: Suggestion[] = [
-  {
-    title: "Où sortir aujourd'hui ?",
-    subtitle: "Meilleur spot + espèce + créneau horaire",
-  },
-  {
-    title: "Quel leurre pour ce coefficient ?",
-    subtitle: "Recommandation adaptée aux conditions",
-  },
-  {
-    title: "Réglementation du bar ?",
-    subtitle: "Tailles, quotas, marquage",
-  },
-  {
-    title: "Comparer deux spots pour demain",
-    subtitle: "Passe Nord vs Rade d'Eyrac",
-  },
+  { title: "Où sortir aujourd'hui ?",          subtitle: "Meilleur spot + espèce + créneau horaire" },
+  { title: "Quel leurre pour ce coefficient ?", subtitle: "Recommandation adaptée aux conditions" },
+  { title: "Réglementation du bar ?",           subtitle: "Tailles, quotas, marquage" },
+  { title: "Comparer deux spots pour demain",   subtitle: "Passe Nord vs Rade d'Eyrac" },
 ];
 
 interface SuggestionCardsProps {
@@ -30,17 +20,25 @@ interface SuggestionCardsProps {
 
 export default function SuggestionCards({ onSelect }: SuggestionCardsProps) {
   return (
-    <div className="grid grid-cols-2 gap-2.5">
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
       {SUGGESTIONS.map((s) => (
         <button
           key={s.title}
           onClick={() => onSelect(s.title)}
-          className="text-left px-3.5 py-3 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 hover:border-slate-600 transition-all duration-150 active:scale-95 group"
+          style={{
+            textAlign: 'left',
+            padding: '12px 14px',
+            background: T.l2,
+            border: `1px solid ${T.border}`,
+            borderRadius: 12,
+            cursor: 'pointer',
+            transition: 'background 0.12s ease',
+          }}
         >
-          <p className="text-slate-200 text-sm font-medium leading-snug group-hover:text-white transition-colors">
+          <p style={{ fontSize: '0.875rem', fontWeight: 500, color: T.t2, lineHeight: 1.35, margin: '0 0 4px' }}>
             {s.title}
           </p>
-          <p className="text-slate-400 text-xs mt-1 leading-snug group-hover:text-slate-400 transition-colors">
+          <p style={{ fontSize: '0.75rem', color: T.t4, lineHeight: 1.35, margin: 0 }}>
             {s.subtitle}
           </p>
         </button>

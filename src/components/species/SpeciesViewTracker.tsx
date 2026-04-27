@@ -13,8 +13,7 @@ export default function SpeciesViewTracker({ speciesId, speciesName }: Props) {
 
   useEffect(() => {
     trackSpeciesViewed(speciesId, speciesName);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [speciesId, speciesName, trackSpeciesViewed]);
 
   return null;
 }

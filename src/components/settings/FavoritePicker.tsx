@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { T } from '@/design/tokens';
+import { IChevDown, IChevUp } from '@/design/icons';
 
 interface FavoritePickerProps {
-  items: { id: string; name: string }[];
+  items:    { id: string; name: string }[];
   selected: string[];
   onChange: (selected: string[]) => void;
 }
@@ -20,46 +21,35 @@ export default function FavoritePicker({ items, selected, onChange }: FavoritePi
   }
 
   return (
-    <div className="space-y-2">
-      {/* Header cliquable */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full bg-slate-800/60 rounded-xl border border-slate-700/50 px-4 py-3 flex items-center justify-between gap-3 text-left"
+        style={{ width: '100%', background: T.l2, borderRadius: 12, border: `1px solid ${T.border}`, padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, textAlign: 'left', cursor: 'pointer' }}
       >
-        <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1, minWidth: 0 }}>
           {selected.length === 0 ? (
-            <span className="text-sm text-slate-400">Aucune sélection</span>
+            <span style={{ fontSize: '0.875rem', color: T.t4 }}>Aucune sélection</span>
           ) : (
             selected.map((id) => {
               const item = items.find((i) => i.id === id);
               return item ? (
-                <span
-                  key={id}
-                  className="bg-cyan-400/15 text-cyan-400 border border-cyan-400/40 rounded-full px-2.5 py-0.5 text-xs"
-                >
+                <span key={id} style={{ fontSize: '0.75rem', color: T.accent, background: `${T.accent}15`, border: `1px solid ${T.accent}35`, borderRadius: 9999, padding: '2px 10px' }}>
                   {item.name}
                 </span>
               ) : null;
             })
           )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {selected.length > 0 && (
-            <span className="text-xs text-slate-400">({selected.length})</span>
-          )}
-          {open ? (
-            <ChevronUp size={16} className="text-slate-400" />
-          ) : (
-            <ChevronDown size={16} className="text-slate-400" />
-          )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {selected.length > 0 && <span style={{ fontSize: '0.75rem', color: T.t4 }}>({selected.length})</span>}
+          {open ? <IChevUp size={16} color={T.t4} /> : <IChevDown size={16} color={T.t4} />}
         </div>
       </button>
 
-      {/* Sélecteur grid */}
       {open && (
-        <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-3">
-          <div className="grid grid-cols-2 gap-1.5">
+        <div style={{ background: T.l2, borderRadius: 12, border: `1px solid ${T.border}`, padding: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {items.map((item) => {
               const active = selected.includes(item.id);
               return (
@@ -67,16 +57,26 @@ export default function FavoritePicker({ items, selected, onChange }: FavoritePi
                   key={item.id}
                   type="button"
                   onClick={() => toggle(item.id)}
-                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors min-h-[44px] text-left ${
-                    active
-                      ? 'bg-cyan-400/15 text-cyan-400 border border-cyan-400/40'
-                      : 'bg-slate-900/50 text-slate-400 border border-transparent hover:border-slate-600'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    minHeight: 44,
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    border: `1px solid ${active ? `${T.accent}40` : 'transparent'}`,
+                    background: active ? `${T.accent}15` : T.l3,
+                    color: active ? T.accent : T.t3,
+                    fontSize: '0.875rem',
+                    transition: 'background 0.12s ease',
+                  }}
                 >
-                  <span className={`text-xs shrink-0 ${active ? 'text-cyan-400' : 'text-slate-600'}`}>
+                  <span style={{ fontSize: '0.75rem', flexShrink: 0, color: active ? T.accent : T.t4 }}>
                     {active ? '✓' : '○'}
                   </span>
-                  <span className="truncate">{item.name}</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</span>
                 </button>
               );
             })}

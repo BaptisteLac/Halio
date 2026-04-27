@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { TideData, WeatherData } from '@/types';
 import { getTideData } from '@/lib/tides/tide-service';
-import { getSolunarData } from '@/lib/solunar/solunar-service';
 import { fetchWeatherData } from '@/lib/weather/weather-service';
 import { createClient } from '@/lib/supabase/client';
 import type { CatchRow } from '@/lib/supabase/types';
+import { T } from '@/design/tokens';
+import { IChevRight, IPlus } from '@/design/icons';
 
 import BottomNav from '@/components/layout/BottomNav';
 import AuthForm from '@/components/journal/AuthForm';
@@ -22,44 +22,32 @@ export default function JournalClient() {
   const router = useRouter();
 
   function handleBack() {
-    if (window.history.length > 1) {
-      router.back();
-    } else {
-      router.push('/moi');
-    }
+    if (window.history.length > 1) router.back();
+    else router.push('/moi');
   }
 
-  const [user, setUser]       = useState<User | null | undefined>(undefined);
+  const [user,    setUser]    = useState<User | null | undefined>(undefined);
   const [catches, setCatches] = useState<CatchRow[]>([]);
 
-  const [tideData, setTideData]       = useState<TideData | null>(null);
+  const [tideData,    setTideData]    = useState<TideData | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
-  const [showForm, setShowForm]               = useState(false);
+  const [showForm,          setShowForm]          = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
-
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-    });
-
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
     if (!user) return;
-
     Promise.all([getTideData(now), fetchWeatherData()])
-      .then(([tide, weather]) => {
-        setTideData(tide);
-        setWeatherData(weather);
-      })
+      .then(([tide, weather]) => { setTideData(tide); setWeatherData(weather); })
       .catch(() => {});
   }, [user, now]);
 
@@ -94,9 +82,9 @@ export default function JournalClient() {
 
   if (user === undefined) {
     return (
-      <div className="h-dvh flex flex-col bg-slate-950">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', border: `2px solid ${T.accent}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
         </div>
         <BottomNav />
       </div>
@@ -105,7 +93,7 @@ export default function JournalClient() {
 
   if (!user) {
     return (
-      <div className="h-dvh flex flex-col bg-slate-950">
+      <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page }}>
         <AuthForm />
         <BottomNav />
       </div>
@@ -113,38 +101,47 @@ export default function JournalClient() {
   }
 
   return (
-    <div className="h-dvh flex flex-col bg-slate-950 overflow-hidden">
-      <header className="shrink-0 bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 z-40">
-        <div className="px-4 py-3 flex items-center gap-3 max-w-lg mx-auto">
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', background: T.page, overflow: 'hidden' }}>
+      <header style={{
+        flexShrink: 0,
+        background: T.l1,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${T.border}`,
+        zIndex: 40,
+      }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, maxWidth: 512, margin: '0 auto' }}>
           <button
             onClick={handleBack}
-            className="text-slate-400 hover:text-white transition-colors p-1 -ml-1"
             aria-label="Retour"
+            style={{ padding: 6, marginLeft: -6, borderRadius: 8, background: 'none', border: 'none', color: T.t3, cursor: 'pointer', display: 'flex' }}
           >
-            <ChevronLeft size={22} />
+            <IChevRight size={20} color={T.t3} style={{ transform: 'rotate(180deg)' }} />
           </button>
-          <div className="flex-1">
-            <h1 className="text-base font-bold text-white">Journal</h1>
-            <p className="text-xs text-slate-400 truncate max-w-[180px]">{user.email}</p>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em', margin: 0 }}>Journal</h1>
+            <p style={{ fontSize: '0.6875rem', color: T.t3, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+              {user.email}
+            </p>
           </div>
           {!showLogoutConfirm ? (
             <button
               onClick={() => setShowLogoutConfirm(true)}
-              className="text-xs text-slate-400 border border-slate-700 rounded-full px-3 py-1.5 hover:border-slate-500 transition-colors"
+              style={{ fontSize: '0.75rem', color: T.t3, border: `1px solid ${T.border}`, borderRadius: 9999, padding: '6px 12px', background: 'none', cursor: 'pointer' }}
             >
               Déconnexion
             </button>
           ) : (
-            <div className="flex items-center gap-1.5">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <button
                 onClick={handleLogout}
-                className="text-xs text-red-400 border border-red-500/40 rounded-full px-3 py-1.5 hover:bg-red-500/10 transition-colors"
+                style={{ fontSize: '0.75rem', color: T.danger, border: `1px solid rgba(239,68,68,.4)`, borderRadius: 9999, padding: '6px 12px', background: 'none', cursor: 'pointer' }}
               >
                 Confirmer
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="text-xs text-slate-400 border border-slate-700 rounded-full px-2 py-1.5 hover:border-slate-500 transition-colors"
+                style={{ fontSize: '0.75rem', color: T.t3, border: `1px solid ${T.border}`, borderRadius: 9999, padding: '6px 8px', background: 'none', cursor: 'pointer' }}
               >
                 ✕
               </button>
@@ -153,22 +150,22 @@ export default function JournalClient() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {catches.length > 0 && (
-          <div className="shrink-0 px-4 pt-4 max-w-lg mx-auto w-full">
+          <div style={{ flexShrink: 0, padding: '12px 16px 0', maxWidth: 512, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
             <CatchStats catches={catches} />
           </div>
         )}
         {catches.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-4">
-            <p className="text-4xl">🎣</p>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 32px', textAlign: 'center', gap: 16 }}>
+            <p style={{ fontSize: '2.5rem', margin: 0 }}>🎣</p>
             <div>
-              <p className="text-white font-semibold text-base">Aucune prise enregistrée</p>
-              <p className="text-slate-400 text-sm mt-1">Commencez à tracer vos sessions de pêche.</p>
+              <p style={{ fontSize: '1rem', fontWeight: 600, color: T.t1, margin: '0 0 4px' }}>Aucune prise enregistrée</p>
+              <p style={{ fontSize: '0.875rem', color: T.t3, margin: 0 }}>Commencez à tracer vos sessions de pêche.</p>
             </div>
             <button
               onClick={() => { navigator.vibrate?.(10); setShowForm(true); }}
-              className="bg-cyan-400 text-slate-900 font-semibold rounded-xl px-6 py-3 text-sm hover:bg-cyan-300 transition-colors"
+              style={{ background: T.accent, color: '#0f172a', fontWeight: 600, borderRadius: 12, padding: '12px 24px', fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}
             >
               Première prise
             </button>
@@ -178,20 +175,34 @@ export default function JournalClient() {
         )}
       </div>
 
-      <div className="shrink-0 h-14" />
-
       <button
         onClick={() => { navigator.vibrate?.(10); setShowForm(true); }}
-        className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] right-4 z-30 w-12 h-12 bg-cyan-400 text-slate-900 rounded-full shadow-lg flex items-center justify-center text-2xl font-bold hover:bg-cyan-300 transition-colors"
         aria-label="Nouvelle prise"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(4rem + env(safe-area-inset-bottom))',
+          right: 16,
+          zIndex: 30,
+          width: 48,
+          height: 48,
+          background: T.accent,
+          color: '#0f172a',
+          borderRadius: '50%',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 16px rgba(34,211,238,.35)',
+        }}
       >
-        +
+        <IPlus size={22} color="#0f172a" />
       </button>
 
       {showForm && (
         <div
-          className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setShowForm(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 30 }}
         />
       )}
 
@@ -200,10 +211,7 @@ export default function JournalClient() {
         tideData={tideData}
         weatherData={weatherData}
         onClose={() => setShowForm(false)}
-        onSaved={() => {
-          setShowForm(false);
-          fetchCatches();
-        }}
+        onSaved={() => { setShowForm(false); fetchCatches(); }}
       />
 
       <BottomNav />

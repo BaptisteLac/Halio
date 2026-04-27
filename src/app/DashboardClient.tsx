@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronUp, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import type { TideData, TideCurvePoint, WeatherData, SolunarData } from '@/types';
 import { getTideData, getTideCurve } from '@/lib/tides/tide-service';
 import { getSolunarData } from '@/lib/solunar/solunar-service';
@@ -12,6 +12,8 @@ import { getBestWindow } from '@/lib/scoring/fishing-windows';
 import { mslToZH, formatTideHour } from '@/lib/tides/tide-utils';
 import { SPECIES } from '@/data/species';
 import { DASHBOARD_SPOT } from '@/data/spots';
+import { T } from '@/design/tokens';
+import { IArrowUp, IArrowDown } from '@/design/icons';
 
 import { useAnalytics } from '@/hooks/useAnalytics';
 import BottomNav from '@/components/layout/BottomNav';
@@ -23,6 +25,7 @@ import SolunarIndicator from '@/components/dashboard/SolunarIndicator';
 import SpeciesRecommendation from '@/components/dashboard/SpeciesRecommendation';
 import FishingWindows from '@/components/dashboard/FishingWindows';
 import DayHeroGo from '@/components/dashboard/DayHeroGo';
+import { ChevronUp } from 'lucide-react';
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -41,12 +44,10 @@ function fmt(date: Date): string {
 
 function LoadingSkeleton() {
   return (
-    <div className="animate-pulse space-y-4 p-4 max-w-lg mx-auto">
-      <div className="h-8 bg-slate-800 rounded-lg w-3/4" />
-      <div className="h-40 bg-slate-800 rounded-xl" />
-      <div className="h-32 bg-slate-800 rounded-xl" />
-      <div className="h-52 bg-slate-800 rounded-xl" />
-      <div className="h-36 bg-slate-800 rounded-xl" />
+    <div style={{ padding: 16, maxWidth: 512, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {[140, 120, 200, 140].map((h, i) => (
+        <div key={i} style={{ height: h, background: T.l2, borderRadius: 14, animation: 'pulse 2s ease infinite' }} />
+      ))}
     </div>
   );
 }
@@ -127,9 +128,9 @@ export default function DashboardClient() {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-slate-950 pb-20">
-        <div className="bg-slate-900 border-b border-slate-800 px-4 py-3">
-          <div className="h-6 bg-slate-800 rounded w-32 animate-pulse" />
+      <div style={{ minHeight: '100dvh', background: T.page, paddingBottom: 80 }}>
+        <div style={{ background: T.l1, borderBottom: `1px solid ${T.border}`, padding: '12px 16px' }}>
+          <div style={{ height: 24, background: T.l2, borderRadius: 8, width: 128 }} />
         </div>
         <LoadingSkeleton />
         <BottomNav />
@@ -139,10 +140,10 @@ export default function DashboardClient() {
 
   if (error || !tideData || !solunarData || !tideCurve) {
     return (
-      <div className="min-h-dvh bg-slate-950 flex items-center justify-center p-4 pb-20">
-        <div className="text-center">
-          <p className="text-red-400 font-medium">Erreur de chargement</p>
-          <p className="text-slate-400 text-sm mt-1">{error ?? 'Données indisponibles'}</p>
+      <div style={{ minHeight: '100dvh', background: T.page, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, paddingBottom: 80 }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ color: T.danger, fontWeight: 500 }}>Erreur de chargement</p>
+          <p style={{ color: T.t3, fontSize: '0.875rem', marginTop: 4 }}>{error ?? 'Données indisponibles'}</p>
         </div>
         <BottomNav />
       </div>
@@ -169,18 +170,24 @@ export default function DashboardClient() {
   });
 
   return (
-    <div className="min-h-dvh bg-slate-950 pb-20">
-      <header className="bg-slate-900/90 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-800/80">
-        <div className="px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
+    <div style={{ minHeight: '100dvh', background: T.page, paddingBottom: 80 }}>
+      <header style={{
+        background: T.l1,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        position: 'sticky', top: 0, zIndex: 40,
+        borderBottom: `1px solid ${T.border}`,
+      }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 512, margin: '0 auto' }}>
           <div>
-            <h1 className="text-base font-bold text-white">Halio</h1>
-            <p className="text-xs text-slate-400 capitalize">{dateLabel}</p>
+            <h1 style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, letterSpacing: '-0.02em' }}>Halio</h1>
+            <p style={{ fontSize: '0.6875rem', color: T.t3, textTransform: 'capitalize', marginTop: 1 }}>{dateLabel}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <CoefficientBadge coefficient={coefficient} size="md" />
             <Link
               href="/reglages"
-              className="text-slate-400 hover:text-slate-300 transition-colors p-1"
+              style={{ color: T.t3, padding: 4, display: 'flex' }}
               aria-label="Réglages"
             >
               <Settings size={18} />
@@ -191,7 +198,7 @@ export default function DashboardClient() {
 
       {weatherError && <WeatherErrorBanner />}
 
-      <main className="px-4 py-4 space-y-4 max-w-lg mx-auto">
+      <main style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 512, margin: '0 auto' }}>
         {currentScore && (
           <DayHeroGo
             bestWindow={bestWindow}
@@ -210,46 +217,57 @@ export default function DashboardClient() {
           />
         )}
 
-        <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-slate-300 font-medium text-sm">Marées aujourd&apos;hui</h3>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
-                currentPhase === 'montant'
-                  ? 'bg-cyan-400/15 text-cyan-400 border-cyan-400/30'
-                  : 'bg-orange-400/15 text-orange-400 border-orange-400/30'
-              }`}
-            >
-              {currentPhase === 'montant' ? '↑' : '↓'} {formatTideHour(currentHour, currentPhase)}
+        <div style={{ background: T.l2, borderRadius: 14, border: `1px solid ${T.border}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t2, margin: 0 }}>Marées aujourd&apos;hui</h3>
+            <span style={{
+              fontSize: '0.75rem',
+              padding: '2px 8px',
+              borderRadius: 9999,
+              border: `1px solid ${currentPhase === 'montant' ? 'rgba(34,211,238,.3)' : 'rgba(251,146,60,.3)'}`,
+              background: currentPhase === 'montant' ? 'rgba(34,211,238,.1)' : 'rgba(251,146,60,.1)',
+              color: currentPhase === 'montant' ? T.accent : T.warn,
+              fontWeight: 500,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}>
+              {currentPhase === 'montant'
+                ? <IArrowUp size={11} color={T.accent} />
+                : <IArrowDown size={11} color={T.warn} />
+              }
+              {formatTideHour(currentHour, currentPhase)}
             </span>
           </div>
 
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-white tabular-nums">
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontSize: '2rem', fontWeight: 800, color: T.t1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', lineHeight: 1 }}>
               {mslToZH(currentHeight).toFixed(2)}
             </span>
-            <span className="text-slate-400 text-sm">m (ZH)</span>
+            <span style={{ fontSize: '0.875rem', color: T.t3 }}>m (ZH)</span>
           </div>
 
-          <p className="text-xs text-slate-400">
-            {nextExtreme.type === 'high' ? '⬆️ PM' : '⬇️ BM'}{' '}
-            <span className="text-slate-200 font-medium">{fmt(nextExtreme.time)}</span>
+          <p style={{ fontSize: '0.75rem', color: T.t3, display: 'flex', alignItems: 'center', gap: 6 }}>
+            {nextExtreme.type === 'high'
+              ? <IArrowUp size={12} color={T.accent} />
+              : <IArrowDown size={12} color={T.t3} />
+            }
+            {nextExtreme.type === 'high' ? 'PM' : 'BM'}{' '}
+            <span style={{ color: T.t1, fontWeight: 500 }}>{fmt(nextExtreme.time)}</span>
             {' — '}
-            <span className="text-slate-300">{mslToZH(nextExtreme.height).toFixed(2)} m</span>
-            <span className="text-slate-400"> ({formatDuration(timeToNextExtreme)})</span>
+            <span style={{ color: T.t2 }}>{mslToZH(nextExtreme.height).toFixed(2)} m</span>
+            <span style={{ color: T.t3 }}>({formatDuration(timeToNextExtreme)})</span>
           </p>
 
-          <div className="flex gap-2 flex-wrap">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {todayExtremes.map((e, i) => (
               <div
                 key={i}
-                className="flex items-center gap-1 text-xs bg-slate-700/50 rounded-lg px-2 py-1"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', background: T.l3, borderRadius: 8, padding: '4px 8px' }}
               >
-                <span className={e.type === 'high' ? 'text-cyan-400' : 'text-slate-400'}>
-                  {e.type === 'high' ? 'PM' : 'BM'}
-                </span>
-                <span className="text-slate-300">{fmt(e.time)}</span>
-                <span className="text-slate-400">{mslToZH(e.height).toFixed(2)} m</span>
+                <span style={{ color: e.type === 'high' ? T.accent : T.t3 }}>{e.type === 'high' ? 'PM' : 'BM'}</span>
+                <span style={{ color: T.t2 }}>{fmt(e.time)}</span>
+                <span style={{ color: T.t3 }}>{mslToZH(e.height).toFixed(2)} m</span>
               </div>
             ))}
           </div>
@@ -260,11 +278,11 @@ export default function DashboardClient() {
         {topSpecies.length > 0 && <SpeciesRecommendation topSpecies={topSpecies} />}
 
         {weatherData && weatherExpanded && (
-          <div className="relative">
+          <div style={{ position: 'relative' }}>
             <WeatherCard weather={weatherData} />
             <button
               onClick={() => setWeatherExpanded(false)}
-              className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors p-1"
+              style={{ position: 'absolute', top: 12, right: 12, color: T.t3, background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}
               aria-label="Réduire la météo"
             >
               <ChevronUp size={16} />
@@ -272,7 +290,7 @@ export default function DashboardClient() {
           </div>
         )}
         {weatherData && !weatherExpanded && (
-          <div className="grid grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <WeatherCard weather={weatherData} compact onClick={() => setWeatherExpanded(true)} />
             <SolunarIndicator solunar={solunarData} now={now} compact />
           </div>

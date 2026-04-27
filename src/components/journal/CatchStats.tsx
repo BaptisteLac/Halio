@@ -1,6 +1,7 @@
 import type { CatchRow } from '@/lib/supabase/types';
 import { getSpeciesById } from '@/data/species';
 import { getSpotById } from '@/data/spots';
+import { T } from '@/design/tokens';
 
 interface Props {
   catches: CatchRow[];
@@ -12,6 +13,25 @@ function topById(ids: string[]): { id: string; count: number } | null {
   for (const id of ids) freq.set(id, (freq.get(id) ?? 0) + 1);
   const [id, count] = [...freq.entries()].reduce((a, b) => (b[1] > a[1] ? b : a));
   return { id, count };
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ background: T.l3, borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
+      <p style={{ fontSize: '1rem', fontWeight: 700, color: T.t1, margin: 0, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+      <p style={{ fontSize: '0.6875rem', color: T.t4, margin: '2px 0 0' }}>{label}</p>
+    </div>
+  );
+}
+
+function StatWide({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div style={{ background: T.l3, borderRadius: 10, padding: '8px 10px' }}>
+      <p style={{ fontSize: '0.6875rem', color: T.t4, margin: 0 }}>{label}</p>
+      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t1, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</p>
+      <p style={{ fontSize: '0.6875rem', color: T.t3, margin: '2px 0 0' }}>{sub}</p>
+    </div>
+  );
 }
 
 export default function CatchStats({ catches }: Props) {
@@ -35,37 +55,36 @@ export default function CatchStats({ catches }: Props) {
   const releasedPct   = Math.round((releasedCount / catches.length) * 100);
 
   return (
-    <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-3">
-      <h3 className="text-slate-300 font-medium text-sm">Mes stats</h3>
+    <div style={{ background: T.l2, borderRadius: 14, border: `1px solid ${T.border}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <h3 style={{ fontSize: '0.875rem', fontWeight: 600, color: T.t2, margin: 0 }}>Mes stats</h3>
 
-      {/* Ligne 1 : totaux */}
-      <div className="grid grid-cols-3 gap-2">
-        <Stat label="Prises" value={String(catches.length)} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        <Stat label="Prises"     value={String(catches.length)} />
         <Stat label="Score moy." value={avgScore != null ? `${avgScore}/100` : '—'} />
-        <Stat label="Remises" value={releasedCount > 0 ? `${releasedPct}%` : '—'} />
+        <Stat label="Remises"    value={releasedCount > 0 ? `${releasedPct}%` : '—'} />
       </div>
 
-      {/* Ligne 2 : espèce + spot favoris */}
-      <div className="grid grid-cols-2 gap-2">
-        {topSpecies && (
-          <StatWide
-            label="Plus pêchée"
-            value={getSpeciesById(topSpecies.id)?.name ?? topSpecies.id}
-            sub={`${topSpecies.count} prise${topSpecies.count > 1 ? 's' : ''}`}
-          />
-        )}
-        {topSpot && (
-          <StatWide
-            label="Spot fréquent"
-            value={getSpotById(topSpot.id)?.name ?? topSpot.id}
-            sub={`${topSpot.count} sortie${topSpot.count > 1 ? 's' : ''}`}
-          />
-        )}
-      </div>
+      {(topSpecies || topSpot) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {topSpecies && (
+            <StatWide
+              label="Plus pêchée"
+              value={getSpeciesById(topSpecies.id)?.name ?? topSpecies.id}
+              sub={`${topSpecies.count} prise${topSpecies.count > 1 ? 's' : ''}`}
+            />
+          )}
+          {topSpot && (
+            <StatWide
+              label="Spot fréquent"
+              value={getSpotById(topSpot.id)?.name ?? topSpot.id}
+              sub={`${topSpot.count} sortie${topSpot.count > 1 ? 's' : ''}`}
+            />
+          )}
+        </div>
+      )}
 
-      {/* Ligne 3 : records (seulement si données disponibles) */}
       {(recordSize || recordWeight) && (
-        <div className={`grid gap-2 ${recordSize && recordWeight ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <div style={{ display: 'grid', gridTemplateColumns: recordSize && recordWeight ? '1fr 1fr' : '1fr', gap: 8 }}>
           {recordSize && (
             <StatWide
               label="Record taille"
@@ -82,25 +101,6 @@ export default function CatchStats({ catches }: Props) {
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-slate-700/50 rounded-lg px-3 py-2 text-center">
-      <p className="text-white font-bold text-base tabular-nums">{value}</p>
-      <p className="text-slate-400 text-xs mt-0.5">{label}</p>
-    </div>
-  );
-}
-
-function StatWide({ label, value, sub }: { label: string; value: string; sub: string }) {
-  return (
-    <div className="bg-slate-700/50 rounded-lg px-3 py-2">
-      <p className="text-slate-400 text-xs">{label}</p>
-      <p className="text-white font-semibold text-sm mt-0.5 truncate">{value}</p>
-      <p className="text-slate-400 text-xs">{sub}</p>
     </div>
   );
 }

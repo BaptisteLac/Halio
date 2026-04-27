@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import type { CoachUsage } from '@/hooks/useCoachUsage';
+import { T } from '@/design/tokens';
 
 function formatCountdown(resetAt: Date): string {
   const diff = resetAt.getTime() - Date.now();
   if (diff <= 0) return 'bientôt';
   const totalSeconds = Math.floor(diff / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
+  const hours   = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   if (hours > 0) return `${hours}h ${minutes}min`;
   return `${minutes}min`;
@@ -31,59 +32,46 @@ export default function CoachUsageBar({ usage }: Props) {
 
   const progress = Math.min(100, (count / limit) * 100);
 
-  // --- État 3 : limite atteinte ---
   if (isLimitReached) {
     return (
-      <div className="mx-4 mt-2 bg-slate-800 border border-slate-700 rounded-xl p-3">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-base leading-none" aria-hidden="true">🔒</span>
-          <span className="text-sm font-medium text-slate-200">Limite journalière atteinte</span>
+      <div style={{ margin: '8px 16px 0', background: T.l2, border: `1px solid ${T.border}`, borderRadius: 12, padding: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: '1rem', lineHeight: 1 }} aria-hidden="true">🔒</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: 500, color: T.t2 }}>Limite journalière atteinte</span>
         </div>
-        <p className="text-xs text-slate-400 mb-2">
+        <p style={{ fontSize: '0.75rem', color: T.t3, margin: '0 0 8px' }}>
           Revenez demain — réinitialisation à minuit
-          {countdown && (
-            <> · Réinitialisation dans <span className="text-slate-400">{countdown}</span></>
-          )}
+          {countdown && <> · dans <span style={{ color: T.t3 }}>{countdown}</span></>}
         </p>
-        <div className="h-1 rounded-full bg-slate-700 overflow-hidden">
-          <div className="h-full w-full rounded-full bg-red-400/50" />
+        <div style={{ height: 4, borderRadius: 9999, background: T.l3, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: '100%', borderRadius: 9999, background: `${T.danger}60` }} />
         </div>
       </div>
     );
   }
 
-  // --- État 2 : alerte (≤ 2 messages restants) ---
   if (isWarning) {
     return (
-      <div className="mx-4 mt-2 bg-amber-400/10 border border-amber-400/20 rounded-xl px-3 py-2">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-medium text-amber-400">
-            ⚠️ Plus que {remaining} message{remaining > 1 ? 's' : ''} aujourd&apos;hui
+      <div style={{ margin: '8px 16px 0', background: `${T.warn}10`, border: `1px solid ${T.warn}25`, borderRadius: 12, padding: '8px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 500, color: T.warn }}>
+            Plus que {remaining} message{remaining > 1 ? 's' : ''} aujourd&apos;hui
           </span>
         </div>
-        <div className="h-1 rounded-full bg-slate-700 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-amber-400 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+        <div style={{ height: 4, borderRadius: 9999, background: T.l3, overflow: 'hidden' }}>
+          <div style={{ height: '100%', borderRadius: 9999, background: T.warn, width: `${progress}%`, transition: 'width 0.3s ease' }} />
         </div>
       </div>
     );
   }
 
-  // --- État 1 : normal ---
   return (
-    <div className="mx-4 mt-2">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-slate-400">
-          {count}/{limit} messages aujourd&apos;hui
-        </span>
+    <div style={{ margin: '8px 16px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+        <span style={{ fontSize: '0.75rem', color: T.t4 }}>{count}/{limit} messages aujourd&apos;hui</span>
       </div>
-      <div className="h-1 rounded-full bg-slate-700 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-cyan-400 transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
+      <div style={{ height: 4, borderRadius: 9999, background: T.l3, overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: 9999, background: T.coach, width: `${progress}%`, transition: 'width 0.3s ease' }} />
       </div>
     </div>
   );
