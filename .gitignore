@@ -4,6 +4,11 @@ public/screenshots/*.png
 
 # Superpowers brainstorm sessions
 .superpowers/
+docs/superpowers/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+screenshots/
 
 # Git worktrees
 .worktrees/
