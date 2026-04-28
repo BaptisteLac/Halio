@@ -32,6 +32,7 @@ export function useNotificationPermission() {
       if (permResult !== 'granted') return false;
 
       const keyRes = await fetch('/api/push/vapid-key');
+      if (!keyRes.ok) return false;
       const { publicKey } = await keyRes.json();
 
       const reg = await navigator.serviceWorker.ready;
@@ -40,7 +41,7 @@ export function useNotificationPermission() {
         applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
       });
 
-      await fetch('/api/push/subscribe', {
+      const saveRes = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -51,9 +52,12 @@ export function useNotificationPermission() {
           },
         }),
       });
+      if (!saveRes.ok) return false;
 
       setIsSubscribed(true);
       return true;
+    } catch {
+      return false;
     } finally {
       setLoading(false);
     }
