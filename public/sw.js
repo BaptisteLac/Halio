@@ -112,7 +112,12 @@ async function networkFirst(request, cacheName) {
 
 self.addEventListener('push', (event) => {
   if (!event.data) return;
-  const data = event.data.json();
+  let data;
+  try {
+    data = event.data.json();
+  } catch {
+    return;
+  }
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
