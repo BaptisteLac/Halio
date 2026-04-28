@@ -55,6 +55,14 @@ describe('evaluateRule', () => {
   it('unknown species returns 0 score, fails >= threshold', () => {
     expect(evaluateRule(rule({ type: 'species_score', species_id: 'requin', operator: '>=', value: '50' }), baseConditions)).toBe(false);
   });
+
+  it('pressure_trend = value passes on match', () => {
+    expect(evaluateRule(rule({ type: 'pressure_trend', operator: '=', value: 'baisse' }), baseConditions)).toBe(true);
+  });
+
+  it('pressure_trend = value fails on mismatch', () => {
+    expect(evaluateRule(rule({ type: 'pressure_trend', operator: '=', value: 'hausse' }), baseConditions)).toBe(false);
+  });
 });
 
 describe('evaluateRules', () => {

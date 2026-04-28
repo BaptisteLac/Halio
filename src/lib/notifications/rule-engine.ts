@@ -48,6 +48,7 @@ export function evaluateRule(rule: NotificationRule, conditions: ComputedConditi
     case '>=': return actual >= threshold;
     case '<=': return actual <= threshold;
     case '=':  return actual === threshold;
+    default: return false;
   }
 }
 
