@@ -66,6 +66,18 @@ create table if not exists notification_log (
 create unique index if not exists notification_log_dedup
   on notification_log (user_id, zone_id, target_date, horizon_days, (triggered_at::date));
 
+alter table notification_log enable row level security;
+
+create policy "Users read own notification log"
+  on notification_log for select
+  using (auth.uid() = user_id);
+
+alter table zones enable row level security;
+
+create policy "Zones are publicly readable"
+  on zones for select
+  using (true);
+
 -- Modifications user_settings
 alter table user_settings
   add column if not exists subscribed_zones text[] default '{arcachon}',
@@ -75,3 +87,12 @@ alter table user_settings
   drop column if exists notifications_enabled,
   drop column if exists notification_min_score,
   drop column if exists notification_time_range;
+
+create index if not exists notification_rules_user_zone
+  on notification_rules (user_id, zone_id) where enabled = true;
+
+create index if not exists push_subscriptions_user_id
+  on push_subscriptions (user_id);
+
+create index if not exists notification_log_triggered_at
+  on notification_log (triggered_at);
