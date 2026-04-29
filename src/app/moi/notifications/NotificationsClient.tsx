@@ -102,10 +102,10 @@ export default function NotificationsClient() {
     if (!user) return;
     setSaving(true);
     const supabase = createClient();
-    await supabase.from('user_settings').update({
-      notification_days:     overrides?.days ?? notifDays,
-      notification_horizons: overrides?.hs   ?? horizons,
-    }).eq('user_id', user.id);
+    await supabase.from('user_settings').upsert(
+      { user_id: user.id, notification_days: overrides?.days ?? notifDays, notification_horizons: overrides?.hs ?? horizons },
+      { onConflict: 'user_id' },
+    );
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
