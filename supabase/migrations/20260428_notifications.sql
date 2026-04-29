@@ -64,7 +64,7 @@ create table if not exists notification_log (
 );
 
 create unique index if not exists notification_log_dedup
-  on notification_log (user_id, zone_id, target_date, horizon_days, (triggered_at::date));
+  on notification_log (user_id, zone_id, target_date, horizon_days);
 
 alter table notification_log enable row level security;
 
