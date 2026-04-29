@@ -115,11 +115,10 @@ export type Database = {
           favorite_spots: string[] | null
           home_port: string | null
           notification_days: number[] | null
-          notification_min_score: number
-          notification_time_range: string | null
-          notifications_enabled: boolean | null
+          notification_horizons: number[] | null
           preferred_techniques: string[] | null
           push_notifications_enabled: boolean | null
+          subscribed_zones: string[] | null
           user_id: string
         }
         Insert: {
@@ -129,11 +128,10 @@ export type Database = {
           favorite_spots?: string[] | null
           home_port?: string | null
           notification_days?: number[] | null
-          notification_min_score?: number
-          notification_time_range?: string | null
-          notifications_enabled?: boolean | null
+          notification_horizons?: number[] | null
           preferred_techniques?: string[] | null
           push_notifications_enabled?: boolean | null
+          subscribed_zones?: string[] | null
           user_id: string
         }
         Update: {
@@ -143,12 +141,131 @@ export type Database = {
           favorite_spots?: string[] | null
           home_port?: string | null
           notification_days?: number[] | null
-          notification_min_score?: number
-          notification_time_range?: string | null
-          notifications_enabled?: boolean | null
+          notification_horizons?: number[] | null
           preferred_techniques?: string[] | null
           push_notifications_enabled?: boolean | null
+          subscribed_zones?: string[] | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      zones: {
+        Row: {
+          id: string
+          name: string
+          latitude: number
+          longitude: number
+          timezone: string
+          active: boolean
+        }
+        Insert: {
+          id: string
+          name: string
+          latitude: number
+          longitude: number
+          timezone?: string
+          active?: boolean
+        }
+        Update: {
+          id?: string
+          name?: string
+          latitude?: number
+          longitude?: number
+          timezone?: string
+          active?: boolean
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          endpoint?: string
+          p256dh?: string
+          auth?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      notification_rules: {
+        Row: {
+          id: string
+          user_id: string
+          zone_id: string
+          type: 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend'
+          species_id: string | null
+          operator: '>' | '<' | '>=' | '<=' | '='
+          value: string
+          enabled: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          zone_id?: string
+          type: 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend'
+          species_id?: string | null
+          operator: '>' | '<' | '>=' | '<=' | '='
+          value: string
+          enabled?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          zone_id?: string
+          type?: 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend'
+          species_id?: string | null
+          operator?: '>' | '<' | '>=' | '<=' | '='
+          value?: string
+          enabled?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      notification_log: {
+        Row: {
+          id: string
+          user_id: string
+          zone_id: string
+          target_date: string
+          horizon_days: number
+          triggered_at: string
+          scores_snapshot: Json | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          zone_id: string
+          target_date: string
+          horizon_days: number
+          triggered_at?: string
+          scores_snapshot?: Json | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          zone_id?: string
+          target_date?: string
+          horizon_days?: number
+          triggered_at?: string
+          scores_snapshot?: Json | null
         }
         Relationships: []
       }
@@ -296,3 +413,8 @@ export type CatchRow = Database['public']['Tables']['catches']['Row']
 export type CatchInsert = Database['public']['Tables']['catches']['Insert']
 export type CatchUpdate = Database['public']['Tables']['catches']['Update']
 export type UserSettingsRow = Database['public']['Tables']['user_settings']['Row']
+export type ZoneRow = Database['public']['Tables']['zones']['Row']
+export type PushSubscriptionRow = Database['public']['Tables']['push_subscriptions']['Row']
+export type NotificationRuleRow = Database['public']['Tables']['notification_rules']['Row']
+export type NotificationRuleInsert = Database['public']['Tables']['notification_rules']['Insert']
+export type NotificationLogInsert = Database['public']['Tables']['notification_log']['Insert']
