@@ -31,9 +31,8 @@ export function useNotificationPermission() {
       setPermission(permResult as NotifPermissionState);
       if (permResult !== 'granted') return false;
 
-      const keyRes = await fetch('/api/push/vapid-key');
-      if (!keyRes.ok) return false;
-      const { publicKey } = await keyRes.json();
+      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!publicKey) return false;
 
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
@@ -41,14 +40,21 @@ export function useNotificationPermission() {
         applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
       });
 
+      const p256dh = sub.getKey('p256dh');
+      const auth   = sub.getKey('auth');
+      if (!p256dh || !auth) {
+        await sub.unsubscribe();
+        return false;
+      }
+
       const saveRes = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           endpoint: sub.endpoint,
           keys: {
-            p256dh: arrayBufferToBase64(sub.getKey('p256dh')!),
-            auth: arrayBufferToBase64(sub.getKey('auth')!),
+            p256dh: arrayBufferToBase64(p256dh),
+            auth:   arrayBufferToBase64(auth),
           },
         }),
       });

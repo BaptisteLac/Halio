@@ -81,7 +81,8 @@ create policy "Zones are publicly readable"
 -- Modifications user_settings
 alter table user_settings
   add column if not exists subscribed_zones text[] default '{arcachon}',
-  add column if not exists notification_horizons int[] default '{1}';
+  add column if not exists notification_horizons int[] default '{1}',
+  add column if not exists notification_days int[] default '{1,2,3,4,5,6,7}';
 
 alter table user_settings
   drop column if exists notifications_enabled,

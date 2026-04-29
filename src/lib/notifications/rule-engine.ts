@@ -22,8 +22,6 @@ export type ComputedConditions = {
 };
 
 export function evaluateRule(rule: NotificationRule, conditions: ComputedConditions): boolean {
-  if (!rule.enabled) return true;
-
   const stringTypes: RuleType[] = ['tide_phase', 'pressure_trend'];
   if (stringTypes.includes(rule.type)) {
     const actual = rule.type === 'tide_phase' ? conditions.tide_phase : conditions.pressure_trend;
@@ -53,5 +51,5 @@ export function evaluateRule(rule: NotificationRule, conditions: ComputedConditi
 }
 
 export function evaluateRules(rules: NotificationRule[], conditions: ComputedConditions): boolean {
-  return rules.every((rule) => evaluateRule(rule, conditions));
+  return rules.filter((r) => r.enabled).every((r) => evaluateRule(r, conditions));
 }

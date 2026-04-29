@@ -48,8 +48,8 @@ describe('evaluateRule', () => {
     expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), baseConditions)).toBe(false);
   });
 
-  it('disabled rule is treated as passing (ignored)', () => {
-    expect(evaluateRule(rule({ type: 'wind_speed', operator: '<=', value: '5', enabled: false }), baseConditions)).toBe(true);
+  it('disabled rule still evaluates its condition', () => {
+    expect(evaluateRule(rule({ type: 'wind_speed', operator: '<=', value: '5', enabled: false }), baseConditions)).toBe(false);
   });
 
   it('unknown species returns 0 score, fails >= threshold', () => {
@@ -85,5 +85,13 @@ describe('evaluateRules', () => {
 
   it('returns true when rule list is empty', () => {
     expect(evaluateRules([], baseConditions)).toBe(true);
+  });
+
+  it('disabled rules are skipped — does not block notification', () => {
+    const rules: NotificationRule[] = [
+      rule({ type: 'species_score', species_id: 'bar', operator: '>=', value: '80' }),
+      rule({ type: 'wind_speed', operator: '<=', value: '5', enabled: false }),
+    ];
+    expect(evaluateRules(rules, baseConditions)).toBe(true);
   });
 });

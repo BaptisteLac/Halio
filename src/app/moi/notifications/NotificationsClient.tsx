@@ -70,6 +70,7 @@ export default function NotificationsClient() {
   const [saving,    setSaving]    = useState(false);
   const [saved,     setSaved]     = useState(false);
   const [showForm,  setShowForm]  = useState(false);
+  const [ruleError, setRuleError] = useState<string | null>(null);
   const [newRule,   setNewRule]   = useState<NewRuleState>({ type: 'species_score', species_id: 'bar', operator: '>=', value: '70' });
 
   useEffect(() => {
@@ -101,11 +102,10 @@ export default function NotificationsClient() {
     if (!user) return;
     setSaving(true);
     const supabase = createClient();
-    await supabase.from('user_settings').upsert({
-      user_id: user.id,
+    await supabase.from('user_settings').update({
       notification_days:     overrides?.days ?? notifDays,
       notification_horizons: overrides?.hs   ?? horizons,
-    });
+    }).eq('user_id', user.id);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -127,12 +127,13 @@ export default function NotificationsClient() {
   async function deleteRule(id: string) {
     if (!user) return;
     const supabase = createClient();
-    await supabase.from('notification_rules').delete().eq('id', id);
-    setRules((prev) => prev.filter((r) => r.id !== id));
+    const { error } = await supabase.from('notification_rules').delete().eq('id', id);
+    if (!error) setRules((prev) => prev.filter((r) => r.id !== id));
   }
 
   async function addRule() {
     if (!user) return;
+    setRuleError(null);
     const supabase = createClient();
     const insert: NotificationRuleInsert = {
       user_id:    user.id,
@@ -143,7 +144,11 @@ export default function NotificationsClient() {
       value:      newRule.value,
       enabled:    true,
     };
-    const { data } = await supabase.from('notification_rules').insert(insert).select().single();
+    const { data, error } = await supabase.from('notification_rules').insert(insert).select().single();
+    if (error) {
+      setRuleError('Impossible d\'ajouter la règle. Réessaie.');
+      return;
+    }
     if (data) setRules((prev) => [...prev, data]);
     setShowForm(false);
     setNewRule({ type: 'species_score', species_id: 'bar', operator: '>=', value: '70' });
@@ -308,8 +313,11 @@ export default function NotificationsClient() {
                     </div>
                   )}
 
+                  {ruleError && (
+                    <p style={{ fontSize: '0.75rem', color: T.danger, margin: 0 }}>{ruleError}</p>
+                  )}
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={() => setShowForm(false)} style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t3, fontSize: '0.8125rem', cursor: 'pointer' }}>Annuler</button>
+                    <button onClick={() => { setShowForm(false); setRuleError(null); }} style={{ flex: 1, padding: '9px 0', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t3, fontSize: '0.8125rem', cursor: 'pointer' }}>Annuler</button>
                     <button onClick={addRule} style={{ flex: 2, padding: '9px 0', borderRadius: 8, background: T.accent, border: 'none', color: '#0f172a', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer' }}>Ajouter</button>
                   </div>
                 </div>
