@@ -9,6 +9,7 @@ const baseConditions: ComputedConditions = {
   coefficient: 82,
   tide_phase: 'montant',
   pressure_trend: 'baisse',
+  cloud_cover: 25,
 };
 
 const rule = (overrides: Partial<NotificationRule>): NotificationRule => ({
@@ -62,6 +63,30 @@ describe('evaluateRule', () => {
 
   it('pressure_trend = value fails on mismatch', () => {
     expect(evaluateRule(rule({ type: 'pressure_trend', operator: '=', value: 'hausse' }), baseConditions)).toBe(false);
+  });
+
+  it('tide_phase = haute matches when conditions report haute', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'haute' }), { ...baseConditions, tide_phase: 'haute' })).toBe(true);
+  });
+
+  it('tide_phase = basse matches when conditions report basse', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'basse' }), { ...baseConditions, tide_phase: 'basse' })).toBe(true);
+  });
+
+  it('legacy tide_phase = etale rule still matches when conditions report haute', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), { ...baseConditions, tide_phase: 'haute' })).toBe(true);
+  });
+
+  it('legacy tide_phase = etale rule still matches when conditions report basse', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), { ...baseConditions, tide_phase: 'basse' })).toBe(true);
+  });
+
+  it('cloud_cover <= threshold passes when sky is clear', () => {
+    expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), baseConditions)).toBe(true);
+  });
+
+  it('cloud_cover <= threshold fails when sky is overcast', () => {
+    expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), { ...baseConditions, cloud_cover: 80 })).toBe(false);
   });
 });
 

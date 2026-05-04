@@ -13,16 +13,16 @@ type Zone = { id: string; latitude: number; longitude: number; timezone: string 
 async function fetchWeatherForDates(
   zone: Zone,
   dates: Date[],
-): Promise<Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse" }>> {
+): Promise<Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number }>> {
   const start = dates[0].toISOString().split("T")[0];
   const end   = dates[dates.length - 1].toISOString().split("T")[0];
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl&timezone=${encodeURIComponent(zone.timezone)}&start_date=${start}&end_date=${end}&wind_speed_unit=kn`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${start}&end_date=${end}&wind_speed_unit=kn`;
 
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Open-Meteo ${resp.status}`);
   const data = await resp.json();
 
-  const result = new Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse" }>();
+  const result = new Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number }>();
 
   for (let i = 0; i < dates.length; i++) {
     const dateStr = dates[i].toISOString().split("T")[0];
@@ -30,13 +30,15 @@ async function fetchWeatherForDates(
 
     const morningWinds = [6, 7, 8, 9].map((h) => (data.hourly.wind_speed_10m[baseHour + h] as number) ?? 10);
     const avgWind = morningWinds.reduce((a: number, b: number) => a + b, 0) / morningWinds.length;
+    const morningClouds = [6, 7, 8, 9].map((h) => (data.hourly.cloud_cover[baseHour + h] as number) ?? 0);
+    const avgCloud = morningClouds.reduce((a: number, b: number) => a + b, 0) / morningClouds.length;
 
     const p7  = (data.hourly.pressure_msl[baseHour + 7]  as number) ?? 1013;
     const p15 = (data.hourly.pressure_msl[baseHour + 15] as number) ?? 1013;
     const diff = p15 - p7;
     const trend: "hausse" | "stable" | "baisse" = diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable";
 
-    result.set(dateStr, { windKn: avgWind, trend });
+    result.set(dateStr, { windKn: avgWind, trend, cloudPct: avgCloud });
   }
   return result;
 }
@@ -80,7 +82,7 @@ Deno.serve(async (_req: Request) => {
       return d;
     });
 
-    let weatherMap: Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse" }>;
+    let weatherMap: Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number }>;
     try {
       weatherMap = await fetchWeatherForDates(zone, targetDates);
     } catch (err) {
@@ -123,6 +125,7 @@ Deno.serve(async (_req: Request) => {
           targetDate,
           weather.windKn,
           weather.trend,
+          weather.cloudPct,
         );
 
         if (!evaluateRules(userRules, conditions)) continue;

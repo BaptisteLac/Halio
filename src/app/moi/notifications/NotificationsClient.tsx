@@ -36,6 +36,7 @@ const RULE_TYPE_LABELS: Record<RuleType, string> = {
   coefficient:    'Coefficient',
   tide_phase:     'Phase de marée',
   pressure_trend: 'Tendance pression',
+  cloud_cover:    'Couverture nuageuse (%)',
 };
 
 const NUMERIC_OPERATORS: { op: Operator; label: string }[] = [
@@ -45,7 +46,14 @@ const NUMERIC_OPERATORS: { op: Operator; label: string }[] = [
   { op: '<',  label: '<' },
 ];
 
-const TIDE_PHASES     = ['montant', 'descendant', 'etale'];
+const TIDE_PHASES = ['montant', 'descendant', 'etale', 'haute', 'basse'] as const;
+const TIDE_PHASE_LABELS: Record<(typeof TIDE_PHASES)[number], string> = {
+  montant:    'Montant',
+  descendant: 'Descendant',
+  etale:      'Étale',
+  haute:      'Marée haute',
+  basse:      'Marée basse',
+};
 const PRESSURE_TRENDS = ['hausse', 'stable', 'baisse'];
 
 const sectionLabel: React.CSSProperties = {
@@ -160,8 +168,12 @@ export default function NotificationsClient() {
       const sp = SPECIES.find((s) => s.id === rule.species_id);
       return `${sp?.name ?? rule.species_id} ${rule.operator} ${rule.value}/100`;
     }
-    if (rule.type === 'tide_phase') return `Marée = ${rule.value}`;
+    if (rule.type === 'tide_phase') {
+      const label = TIDE_PHASE_LABELS[rule.value as (typeof TIDE_PHASES)[number]] ?? rule.value;
+      return `Marée = ${label}`;
+    }
     if (rule.type === 'pressure_trend') return `Pression = ${rule.value}`;
+    if (rule.type === 'cloud_cover') return `Couverture nuageuse ${rule.operator} ${rule.value}%`;
     return `${typeLabel} ${rule.operator} ${rule.value}`;
   }
 
@@ -253,7 +265,11 @@ export default function NotificationsClient() {
                     value={newRule.type}
                     onChange={(e) => {
                       const type = e.target.value as RuleType;
-                      const defaultValue = type === 'tide_phase' ? 'montant' : type === 'pressure_trend' ? 'baisse' : '70';
+                      const defaultValue =
+                        type === 'tide_phase'    ? 'montant' :
+                        type === 'pressure_trend' ? 'baisse'  :
+                        type === 'cloud_cover'    ? '30'      :
+                        '70';
                       setNewRule({ type, species_id: 'bar', operator: '>=', value: defaultValue });
                     }}
                     style={{ padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.8125rem' }}
@@ -274,29 +290,46 @@ export default function NotificationsClient() {
                   )}
 
                   {!isStringType && (
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <select
-                        value={newRule.operator}
-                        onChange={(e) => setNewRule((r) => ({ ...r, operator: e.target.value as Operator }))}
-                        style={{ width: 70, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.875rem' }}
-                      >
-                        {NUMERIC_OPERATORS.map(({ op, label }) => <option key={op} value={op}>{label}</option>)}
-                      </select>
-                      <input
-                        type="number"
-                        value={newRule.value}
-                        onChange={(e) => setNewRule((r) => ({ ...r, value: e.target.value }))}
-                        style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.8125rem' }}
-                      />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <select
+                          value={newRule.operator}
+                          onChange={(e) => setNewRule((r) => ({ ...r, operator: e.target.value as Operator }))}
+                          style={{ width: 70, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.875rem' }}
+                        >
+                          {NUMERIC_OPERATORS.map(({ op, label }) => <option key={op} value={op}>{label}</option>)}
+                        </select>
+                        {newRule.type === 'cloud_cover' ? (
+                          <>
+                            <input
+                              type="range"
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={newRule.value}
+                              onChange={(e) => setNewRule((r) => ({ ...r, value: e.target.value }))}
+                              style={{ flex: 1, height: 44, accentColor: T.accent, cursor: 'pointer' }}
+                            />
+                            <span style={{ minWidth: 48, textAlign: 'right', fontSize: '0.875rem', fontWeight: 600, color: T.t1, fontVariantNumeric: 'tabular-nums' }}>{newRule.value} %</span>
+                          </>
+                        ) : (
+                          <input
+                            type="number"
+                            value={newRule.value}
+                            onChange={(e) => setNewRule((r) => ({ ...r, value: e.target.value }))}
+                            style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.8125rem' }}
+                          />
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {newRule.type === 'tide_phase' && (
-                    <div style={{ display: 'flex', gap: 6 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {TIDE_PHASES.map((v) => (
                         <button key={v} onClick={() => setNewRule((r) => ({ ...r, value: v }))}
-                          style={{ flex: 1, padding: '7px 4px', borderRadius: 8, fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer', border: `1px solid ${newRule.value === v ? `${T.accent}40` : T.border}`, background: newRule.value === v ? `${T.accent}15` : T.l3, color: newRule.value === v ? T.accent : T.t3 }}>
-                          {v}
+                          style={{ flex: '1 1 30%', minWidth: 0, padding: '8px 4px', borderRadius: 8, fontSize: '0.75rem', fontWeight: 500, cursor: 'pointer', border: `1px solid ${newRule.value === v ? `${T.accent}40` : T.border}`, background: newRule.value === v ? `${T.accent}15` : T.l3, color: newRule.value === v ? T.accent : T.t3 }}>
+                          {TIDE_PHASE_LABELS[v]}
                         </button>
                       ))}
                     </div>

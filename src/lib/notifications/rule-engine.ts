@@ -1,4 +1,4 @@
-export type RuleType = 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend';
+export type RuleType = 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover';
 export type Operator = '>' | '<' | '>=' | '<=' | '=';
 
 export type NotificationRule = {
@@ -17,15 +17,19 @@ export type ComputedConditions = {
   species_scores: Record<string, number>;
   wind_speed: number;
   coefficient: number;
-  tide_phase: 'montant' | 'descendant' | 'etale';
+  tide_phase: 'montant' | 'descendant' | 'etale' | 'haute' | 'basse';
   pressure_trend: 'hausse' | 'stable' | 'baisse';
+  cloud_cover: number;
 };
 
 export function evaluateRule(rule: NotificationRule, conditions: ComputedConditions): boolean {
-  const stringTypes: RuleType[] = ['tide_phase', 'pressure_trend'];
-  if (stringTypes.includes(rule.type)) {
-    const actual = rule.type === 'tide_phase' ? conditions.tide_phase : conditions.pressure_trend;
-    return actual === rule.value;
+  if (rule.type === 'tide_phase') {
+    // Backward-compat: a legacy rule value 'etale' matches the more precise 'haute' or 'basse'.
+    if (rule.value === 'etale') return conditions.tide_phase === 'etale' || conditions.tide_phase === 'haute' || conditions.tide_phase === 'basse';
+    return conditions.tide_phase === rule.value;
+  }
+  if (rule.type === 'pressure_trend') {
+    return conditions.pressure_trend === rule.value;
   }
 
   let actual: number;
@@ -35,6 +39,8 @@ export function evaluateRule(rule: NotificationRule, conditions: ComputedConditi
     actual = conditions.global_score;
   } else if (rule.type === 'wind_speed') {
     actual = conditions.wind_speed;
+  } else if (rule.type === 'cloud_cover') {
+    actual = conditions.cloud_cover;
   } else {
     actual = conditions.coefficient;
   }
