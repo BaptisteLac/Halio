@@ -208,7 +208,7 @@ export type Database = {
           id: string
           user_id: string
           zone_id: string
-          type: 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover' | 'hour_of_day_range'
+          type: 'species_score' | 'global_score' | 'wind_speed' | 'wind_direction' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover' | 'swell_height' | 'hour_of_day_range'
           species_id: string | null
           operator: '>' | '<' | '>=' | '<=' | '='
           value: string
@@ -219,7 +219,7 @@ export type Database = {
           id?: string
           user_id: string
           zone_id?: string
-          type: 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover' | 'hour_of_day_range'
+          type: 'species_score' | 'global_score' | 'wind_speed' | 'wind_direction' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover' | 'swell_height' | 'hour_of_day_range'
           species_id?: string | null
           operator: '>' | '<' | '>=' | '<=' | '='
           value: string
@@ -230,7 +230,7 @@ export type Database = {
           id?: string
           user_id?: string
           zone_id?: string
-          type?: 'species_score' | 'global_score' | 'wind_speed' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover' | 'hour_of_day_range'
+          type?: 'species_score' | 'global_score' | 'wind_speed' | 'wind_direction' | 'coefficient' | 'tide_phase' | 'pressure_trend' | 'cloud_cover' | 'swell_height' | 'hour_of_day_range'
           species_id?: string | null
           operator?: '>' | '<' | '>=' | '<=' | '='
           value?: string

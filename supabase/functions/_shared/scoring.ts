@@ -2,7 +2,12 @@ import SunCalc from "npm:suncalc@1";
 import TidePredictor from "npm:@neaps/tide-predictor@2";
 import { nearest } from "npm:@neaps/tide-database@1";
 
-export type RuleType = "species_score" | "global_score" | "wind_speed" | "coefficient" | "tide_phase" | "pressure_trend" | "cloud_cover" | "hour_of_day_range";
+export type RuleType =
+  | "species_score" | "global_score"
+  | "wind_speed" | "wind_direction" | "coefficient"
+  | "tide_phase" | "pressure_trend"
+  | "cloud_cover" | "swell_height"
+  | "hour_of_day_range";
 export type Operator = ">" | "<" | ">=" | "<=" | "=";
 
 export type NotificationRule = {
@@ -21,11 +26,22 @@ export type ComputedConditions = {
   global_score: number;
   species_scores: Record<string, number>;
   wind_speed: number;
+  wind_direction: number | null;
   coefficient: number;
   tide_phase: "montant" | "descendant" | "etale_pm" | "etale_bm";
   pressure_trend: "hausse" | "stable" | "baisse";
   cloud_cover: number | null;
+  swell_height: number | null;
 };
+
+export const WIND_SECTORS = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"] as const;
+export type WindSector = (typeof WIND_SECTORS)[number];
+
+export function degreesToCardinal8(deg: number): WindSector {
+  const normalized = ((deg % 360) + 360) % 360;
+  const idx = Math.round(normalized / 45) % 8;
+  return WIND_SECTORS[idx];
+}
 
 export const SPECIES_WEIGHTS: Record<string, {
   coeff: { opt: number; sig: number };
@@ -101,6 +117,12 @@ export function evaluateRule(rule: NotificationRule, c: ComputedConditions): boo
     if (Number.isNaN(start) || Number.isNaN(end)) return false;
     return c.hour >= start && c.hour <= end;
   }
+  if (rule.type === "wind_direction") {
+    if (c.wind_direction === null) return false;
+    const selected = rule.value.split(",").map((s) => s.trim()).filter(Boolean);
+    if (selected.length === 0) return false;
+    return selected.includes(degreesToCardinal8(c.wind_direction));
+  }
 
   let actual: number;
   if (rule.type === "species_score") actual = c.species_scores[rule.species_id ?? ""] ?? 0;
@@ -109,6 +131,10 @@ export function evaluateRule(rule: NotificationRule, c: ComputedConditions): boo
   else if (rule.type === "cloud_cover") {
     if (c.cloud_cover === null) return false;
     actual = c.cloud_cover;
+  }
+  else if (rule.type === "swell_height") {
+    if (c.swell_height === null) return false;
+    actual = c.swell_height;
   }
   else actual = c.coefficient;
 
@@ -192,10 +218,12 @@ export function computeConditions(
     global_score: computeGlobalScore(speciesScores),
     species_scores: speciesScores,
     wind_speed: windKn,
+    wind_direction: null,
     coefficient,
     tide_phase,
     pressure_trend: pressureTrend,
     cloud_cover: cloudCover,
+    swell_height: null,
   };
 }
 
@@ -220,6 +248,8 @@ export function buildHourlyConditions(
   timezone: string,
   hourlyWinds: number[],
   hourlyClouds: (number | null)[],
+  hourlyWindDirs: (number | null)[],
+  hourlySwell: (number | null)[],
   dayWindKn: number,
   pressureTrend: "hausse" | "stable" | "baisse",
 ): ComputedConditions[] {
@@ -246,10 +276,12 @@ export function buildHourlyConditions(
       global_score: dailyGlobalScore,
       species_scores: dailySpeciesScores,
       wind_speed: hourlyWinds[h] ?? dayWindKn,
+      wind_direction: hourlyWindDirs[h] ?? null,
       coefficient,
       tide_phase,
       pressure_trend: pressureTrend,
       cloud_cover: hourlyClouds[h] ?? null,
+      swell_height: hourlySwell[h] ?? null,
     });
   }
   return result;

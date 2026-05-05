@@ -9,15 +9,37 @@ import {
 
 type Zone = { id: string; latitude: number; longitude: number; timezone: string };
 
+// Open-ocean swell proxy: Biscarrosse-Plage. The Arcachon zone coords get snapped
+// to a sheltered grid cell inside the bay; Biscarrosse sits 25 km south on the
+// open Atlantic and gives a representative reading for boats heading out the pass.
+const SWELL_PROXY_LAT = 44.43;
+const SWELL_PROXY_LNG = -1.25;
+
 type HourlyData = {
   winds: number[];
   clouds: (number | null)[];
+  windDirs: (number | null)[];
+  swell: (number | null)[];
   trend: "hausse" | "stable" | "baisse";
   dayWindKn: number;
 };
 
+async function fetchSwell(dateStr: string, timezone: string): Promise<(number | null)[]> {
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${SWELL_PROXY_LAT}&longitude=${SWELL_PROXY_LNG}&hourly=swell_wave_height&timezone=${encodeURIComponent(timezone)}&start_date=${dateStr}&end_date=${dateStr}`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`Marine ${resp.status}`);
+    const data = await resp.json();
+    const raw = (data.hourly?.swell_wave_height as (number | null)[] | undefined) ?? [];
+    return Array.from({ length: 24 }, (_, h) => raw[h] ?? null);
+  } catch (err) {
+    console.error("Marine fetch failed:", err);
+    return Array.from({ length: 24 }, () => null);
+  }
+}
+
 async function fetchHourlyData(zone: Zone, dateStr: string): Promise<HourlyData> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,wind_direction_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Open-Meteo ${resp.status}`);
   const data = await resp.json();
@@ -25,9 +47,13 @@ async function fetchHourlyData(zone: Zone, dateStr: string): Promise<HourlyData>
   const windsRaw = (data.hourly.wind_speed_10m as (number | null)[] | undefined) ?? [];
   const cloudsRaw = (data.hourly.cloud_cover as (number | null)[] | undefined) ?? [];
   const pressureRaw = (data.hourly.pressure_msl as (number | null)[] | undefined) ?? [];
+  const windDirsRaw = (data.hourly.wind_direction_10m as (number | null)[] | undefined) ?? [];
 
   const winds: number[] = Array.from({ length: 24 }, (_, h) => windsRaw[h] ?? 10);
   const clouds: (number | null)[] = Array.from({ length: 24 }, (_, h) => cloudsRaw[h] ?? null);
+  const windDirs: (number | null)[] = Array.from({ length: 24 }, (_, h) => windDirsRaw[h] ?? null);
+
+  const swell = await fetchSwell(dateStr, zone.timezone);
 
   const morningWinds = [6, 7, 8, 9].map((h) => winds[h]);
   const dayWindKn = morningWinds.reduce((a, b) => a + b, 0) / morningWinds.length;
@@ -37,7 +63,7 @@ async function fetchHourlyData(zone: Zone, dateStr: string): Promise<HourlyData>
   const diff = p15 - p7;
   const trend: "hausse" | "stable" | "baisse" = diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable";
 
-  return { winds, clouds, trend, dayWindKn };
+  return { winds, clouds, windDirs, swell, trend, dayWindKn };
 }
 
 function formatWindow(matchingHours: number[]): string {
@@ -105,6 +131,8 @@ Deno.serve(async (_req: Request) => {
       zone.timezone,
       hourly.winds,
       hourly.clouds,
+      hourly.windDirs,
+      hourly.swell,
       hourly.dayWindKn,
       hourly.trend,
     );
