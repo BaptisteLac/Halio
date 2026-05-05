@@ -2,7 +2,7 @@ import SunCalc from "npm:suncalc@1";
 import TidePredictor from "npm:@neaps/tide-predictor@2";
 import { nearest } from "npm:@neaps/tide-database@1";
 
-export type RuleType = "species_score" | "global_score" | "wind_speed" | "coefficient" | "tide_phase" | "pressure_trend" | "cloud_cover";
+export type RuleType = "species_score" | "global_score" | "wind_speed" | "coefficient" | "tide_phase" | "pressure_trend" | "cloud_cover" | "hour_of_day_range";
 export type Operator = ">" | "<" | ">=" | "<=" | "=";
 
 export type NotificationRule = {
@@ -17,6 +17,7 @@ export type NotificationRule = {
 };
 
 export type ComputedConditions = {
+  hour: number;
   global_score: number;
   species_scores: Record<string, number>;
   wind_speed: number;
@@ -95,6 +96,11 @@ export function evaluateRule(rule: NotificationRule, c: ComputedConditions): boo
     return c.tide_phase === rule.value;
   }
   if (rule.type === "pressure_trend") return c.pressure_trend === rule.value;
+  if (rule.type === "hour_of_day_range") {
+    const [start, end] = rule.value.split("-").map(Number);
+    if (Number.isNaN(start) || Number.isNaN(end)) return false;
+    return c.hour >= start && c.hour <= end;
+  }
 
   let actual: number;
   if (rule.type === "species_score") actual = c.species_scores[rule.species_id ?? ""] ?? 0;
@@ -116,6 +122,17 @@ export function evaluateRule(rule: NotificationRule, c: ComputedConditions): boo
 
 export function evaluateRules(rules: NotificationRule[], c: ComputedConditions): boolean {
   return rules.filter((r) => r.enabled).every((r) => evaluateRule(r, c));
+}
+
+export function evaluateRulesAcrossDay(
+  rules: NotificationRule[],
+  hourlyConditions: ComputedConditions[],
+): { matched: boolean; matchingHours: number[] } {
+  const enabled = rules.filter((r) => r.enabled);
+  const matchingHours = hourlyConditions
+    .filter((c) => enabled.every((r) => evaluateRule(r, c)))
+    .map((c) => c.hour);
+  return { matched: matchingHours.length > 0, matchingHours };
 }
 
 export function computeTidePhase(
@@ -171,6 +188,7 @@ export function computeConditions(
   }
 
   return {
+    hour: 8,
     global_score: computeGlobalScore(speciesScores),
     species_scores: speciesScores,
     wind_speed: windKn,
@@ -179,4 +197,60 @@ export function computeConditions(
     pressure_trend: pressureTrend,
     cloud_cover: cloudCover,
   };
+}
+
+// Returns the offset in hours from UTC for the given timezone on the given date.
+// Positive = ahead of UTC. e.g. Europe/Paris in summer → 2.
+function timezoneOffsetHours(todayStr: string, timezone: string): number {
+  const noonUtcMs = Date.parse(`${todayStr}T12:00:00Z`);
+  const localHourAtNoonUtc = Number(
+    new Date(noonUtcMs).toLocaleString("en-US", { timeZone: timezone, hour: "numeric", hour12: false }),
+  );
+  return localHourAtNoonUtc - 12;
+}
+
+// Build 24 ComputedConditions snapshots, one per local hour (0..23).
+// `hourlyWinds` and `hourlyClouds` come from Open-Meteo with timezone=zone.timezone,
+// so index h corresponds to local hour h. `dayWindKn` is the day-level wind used to
+// compute species/global scores (kept day-level intentionally — see plan).
+export function buildHourlyConditions(
+  lat: number,
+  lng: number,
+  todayStr: string,
+  timezone: string,
+  hourlyWinds: number[],
+  hourlyClouds: (number | null)[],
+  dayWindKn: number,
+  pressureTrend: "hausse" | "stable" | "baisse",
+): ComputedConditions[] {
+  const utcMidnightMs = Date.parse(`${todayStr}T00:00:00Z`);
+  const targetDate = new Date(utcMidnightMs);
+  const offsetHours = timezoneOffsetHours(todayStr, timezone);
+
+  const moonIllum = SunCalc.getMoonIllumination(targetDate);
+  const coefficient = estimateCoefficient(moonIllum.phase);
+  const temp = SST_MONTHLY[targetDate.getUTCMonth()];
+
+  const dailySpeciesScores: Record<string, number> = {};
+  for (const id of Object.keys(SPECIES_WEIGHTS)) {
+    dailySpeciesScores[id] = computeSpeciesScore(id, coefficient, dayWindKn, pressureTrend, temp);
+  }
+  const dailyGlobalScore = computeGlobalScore(dailySpeciesScores);
+
+  const result: ComputedConditions[] = [];
+  for (let h = 0; h < 24; h++) {
+    const referenceTime = new Date(utcMidnightMs + (h - offsetHours) * 3_600_000);
+    const tide_phase = computeTidePhase(lat, lng, referenceTime);
+    result.push({
+      hour: h,
+      global_score: dailyGlobalScore,
+      species_scores: dailySpeciesScores,
+      wind_speed: hourlyWinds[h] ?? dayWindKn,
+      coefficient,
+      tide_phase,
+      pressure_trend: pressureTrend,
+      cloud_cover: hourlyClouds[h] ?? null,
+    });
+  }
+  return result;
 }
