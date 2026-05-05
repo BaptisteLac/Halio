@@ -21,9 +21,9 @@ export type ComputedConditions = {
   species_scores: Record<string, number>;
   wind_speed: number;
   coefficient: number;
-  tide_phase: "montant" | "descendant" | "etale" | "haute" | "basse";
+  tide_phase: "montant" | "descendant" | "etale_pm" | "etale_bm";
   pressure_trend: "hausse" | "stable" | "baisse";
-  cloud_cover: number;
+  cloud_cover: number | null;
 };
 
 export const SPECIES_WEIGHTS: Record<string, {
@@ -92,7 +92,6 @@ export function computeGlobalScore(speciesScores: Record<string, number>): numbe
 
 export function evaluateRule(rule: NotificationRule, c: ComputedConditions): boolean {
   if (rule.type === "tide_phase") {
-    if (rule.value === "etale") return c.tide_phase === "etale" || c.tide_phase === "haute" || c.tide_phase === "basse";
     return c.tide_phase === rule.value;
   }
   if (rule.type === "pressure_trend") return c.pressure_trend === rule.value;
@@ -101,7 +100,10 @@ export function evaluateRule(rule: NotificationRule, c: ComputedConditions): boo
   if (rule.type === "species_score") actual = c.species_scores[rule.species_id ?? ""] ?? 0;
   else if (rule.type === "global_score") actual = c.global_score;
   else if (rule.type === "wind_speed") actual = c.wind_speed;
-  else if (rule.type === "cloud_cover") actual = c.cloud_cover;
+  else if (rule.type === "cloud_cover") {
+    if (c.cloud_cover === null) return false;
+    actual = c.cloud_cover;
+  }
   else actual = c.coefficient;
 
   const threshold = Number(rule.value);
@@ -120,7 +122,7 @@ export function computeTidePhase(
   lat: number,
   lng: number,
   referenceTime: Date,
-): "montant" | "descendant" | "etale" | "haute" | "basse" {
+): "montant" | "descendant" | "etale_pm" | "etale_bm" {
   const result = nearest({ latitude: lat, longitude: lng });
   if (!result) return "montant";
   const [station] = result;
@@ -139,8 +141,8 @@ export function computeTidePhase(
   const before = extremes.filter((e) => new Date(e.time).getTime() <= refMs).pop();
   const after   = extremes.find((e)   => new Date(e.time).getTime() > refMs);
 
-  if (before && Math.abs(refMs - new Date(before.time).getTime()) < ONE_HOUR) return before.high ? "haute" : "basse";
-  if (after  && Math.abs(new Date(after.time).getTime() - refMs)  < ONE_HOUR) return after.high  ? "haute" : "basse";
+  if (before && Math.abs(refMs - new Date(before.time).getTime()) < ONE_HOUR) return before.high ? "etale_pm" : "etale_bm";
+  if (after  && Math.abs(new Date(after.time).getTime() - refMs)  < ONE_HOUR) return after.high  ? "etale_pm" : "etale_bm";
 
   if (before?.high === false) return "montant";
   if (before?.high === true)  return "descendant";
@@ -153,7 +155,7 @@ export function computeConditions(
   targetDate: Date,
   windKn: number,
   pressureTrend: "hausse" | "stable" | "baisse",
-  cloudCover: number,
+  cloudCover: number | null,
 ): ComputedConditions {
   const moonIllum = SunCalc.getMoonIllumination(targetDate);
   const coefficient = estimateCoefficient(moonIllum.phase);

@@ -46,13 +46,12 @@ const NUMERIC_OPERATORS: { op: Operator; label: string }[] = [
   { op: '<',  label: '<' },
 ];
 
-const TIDE_PHASES = ['montant', 'descendant', 'etale', 'haute', 'basse'] as const;
+const TIDE_PHASES = ['montant', 'descendant', 'etale_pm', 'etale_bm'] as const;
 const TIDE_PHASE_LABELS: Record<(typeof TIDE_PHASES)[number], string> = {
   montant:    'Montant',
   descendant: 'Descendant',
-  etale:      'Étale',
-  haute:      'Marée haute',
-  basse:      'Marée basse',
+  etale_pm:   'Étale de pleine mer',
+  etale_bm:   'Étale de basse mer',
 };
 const PRESSURE_TRENDS = ['hausse', 'stable', 'baisse'];
 

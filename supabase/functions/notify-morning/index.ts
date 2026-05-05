@@ -13,7 +13,7 @@ type Zone = { id: string; latitude: number; longitude: number; timezone: string 
 async function fetchTodayConditions(
   zone: Zone,
   dateStr: string,
-): Promise<{ windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number }> {
+): Promise<{ windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null }> {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Open-Meteo ${resp.status}`);
@@ -21,8 +21,11 @@ async function fetchTodayConditions(
 
   const morningWinds = [6, 7, 8, 9].map((h) => (data.hourly.wind_speed_10m[h] as number) ?? 10);
   const avgWind = morningWinds.reduce((a: number, b: number) => a + b, 0) / morningWinds.length;
-  const morningClouds = [6, 7, 8, 9].map((h) => (data.hourly.cloud_cover[h] as number) ?? 0);
-  const avgCloud = morningClouds.reduce((a: number, b: number) => a + b, 0) / morningClouds.length;
+  const cloudArr = data.hourly.cloud_cover as number[] | undefined;
+  const morningClouds = cloudArr ? [6, 7, 8, 9].map((h) => cloudArr[h] as number | undefined) : null;
+  const avgCloud = morningClouds?.every((v) => v != null)
+    ? morningClouds.reduce((a, b) => a + b!, 0) / morningClouds.length
+    : null;
   const p7  = (data.hourly.pressure_msl[7]  as number) ?? 1013;
   const p15 = (data.hourly.pressure_msl[15] as number) ?? 1013;
   const diff = p15 - p7;
@@ -63,7 +66,7 @@ Deno.serve(async (_req: Request) => {
   let totalSent = 0;
 
   for (const zone of zones as Zone[]) {
-    let weather: { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number };
+    let weather: { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null };
     try {
       weather = await fetchTodayConditions(zone, todayStr);
     } catch (err) {

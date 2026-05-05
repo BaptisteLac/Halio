@@ -46,7 +46,7 @@ describe('evaluateRule', () => {
   });
 
   it('tide_phase = value fails on mismatch', () => {
-    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), baseConditions)).toBe(false);
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }), baseConditions)).toBe(false);
   });
 
   it('disabled rule still evaluates its condition', () => {
@@ -65,21 +65,18 @@ describe('evaluateRule', () => {
     expect(evaluateRule(rule({ type: 'pressure_trend', operator: '=', value: 'hausse' }), baseConditions)).toBe(false);
   });
 
-  it('tide_phase = haute matches when conditions report haute', () => {
-    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'haute' }), { ...baseConditions, tide_phase: 'haute' })).toBe(true);
+  it('tide_phase = etale_pm matches when conditions report etale_pm', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }), { ...baseConditions, tide_phase: 'etale_pm' })).toBe(true);
   });
 
-  it('tide_phase = basse matches when conditions report basse', () => {
-    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'basse' }), { ...baseConditions, tide_phase: 'basse' })).toBe(true);
+  it('tide_phase = etale_bm matches when conditions report etale_bm', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_bm' }), { ...baseConditions, tide_phase: 'etale_bm' })).toBe(true);
   });
 
-  it('legacy tide_phase = etale rule still matches when conditions report haute', () => {
-    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), { ...baseConditions, tide_phase: 'haute' })).toBe(true);
+  it('tide_phase = etale_pm does not match etale_bm', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }), { ...baseConditions, tide_phase: 'etale_bm' })).toBe(false);
   });
 
-  it('legacy tide_phase = etale rule still matches when conditions report basse', () => {
-    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), { ...baseConditions, tide_phase: 'basse' })).toBe(true);
-  });
 
   it('cloud_cover <= threshold passes when sky is clear', () => {
     expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), baseConditions)).toBe(true);
@@ -87,6 +84,10 @@ describe('evaluateRule', () => {
 
   it('cloud_cover <= threshold fails when sky is overcast', () => {
     expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), { ...baseConditions, cloud_cover: 80 })).toBe(false);
+  });
+
+  it('cloud_cover rule blocks notification when data is unavailable', () => {
+    expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), { ...baseConditions, cloud_cover: null })).toBe(false);
   });
 });
 
