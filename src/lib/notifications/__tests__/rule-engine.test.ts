@@ -9,6 +9,7 @@ const baseConditions: ComputedConditions = {
   coefficient: 82,
   tide_phase: 'montant',
   pressure_trend: 'baisse',
+  cloud_cover: 25,
 };
 
 const rule = (overrides: Partial<NotificationRule>): NotificationRule => ({
@@ -45,7 +46,7 @@ describe('evaluateRule', () => {
   });
 
   it('tide_phase = value fails on mismatch', () => {
-    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale' }), baseConditions)).toBe(false);
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }), baseConditions)).toBe(false);
   });
 
   it('disabled rule still evaluates its condition', () => {
@@ -62,6 +63,31 @@ describe('evaluateRule', () => {
 
   it('pressure_trend = value fails on mismatch', () => {
     expect(evaluateRule(rule({ type: 'pressure_trend', operator: '=', value: 'hausse' }), baseConditions)).toBe(false);
+  });
+
+  it('tide_phase = etale_pm matches when conditions report etale_pm', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }), { ...baseConditions, tide_phase: 'etale_pm' })).toBe(true);
+  });
+
+  it('tide_phase = etale_bm matches when conditions report etale_bm', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_bm' }), { ...baseConditions, tide_phase: 'etale_bm' })).toBe(true);
+  });
+
+  it('tide_phase = etale_pm does not match etale_bm', () => {
+    expect(evaluateRule(rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }), { ...baseConditions, tide_phase: 'etale_bm' })).toBe(false);
+  });
+
+
+  it('cloud_cover <= threshold passes when sky is clear', () => {
+    expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), baseConditions)).toBe(true);
+  });
+
+  it('cloud_cover <= threshold fails when sky is overcast', () => {
+    expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), { ...baseConditions, cloud_cover: 80 })).toBe(false);
+  });
+
+  it('cloud_cover rule blocks notification when data is unavailable', () => {
+    expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), { ...baseConditions, cloud_cover: null })).toBe(false);
   });
 });
 

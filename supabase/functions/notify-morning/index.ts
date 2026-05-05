@@ -13,18 +13,27 @@ type Zone = { id: string; latitude: number; longitude: number; timezone: string 
 async function fetchTodayConditions(
   zone: Zone,
   dateStr: string,
-): Promise<{ windKn: number; trend: "hausse" | "stable" | "baisse" }> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
+): Promise<{ windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null }> {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Open-Meteo ${resp.status}`);
   const data = await resp.json();
 
   const morningWinds = [6, 7, 8, 9].map((h) => (data.hourly.wind_speed_10m[h] as number) ?? 10);
   const avgWind = morningWinds.reduce((a: number, b: number) => a + b, 0) / morningWinds.length;
+  const cloudArr = data.hourly.cloud_cover as number[] | undefined;
+  const morningClouds = cloudArr ? [6, 7, 8, 9].map((h) => cloudArr[h] as number | undefined) : null;
+  const avgCloud = morningClouds?.every((v) => v != null)
+    ? morningClouds.reduce((a, b) => a + b!, 0) / morningClouds.length
+    : null;
   const p7  = (data.hourly.pressure_msl[7]  as number) ?? 1013;
   const p15 = (data.hourly.pressure_msl[15] as number) ?? 1013;
   const diff = p15 - p7;
-  return { windKn: avgWind, trend: diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable" };
+  return {
+    windKn: avgWind,
+    trend: diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable",
+    cloudPct: avgCloud,
+  };
 }
 
 Deno.serve(async (_req: Request) => {
@@ -57,7 +66,7 @@ Deno.serve(async (_req: Request) => {
   let totalSent = 0;
 
   for (const zone of zones as Zone[]) {
-    let weather: { windKn: number; trend: "hausse" | "stable" | "baisse" };
+    let weather: { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null };
     try {
       weather = await fetchTodayConditions(zone, todayStr);
     } catch (err) {
@@ -71,6 +80,7 @@ Deno.serve(async (_req: Request) => {
       today,
       weather.windKn,
       weather.trend,
+      weather.cloudPct,
     );
 
     const userIds = [...new Set((allRules as NotificationRule[]).map((r) => r.user_id))];
