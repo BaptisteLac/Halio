@@ -3,47 +3,101 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3";
 import {
   type NotificationRule,
-  type ComputedConditions,
-  evaluateRules,
-  computeConditions,
+  evaluateRulesAcrossDay,
+  buildHourlyConditions,
 } from "../_shared/scoring.ts";
 
 type Zone = { id: string; latitude: number; longitude: number; timezone: string };
 
-async function fetchWeatherForDates(
+// Open-ocean swell proxy: Biscarrosse-Plage. The Arcachon zone coords get snapped
+// to a sheltered grid cell inside the bay; Biscarrosse sits 25 km south on the
+// open Atlantic and gives a representative reading for boats heading out the pass.
+const SWELL_PROXY_LAT = 44.43;
+const SWELL_PROXY_LNG = -1.25;
+
+type HourlyData = {
+  winds: number[];
+  clouds: (number | null)[];
+  windDirs: (number | null)[];
+  swell: (number | null)[];
+  trend: "hausse" | "stable" | "baisse";
+  dayWindKn: number;
+};
+
+async function fetchSwellForDates(start: string, end: string, timezone: string, days: number): Promise<(number | null)[]> {
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${SWELL_PROXY_LAT}&longitude=${SWELL_PROXY_LNG}&hourly=swell_wave_height&timezone=${encodeURIComponent(timezone)}&start_date=${start}&end_date=${end}`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`Marine ${resp.status}`);
+    const data = await resp.json();
+    const raw = (data.hourly?.swell_wave_height as (number | null)[] | undefined) ?? [];
+    return Array.from({ length: days * 24 }, (_, h) => raw[h] ?? null);
+  } catch (err) {
+    console.error("Marine fetch failed:", err);
+    return Array.from({ length: days * 24 }, () => null);
+  }
+}
+
+async function fetchHourlyForDates(
   zone: Zone,
   dates: Date[],
-): Promise<Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null }>> {
+): Promise<Map<string, HourlyData>> {
   const start = dates[0].toISOString().split("T")[0];
   const end   = dates[dates.length - 1].toISOString().split("T")[0];
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${start}&end_date=${end}&wind_speed_unit=kn`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,wind_direction_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${start}&end_date=${end}&wind_speed_unit=kn`;
 
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Open-Meteo ${resp.status}`);
   const data = await resp.json();
 
-  const result = new Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null }>();
+  const windsRaw = (data.hourly.wind_speed_10m as (number | null)[] | undefined) ?? [];
+  const cloudsRaw = (data.hourly.cloud_cover as (number | null)[] | undefined) ?? [];
+  const pressureRaw = (data.hourly.pressure_msl as (number | null)[] | undefined) ?? [];
+  const windDirsRaw = (data.hourly.wind_direction_10m as (number | null)[] | undefined) ?? [];
+
+  const swellAll = await fetchSwellForDates(start, end, zone.timezone, dates.length);
+
+  const result = new Map<string, HourlyData>();
 
   for (let i = 0; i < dates.length; i++) {
     const dateStr = dates[i].toISOString().split("T")[0];
     const baseHour = i * 24;
 
-    const morningWinds = [6, 7, 8, 9].map((h) => (data.hourly.wind_speed_10m[baseHour + h] as number) ?? 10);
-    const avgWind = morningWinds.reduce((a: number, b: number) => a + b, 0) / morningWinds.length;
-    const cloudArr = data.hourly.cloud_cover as number[] | undefined;
-    const morningClouds = cloudArr ? [6, 7, 8, 9].map((h) => cloudArr[baseHour + h] as number | undefined) : null;
-    const avgCloud = morningClouds?.every((v) => v != null)
-      ? morningClouds.reduce((a, b) => a + b!, 0) / morningClouds.length
-      : null;
+    const winds: number[] = Array.from({ length: 24 }, (_, h) => windsRaw[baseHour + h] ?? 10);
+    const clouds: (number | null)[] = Array.from({ length: 24 }, (_, h) => cloudsRaw[baseHour + h] ?? null);
+    const windDirs: (number | null)[] = Array.from({ length: 24 }, (_, h) => windDirsRaw[baseHour + h] ?? null);
+    const swell: (number | null)[] = Array.from({ length: 24 }, (_, h) => swellAll[baseHour + h] ?? null);
 
-    const p7  = (data.hourly.pressure_msl[baseHour + 7]  as number) ?? 1013;
-    const p15 = (data.hourly.pressure_msl[baseHour + 15] as number) ?? 1013;
+    const morningWinds = [6, 7, 8, 9].map((h) => winds[h]);
+    const dayWindKn = morningWinds.reduce((a, b) => a + b, 0) / morningWinds.length;
+
+    const p7  = pressureRaw[baseHour + 7]  ?? 1013;
+    const p15 = pressureRaw[baseHour + 15] ?? 1013;
     const diff = p15 - p7;
     const trend: "hausse" | "stable" | "baisse" = diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable";
 
-    result.set(dateStr, { windKn: avgWind, trend, cloudPct: avgCloud });
+    result.set(dateStr, { winds, clouds, windDirs, swell, trend, dayWindKn });
   }
   return result;
+}
+
+function formatWindow(matchingHours: number[]): string {
+  if (matchingHours.length === 0) return "";
+  const sorted = [...matchingHours].sort((a, b) => a - b);
+  const runs: Array<[number, number]> = [];
+  let start = sorted[0];
+  let prev = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === prev + 1) {
+      prev = sorted[i];
+    } else {
+      runs.push([start, prev]);
+      start = sorted[i];
+      prev = sorted[i];
+    }
+  }
+  runs.push([start, prev]);
+  return runs.map(([s, e]) => `${s}h–${e + 1}h`).join(", ");
 }
 
 Deno.serve(async (_req: Request) => {
@@ -85,9 +139,9 @@ Deno.serve(async (_req: Request) => {
       return d;
     });
 
-    let weatherMap: Map<string, { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null }>;
+    let hourlyMap: Map<string, HourlyData>;
     try {
-      weatherMap = await fetchWeatherForDates(zone, targetDates);
+      hourlyMap = await fetchHourlyForDates(zone, targetDates);
     } catch (err) {
       console.error(`Weather fetch failed for ${zone.id}:`, err);
       continue;
@@ -119,19 +173,24 @@ Deno.serve(async (_req: Request) => {
         if (!notifDays.includes(dowIso)) continue;
 
         const dateStr = targetDate.toISOString().split("T")[0];
-        const weather = weatherMap.get(dateStr);
-        if (!weather) continue;
+        const hourly = hourlyMap.get(dateStr);
+        if (!hourly) continue;
 
-        const conditions: ComputedConditions = computeConditions(
+        const hourlyConditions = buildHourlyConditions(
           zone.latitude,
           zone.longitude,
-          targetDate,
-          weather.windKn,
-          weather.trend,
-          weather.cloudPct,
+          dateStr,
+          zone.timezone,
+          hourly.winds,
+          hourly.clouds,
+          hourly.windDirs,
+          hourly.swell,
+          hourly.dayWindKn,
+          hourly.trend,
         );
 
-        if (!evaluateRules(userRules, conditions)) continue;
+        const { matched, matchingHours } = evaluateRulesAcrossDay(userRules, hourlyConditions);
+        if (!matched) continue;
 
         const { data: existing } = await supabase
           .from("notification_log")
@@ -147,8 +206,10 @@ Deno.serve(async (_req: Request) => {
 
         const horizonLabel = horizon === 1 ? "demain" : `dans ${horizon} jours`;
         const dateLabel = targetDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-        const topSpecies = Object.entries(conditions.species_scores).sort((a, b) => b[1] - a[1])[0];
+        const dayConditions = hourlyConditions[0];
+        const topSpecies = Object.entries(dayConditions.species_scores).sort((a, b) => b[1] - a[1])[0];
         const topSpeciesName = topSpecies[0].charAt(0).toUpperCase() + topSpecies[0].slice(1);
+        const window = formatWindow(matchingHours);
 
         let sent = 0;
         for (const sub of userSubs) {
@@ -157,7 +218,7 @@ Deno.serve(async (_req: Request) => {
               { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
               JSON.stringify({
                 title: `Halio — Bonnes conditions ${horizonLabel}`,
-                body: `${topSpeciesName} ${topSpecies[1]}/100 · Vent ${Math.round(weather.windKn)} nœuds · Coeff ${conditions.coefficient} · ${dateLabel}`,
+                body: `${topSpeciesName} ${topSpecies[1]}/100 · ${window} · Coeff ${dayConditions.coefficient} · ${dateLabel}`,
                 url: "https://halioapp.com",
                 tag: `halio-${zone.id}-${dateStr}`,
               }),
@@ -180,7 +241,7 @@ Deno.serve(async (_req: Request) => {
             zone_id: zone.id,
             target_date: dateStr,
             horizon_days: horizon,
-            scores_snapshot: conditions,
+            scores_snapshot: { ...dayConditions, matchingHours },
           });
         }
       }

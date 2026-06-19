@@ -3,37 +3,87 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3";
 import {
   type NotificationRule,
-  type ComputedConditions,
-  evaluateRules,
-  computeConditions,
+  evaluateRulesAcrossDay,
+  buildHourlyConditions,
 } from "../_shared/scoring.ts";
 
 type Zone = { id: string; latitude: number; longitude: number; timezone: string };
 
-async function fetchTodayConditions(
-  zone: Zone,
-  dateStr: string,
-): Promise<{ windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null }> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
+// Open-ocean swell proxy: Biscarrosse-Plage. The Arcachon zone coords get snapped
+// to a sheltered grid cell inside the bay; Biscarrosse sits 25 km south on the
+// open Atlantic and gives a representative reading for boats heading out the pass.
+const SWELL_PROXY_LAT = 44.43;
+const SWELL_PROXY_LNG = -1.25;
+
+type HourlyData = {
+  winds: number[];
+  clouds: (number | null)[];
+  windDirs: (number | null)[];
+  swell: (number | null)[];
+  trend: "hausse" | "stable" | "baisse";
+  dayWindKn: number;
+};
+
+async function fetchSwell(dateStr: string, timezone: string): Promise<(number | null)[]> {
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${SWELL_PROXY_LAT}&longitude=${SWELL_PROXY_LNG}&hourly=swell_wave_height&timezone=${encodeURIComponent(timezone)}&start_date=${dateStr}&end_date=${dateStr}`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`Marine ${resp.status}`);
+    const data = await resp.json();
+    const raw = (data.hourly?.swell_wave_height as (number | null)[] | undefined) ?? [];
+    return Array.from({ length: 24 }, (_, h) => raw[h] ?? null);
+  } catch (err) {
+    console.error("Marine fetch failed:", err);
+    return Array.from({ length: 24 }, () => null);
+  }
+}
+
+async function fetchHourlyData(zone: Zone, dateStr: string): Promise<HourlyData> {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${zone.latitude}&longitude=${zone.longitude}&hourly=wind_speed_10m,wind_direction_10m,pressure_msl,cloud_cover&timezone=${encodeURIComponent(zone.timezone)}&start_date=${dateStr}&end_date=${dateStr}&wind_speed_unit=kn`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Open-Meteo ${resp.status}`);
   const data = await resp.json();
 
-  const morningWinds = [6, 7, 8, 9].map((h) => (data.hourly.wind_speed_10m[h] as number) ?? 10);
-  const avgWind = morningWinds.reduce((a: number, b: number) => a + b, 0) / morningWinds.length;
-  const cloudArr = data.hourly.cloud_cover as number[] | undefined;
-  const morningClouds = cloudArr ? [6, 7, 8, 9].map((h) => cloudArr[h] as number | undefined) : null;
-  const avgCloud = morningClouds?.every((v) => v != null)
-    ? morningClouds.reduce((a, b) => a + b!, 0) / morningClouds.length
-    : null;
-  const p7  = (data.hourly.pressure_msl[7]  as number) ?? 1013;
-  const p15 = (data.hourly.pressure_msl[15] as number) ?? 1013;
+  const windsRaw = (data.hourly.wind_speed_10m as (number | null)[] | undefined) ?? [];
+  const cloudsRaw = (data.hourly.cloud_cover as (number | null)[] | undefined) ?? [];
+  const pressureRaw = (data.hourly.pressure_msl as (number | null)[] | undefined) ?? [];
+  const windDirsRaw = (data.hourly.wind_direction_10m as (number | null)[] | undefined) ?? [];
+
+  const winds: number[] = Array.from({ length: 24 }, (_, h) => windsRaw[h] ?? 10);
+  const clouds: (number | null)[] = Array.from({ length: 24 }, (_, h) => cloudsRaw[h] ?? null);
+  const windDirs: (number | null)[] = Array.from({ length: 24 }, (_, h) => windDirsRaw[h] ?? null);
+
+  const swell = await fetchSwell(dateStr, zone.timezone);
+
+  const morningWinds = [6, 7, 8, 9].map((h) => winds[h]);
+  const dayWindKn = morningWinds.reduce((a, b) => a + b, 0) / morningWinds.length;
+
+  const p7 = pressureRaw[7] ?? 1013;
+  const p15 = pressureRaw[15] ?? 1013;
   const diff = p15 - p7;
-  return {
-    windKn: avgWind,
-    trend: diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable",
-    cloudPct: avgCloud,
-  };
+  const trend: "hausse" | "stable" | "baisse" = diff < -1.5 ? "baisse" : diff > 1.5 ? "hausse" : "stable";
+
+  return { winds, clouds, windDirs, swell, trend, dayWindKn };
+}
+
+function formatWindow(matchingHours: number[]): string {
+  if (matchingHours.length === 0) return "";
+  const sorted = [...matchingHours].sort((a, b) => a - b);
+  // Group contiguous runs.
+  const runs: Array<[number, number]> = [];
+  let start = sorted[0];
+  let prev = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === prev + 1) {
+      prev = sorted[i];
+    } else {
+      runs.push([start, prev]);
+      start = sorted[i];
+      prev = sorted[i];
+    }
+  }
+  runs.push([start, prev]);
+  return runs.map(([s, e]) => `${s}h–${e + 1}h`).join(", ");
 }
 
 Deno.serve(async (_req: Request) => {
@@ -66,21 +116,25 @@ Deno.serve(async (_req: Request) => {
   let totalSent = 0;
 
   for (const zone of zones as Zone[]) {
-    let weather: { windKn: number; trend: "hausse" | "stable" | "baisse"; cloudPct: number | null };
+    let hourly: HourlyData;
     try {
-      weather = await fetchTodayConditions(zone, todayStr);
+      hourly = await fetchHourlyData(zone, todayStr);
     } catch (err) {
       console.error(`Weather fetch failed for ${zone.id}:`, err);
       continue;
     }
 
-    const conditions: ComputedConditions = computeConditions(
+    const hourlyConditions = buildHourlyConditions(
       zone.latitude,
       zone.longitude,
-      today,
-      weather.windKn,
-      weather.trend,
-      weather.cloudPct,
+      todayStr,
+      zone.timezone,
+      hourly.winds,
+      hourly.clouds,
+      hourly.windDirs,
+      hourly.swell,
+      hourly.dayWindKn,
+      hourly.trend,
     );
 
     const userIds = [...new Set((allRules as NotificationRule[]).map((r) => r.user_id))];
@@ -98,7 +152,9 @@ Deno.serve(async (_req: Request) => {
         (r) => r.user_id === userId && r.zone_id === zone.id,
       );
       if (!userRules.length) continue;
-      if (!evaluateRules(userRules, conditions)) continue;
+
+      const { matched, matchingHours } = evaluateRulesAcrossDay(userRules, hourlyConditions);
+      if (!matched) continue;
 
       const { data: existing } = await supabase
         .from("notification_log")
@@ -115,8 +171,10 @@ Deno.serve(async (_req: Request) => {
         .filter((s) => s.user_id === userId);
       if (!userSubs.length) continue;
 
-      const topSpecies = Object.entries(conditions.species_scores).sort((a, b) => b[1] - a[1])[0];
+      const dayConditions = hourlyConditions[0];
+      const topSpecies = Object.entries(dayConditions.species_scores).sort((a, b) => b[1] - a[1])[0];
       const topSpeciesName = topSpecies[0].charAt(0).toUpperCase() + topSpecies[0].slice(1);
+      const window = formatWindow(matchingHours);
 
       let sent = 0;
       for (const sub of userSubs) {
@@ -125,7 +183,7 @@ Deno.serve(async (_req: Request) => {
             { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
             JSON.stringify({
               title: "Halio — Bonnes conditions aujourd'hui",
-              body: `${topSpeciesName} ${topSpecies[1]}/100 · Vent ${Math.round(weather.windKn)} nœuds · Coeff ${conditions.coefficient}`,
+              body: `${topSpeciesName} ${topSpecies[1]}/100 · ${window} · Coeff ${dayConditions.coefficient}`,
               url: "https://halioapp.com",
               tag: `halio-morning-${zone.id}-${todayStr}`,
             }),
@@ -148,7 +206,7 @@ Deno.serve(async (_req: Request) => {
           zone_id: zone.id,
           target_date: todayStr,
           horizon_days: 0,
-          scores_snapshot: conditions,
+          scores_snapshot: { ...dayConditions, matchingHours },
         });
       }
     }

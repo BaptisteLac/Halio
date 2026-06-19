@@ -30,13 +30,16 @@ type RuleType = NotificationRuleRow['type'];
 type Operator = NotificationRuleRow['operator'];
 
 const RULE_TYPE_LABELS: Record<RuleType, string> = {
-  species_score:  'Score espèce',
-  global_score:   'Score global',
-  wind_speed:     'Vent (nœuds)',
-  coefficient:    'Coefficient',
-  tide_phase:     'Phase de marée',
-  pressure_trend: 'Tendance pression',
-  cloud_cover:    'Couverture nuageuse (%)',
+  species_score:     'Score espèce',
+  global_score:      'Score global',
+  wind_speed:        'Vent (nœuds)',
+  wind_direction:    'Direction du vent',
+  coefficient:       'Coefficient',
+  tide_phase:        'Phase de marée',
+  pressure_trend:    'Tendance pression',
+  cloud_cover:       'Couverture nuageuse (%)',
+  swell_height:      'Houle (m)',
+  hour_of_day_range: 'Plage horaire',
 };
 
 const NUMERIC_OPERATORS: { op: Operator; label: string }[] = [
@@ -54,6 +57,7 @@ const TIDE_PHASE_LABELS: Record<(typeof TIDE_PHASES)[number], string> = {
   etale_bm:   'Étale de basse mer',
 };
 const PRESSURE_TRENDS = ['hausse', 'stable', 'baisse'];
+const WIND_SECTORS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'] as const;
 
 const sectionLabel: React.CSSProperties = {
   fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.07em', color: T.t4, marginBottom: 6,
@@ -64,6 +68,21 @@ type NewRuleState = {
   species_id: string;
   operator: Operator;
   value: string;
+  hourStart: number;
+  hourEnd: number;
+  windSectors: string[];
+};
+
+const DEFAULT_HOUR_START = 10;
+const DEFAULT_HOUR_END = 14;
+const INITIAL_NEW_RULE: NewRuleState = {
+  type: 'species_score',
+  species_id: 'bar',
+  operator: '>=',
+  value: '70',
+  hourStart: DEFAULT_HOUR_START,
+  hourEnd: DEFAULT_HOUR_END,
+  windSectors: [],
 };
 
 export default function NotificationsClient() {
@@ -78,7 +97,7 @@ export default function NotificationsClient() {
   const [saved,     setSaved]     = useState(false);
   const [showForm,  setShowForm]  = useState(false);
   const [ruleError, setRuleError] = useState<string | null>(null);
-  const [newRule,   setNewRule]   = useState<NewRuleState>({ type: 'species_score', species_id: 'bar', operator: '>=', value: '70' });
+  const [newRule,   setNewRule]   = useState<NewRuleState>(INITIAL_NEW_RULE);
 
   useEffect(() => {
     const supabase = createClient();
@@ -141,14 +160,34 @@ export default function NotificationsClient() {
   async function addRule() {
     if (!user) return;
     setRuleError(null);
+    if (newRule.type === 'hour_of_day_range' && newRule.hourEnd < newRule.hourStart) {
+      setRuleError("L'heure de fin doit être après l'heure de début.");
+      return;
+    }
+    if (newRule.type === 'wind_direction' && newRule.windSectors.length === 0) {
+      setRuleError('Sélectionne au moins une direction.');
+      return;
+    }
+    if (newRule.type === 'swell_height' && (Number.isNaN(Number(newRule.value)) || Number(newRule.value) < 0)) {
+      setRuleError('Hauteur de houle invalide.');
+      return;
+    }
     const supabase = createClient();
+    const value =
+      newRule.type === 'hour_of_day_range' ? `${newRule.hourStart}-${newRule.hourEnd}` :
+      newRule.type === 'wind_direction'    ? newRule.windSectors.join(',') :
+      newRule.value;
+    const operator: Operator =
+      newRule.type === 'hour_of_day_range' || newRule.type === 'wind_direction'
+        ? '='
+        : newRule.operator;
     const insert: NotificationRuleInsert = {
       user_id:    user.id,
       zone_id:    'arcachon',
       type:       newRule.type,
       species_id: newRule.type === 'species_score' ? newRule.species_id : null,
-      operator:   newRule.operator,
-      value:      newRule.value,
+      operator,
+      value,
       enabled:    true,
     };
     const { data, error } = await supabase.from('notification_rules').insert(insert).select().single();
@@ -158,7 +197,7 @@ export default function NotificationsClient() {
     }
     if (data) setRules((prev) => [...prev, data]);
     setShowForm(false);
-    setNewRule({ type: 'species_score', species_id: 'bar', operator: '>=', value: '70' });
+    setNewRule(INITIAL_NEW_RULE);
   }
 
   function ruleLabel(rule: NotificationRuleRow): string {
@@ -173,10 +212,30 @@ export default function NotificationsClient() {
     }
     if (rule.type === 'pressure_trend') return `Pression = ${rule.value}`;
     if (rule.type === 'cloud_cover') return `Couverture nuageuse ${rule.operator} ${rule.value}%`;
+    if (rule.type === 'swell_height') return `Houle ${rule.operator} ${rule.value} m`;
+    if (rule.type === 'wind_direction') {
+      const sectors = rule.value.split(',').filter(Boolean).join(', ');
+      return `Vent venant de ${sectors}`;
+    }
+    if (rule.type === 'hour_of_day_range') {
+      const [s, e] = rule.value.split('-');
+      const eNum = Number(e);
+      return `Plage horaire ${s}h–${Number.isNaN(eNum) ? e : eNum + 1}h`;
+    }
     return `${typeLabel} ${rule.operator} ${rule.value}`;
   }
 
   const isStringType = newRule.type === 'tide_phase' || newRule.type === 'pressure_trend';
+  const isHourRange = newRule.type === 'hour_of_day_range';
+  const isWindDirection = newRule.type === 'wind_direction';
+
+  function toggleSector(sector: string) {
+    setNewRule((r) => {
+      const exists = r.windSectors.includes(sector);
+      const next = exists ? r.windSectors.filter((s) => s !== sector) : [...r.windSectors, sector];
+      return { ...r, windSectors: next };
+    });
+  }
 
   if (user === undefined) {
     return (
@@ -265,11 +324,15 @@ export default function NotificationsClient() {
                     onChange={(e) => {
                       const type = e.target.value as RuleType;
                       const defaultValue =
-                        type === 'tide_phase'    ? 'montant' :
-                        type === 'pressure_trend' ? 'baisse'  :
-                        type === 'cloud_cover'    ? '30'      :
+                        type === 'tide_phase'        ? 'montant' :
+                        type === 'pressure_trend'    ? 'baisse'  :
+                        type === 'cloud_cover'       ? '30'      :
+                        type === 'swell_height'      ? '1.0'     :
+                        type === 'wind_direction'    ? ''        :
+                        type === 'hour_of_day_range' ? `${DEFAULT_HOUR_START}-${DEFAULT_HOUR_END}` :
                         '70';
-                      setNewRule({ type, species_id: 'bar', operator: '>=', value: defaultValue });
+                      const operator: Operator = type === 'swell_height' ? '<=' : '>=';
+                      setNewRule({ ...INITIAL_NEW_RULE, type, value: defaultValue, operator });
                     }}
                     style={{ padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.8125rem' }}
                   >
@@ -288,7 +351,7 @@ export default function NotificationsClient() {
                     </select>
                   )}
 
-                  {!isStringType && (
+                  {!isStringType && !isHourRange && !isWindDirection && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <select
@@ -311,6 +374,19 @@ export default function NotificationsClient() {
                             />
                             <span style={{ minWidth: 48, textAlign: 'right', fontSize: '0.875rem', fontWeight: 600, color: T.t1, fontVariantNumeric: 'tabular-nums' }}>{newRule.value} %</span>
                           </>
+                        ) : newRule.type === 'swell_height' ? (
+                          <>
+                            <input
+                              type="number"
+                              step={0.1}
+                              min={0}
+                              max={10}
+                              value={newRule.value}
+                              onChange={(e) => setNewRule((r) => ({ ...r, value: e.target.value }))}
+                              style={{ flex: 1, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.8125rem' }}
+                            />
+                            <span style={{ minWidth: 24, textAlign: 'right', fontSize: '0.875rem', fontWeight: 600, color: T.t1 }}>m</span>
+                          </>
                         ) : (
                           <input
                             type="number"
@@ -320,6 +396,20 @@ export default function NotificationsClient() {
                           />
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {isWindDirection && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                      {WIND_SECTORS.map((s) => {
+                        const active = newRule.windSectors.includes(s);
+                        return (
+                          <button key={s} onClick={() => toggleSector(s)}
+                            style={{ padding: '10px 4px', borderRadius: 8, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', border: `1px solid ${active ? `${T.accent}40` : T.border}`, background: active ? `${T.accent}15` : T.l3, color: active ? T.accent : T.t3 }}>
+                            {s}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -342,6 +432,36 @@ export default function NotificationsClient() {
                           {v}
                         </button>
                       ))}
+                    </div>
+                  )}
+
+                  {isHourRange && (
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8125rem', color: T.t3 }}>De</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={newRule.hourStart}
+                        onChange={(e) => {
+                          const v = Math.max(0, Math.min(23, Number(e.target.value) || 0));
+                          setNewRule((r) => ({ ...r, hourStart: v }));
+                        }}
+                        style={{ width: 64, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.875rem', textAlign: 'center' }}
+                      />
+                      <span style={{ fontSize: '0.8125rem', color: T.t3 }}>h à</span>
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={newRule.hourEnd}
+                        onChange={(e) => {
+                          const v = Math.max(0, Math.min(23, Number(e.target.value) || 0));
+                          setNewRule((r) => ({ ...r, hourEnd: v }));
+                        }}
+                        style={{ width: 64, padding: '8px 10px', borderRadius: 8, background: T.l3, border: `1px solid ${T.border}`, color: T.t1, fontSize: '0.875rem', textAlign: 'center' }}
+                      />
+                      <span style={{ fontSize: '0.8125rem', color: T.t3 }}>h</span>
                     </div>
                   )}
 

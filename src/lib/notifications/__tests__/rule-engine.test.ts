@@ -1,15 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { evaluateRule, evaluateRules } from '../rule-engine';
+import { evaluateRule, evaluateRules, evaluateRulesAcrossDay, degreesToCardinal8 } from '../rule-engine';
 import type { NotificationRule, ComputedConditions } from '../rule-engine';
 
 const baseConditions: ComputedConditions = {
+  hour: 8,
   global_score: 72,
   species_scores: { bar: 85, dorade: 60, maigre: 40 },
   wind_speed: 12,
+  wind_direction: 270,
   coefficient: 82,
   tide_phase: 'montant',
   pressure_trend: 'baisse',
   cloud_cover: 25,
+  swell_height: 0.8,
 };
 
 const rule = (overrides: Partial<NotificationRule>): NotificationRule => ({
@@ -89,6 +92,84 @@ describe('evaluateRule', () => {
   it('cloud_cover rule blocks notification when data is unavailable', () => {
     expect(evaluateRule(rule({ type: 'cloud_cover', operator: '<=', value: '30' }), { ...baseConditions, cloud_cover: null })).toBe(false);
   });
+
+  it('hour_of_day_range matches when hour is at the lower bound', () => {
+    expect(evaluateRule(rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }), { ...baseConditions, hour: 10 })).toBe(true);
+  });
+
+  it('hour_of_day_range matches when hour is at the upper bound', () => {
+    expect(evaluateRule(rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }), { ...baseConditions, hour: 14 })).toBe(true);
+  });
+
+  it('hour_of_day_range matches when hour is in the middle', () => {
+    expect(evaluateRule(rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }), { ...baseConditions, hour: 12 })).toBe(true);
+  });
+
+  it('hour_of_day_range fails when hour is just before the window', () => {
+    expect(evaluateRule(rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }), { ...baseConditions, hour: 9 })).toBe(false);
+  });
+
+  it('hour_of_day_range fails when hour is just after the window', () => {
+    expect(evaluateRule(rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }), { ...baseConditions, hour: 15 })).toBe(false);
+  });
+
+  it('hour_of_day_range with malformed value returns false', () => {
+    expect(evaluateRule(rule({ type: 'hour_of_day_range', operator: '=', value: 'abc' }), baseConditions)).toBe(false);
+  });
+
+  it('swell_height <= threshold passes when sea is calm', () => {
+    expect(evaluateRule(rule({ type: 'swell_height', operator: '<=', value: '1.0' }), baseConditions)).toBe(true);
+  });
+
+  it('swell_height <= threshold fails when swell is too high', () => {
+    expect(evaluateRule(rule({ type: 'swell_height', operator: '<=', value: '0.5' }), baseConditions)).toBe(false);
+  });
+
+  it('swell_height rule blocks notification when data is unavailable', () => {
+    expect(evaluateRule(rule({ type: 'swell_height', operator: '<=', value: '1.0' }), { ...baseConditions, swell_height: null })).toBe(false);
+  });
+
+  it('wind_direction matches single sector when wind comes from west (270°)', () => {
+    expect(evaluateRule(rule({ type: 'wind_direction', operator: '=', value: 'O' }), baseConditions)).toBe(true);
+  });
+
+  it('wind_direction multi-select matches when actual is in any selected sector', () => {
+    expect(evaluateRule(rule({ type: 'wind_direction', operator: '=', value: 'N,NE' }), { ...baseConditions, wind_direction: 22 })).toBe(true);
+  });
+
+  it('wind_direction fails when actual is not in any selected sector', () => {
+    expect(evaluateRule(rule({ type: 'wind_direction', operator: '=', value: 'N,NE' }), { ...baseConditions, wind_direction: 180 })).toBe(false);
+  });
+
+  it('wind_direction returns false when data is unavailable', () => {
+    expect(evaluateRule(rule({ type: 'wind_direction', operator: '=', value: 'O' }), { ...baseConditions, wind_direction: null })).toBe(false);
+  });
+
+  it('wind_direction returns false when value is empty', () => {
+    expect(evaluateRule(rule({ type: 'wind_direction', operator: '=', value: '' }), baseConditions)).toBe(false);
+  });
+
+  it('wind_direction handles wrap-around: 348° rounds to N', () => {
+    expect(evaluateRule(rule({ type: 'wind_direction', operator: '=', value: 'N' }), { ...baseConditions, wind_direction: 348 })).toBe(true);
+  });
+});
+
+describe('degreesToCardinal8', () => {
+  it('maps cardinal angles correctly', () => {
+    expect(degreesToCardinal8(0)).toBe('N');
+    expect(degreesToCardinal8(45)).toBe('NE');
+    expect(degreesToCardinal8(90)).toBe('E');
+    expect(degreesToCardinal8(135)).toBe('SE');
+    expect(degreesToCardinal8(180)).toBe('S');
+    expect(degreesToCardinal8(225)).toBe('SO');
+    expect(degreesToCardinal8(270)).toBe('O');
+    expect(degreesToCardinal8(315)).toBe('NO');
+  });
+
+  it('wraps around 360°', () => {
+    expect(degreesToCardinal8(360)).toBe('N');
+    expect(degreesToCardinal8(348)).toBe('N');
+  });
 });
 
 describe('evaluateRules', () => {
@@ -119,5 +200,73 @@ describe('evaluateRules', () => {
       rule({ type: 'wind_speed', operator: '<=', value: '5', enabled: false }),
     ];
     expect(evaluateRules(rules, baseConditions)).toBe(true);
+  });
+});
+
+describe('evaluateRulesAcrossDay', () => {
+  // Build a 24-hour array where wind varies and tide_phase changes between morning and afternoon.
+  function buildHourly(overrides: (h: number) => Partial<ComputedConditions> = () => ({})): ComputedConditions[] {
+    return Array.from({ length: 24 }, (_, h) => ({ ...baseConditions, hour: h, ...overrides(h) }));
+  }
+
+  it('returns matchingHours within the configured window', () => {
+    const hourly = buildHourly();
+    const rules: NotificationRule[] = [
+      rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }),
+    ];
+    const { matched, matchingHours } = evaluateRulesAcrossDay(rules, hourly);
+    expect(matched).toBe(true);
+    expect(matchingHours).toEqual([10, 11, 12, 13, 14]);
+  });
+
+  it('intersects the window with another condition (only matching hours pass both)', () => {
+    // Strong wind only outside 11..13 — combined with 10-14 window, only 11..13 pass.
+    const hourly = buildHourly((h) => ({ wind_speed: h >= 11 && h <= 13 ? 8 : 25 }));
+    const rules: NotificationRule[] = [
+      rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }),
+      rule({ type: 'wind_speed', operator: '<=', value: '15' }),
+    ];
+    const { matched, matchingHours } = evaluateRulesAcrossDay(rules, hourly);
+    expect(matched).toBe(true);
+    expect(matchingHours).toEqual([11, 12, 13]);
+  });
+
+  it('returns matched=false when no hour in the window passes the other rules', () => {
+    // Wind too strong everywhere.
+    const hourly = buildHourly(() => ({ wind_speed: 30 }));
+    const rules: NotificationRule[] = [
+      rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }),
+      rule({ type: 'wind_speed', operator: '<=', value: '15' }),
+    ];
+    const { matched, matchingHours } = evaluateRulesAcrossDay(rules, hourly);
+    expect(matched).toBe(false);
+    expect(matchingHours).toEqual([]);
+  });
+
+  it('disabled hour-range rule is ignored — every hour with passing other rules counts', () => {
+    const hourly = buildHourly();
+    const rules: NotificationRule[] = [
+      rule({ type: 'hour_of_day_range', operator: '=', value: '10-14', enabled: false }),
+      rule({ type: 'wind_speed', operator: '<=', value: '15' }),
+    ];
+    const { matched, matchingHours } = evaluateRulesAcrossDay(rules, hourly);
+    expect(matched).toBe(true);
+    expect(matchingHours.length).toBe(24);
+  });
+
+  it('models the user example: tide_phase=etale_pm + cloud_cover<20 + hour_of_day_range=10-14', () => {
+    // High tide moment occurs at h=12; clouds clear from h=11..14; window is 10..14.
+    const hourly = buildHourly((h) => ({
+      tide_phase: h === 12 ? 'etale_pm' : 'montant',
+      cloud_cover: h >= 11 && h <= 14 ? 10 : 50,
+    }));
+    const rules: NotificationRule[] = [
+      rule({ type: 'tide_phase', operator: '=', value: 'etale_pm' }),
+      rule({ type: 'cloud_cover', operator: '<', value: '20' }),
+      rule({ type: 'hour_of_day_range', operator: '=', value: '10-14' }),
+    ];
+    const { matched, matchingHours } = evaluateRulesAcrossDay(rules, hourly);
+    expect(matched).toBe(true);
+    expect(matchingHours).toEqual([12]);
   });
 });
